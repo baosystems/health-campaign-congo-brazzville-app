@@ -82,7 +82,7 @@ class CustomIndividualGlobalSearchRepository extends LocalRepository {
       if (params.filter != null && params.filter!.isNotEmpty) {
         for (var filter in params.filter!) {
           filterSelectQuery =
-              await filterSearch(filterSelectQuery, params, filter, super.  sql);
+              await filterSearch(filterSelectQuery, params, filter, super.sql);
         }
       } else {
         filterSelectQuery = nameSelectQuery;
@@ -117,6 +117,10 @@ class CustomIndividualGlobalSearchRepository extends LocalRepository {
                 projectBeneficiaryId: task.projectBeneficiaryId,
                 projectBeneficiaryClientReferenceId:
                     task.projectBeneficiaryClientReferenceId,
+                additionalFields: task.additionalFields == null
+                    ? null
+                    : TaskAdditionalFieldsMapper.fromJson(
+                        task.additionalFields!),
                 createdDate: task.createdDate,
                 status: task.status,
                 resources: resources == null

@@ -156,6 +156,10 @@ class IndividualGlobalSearchSMCRepository extends LocalRepository {
                   projectBeneficiaryId: task.projectBeneficiaryId,
                   projectBeneficiaryClientReferenceId:
                       task.projectBeneficiaryClientReferenceId,
+                  additionalFields: task.additionalFields == null
+                      ? null
+                      : TaskAdditionalFieldsMapper.fromJson(
+                          task.additionalFields!),
                   createdDate: task.createdDate,
                   status: task.status,
                   resources: resources == null

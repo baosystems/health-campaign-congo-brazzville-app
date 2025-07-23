@@ -63,11 +63,12 @@ class SummaryReportBloc extends Bloc<SummaryReportEvent, SummaryReportState> {
         refusalCasesList.add(element);
       }
 
-      if (element.additionalFields?.fields.firstWhereOrNull((element) =>
-              element.key ==
-              additional_fields_local.AdditionalFieldsType.zeroDoseStatus
-                  .toValue()) !=
-          null) {
+      if ((element.additionalFields?.fields.firstWhereOrNull((element) =>
+                  element.key ==
+                  additional_fields_local.AdditionalFieldsType.zeroDoseStatus
+                      .toValue()) !=
+              null) &&
+          element.status != Status.delivered.toValue()) {
         zeroDoseChildrenList.add(element);
       }
     }

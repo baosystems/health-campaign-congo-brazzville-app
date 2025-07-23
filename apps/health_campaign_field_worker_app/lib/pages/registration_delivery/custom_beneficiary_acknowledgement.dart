@@ -65,8 +65,9 @@ class CustomBeneficiaryAcknowledgementPageState
     } else {
       String? beneficiaryId = widget.selectedIndividual != null
           ? householdMember!.members
-              ?.firstWhereOrNull(
-                  (member) => member.id == widget.selectedIndividual?.id)
+              ?.firstWhereOrNull((member) =>
+                  member.clientReferenceId ==
+                  widget.selectedIndividual?.clientReferenceId)
               ?.identifiers
               ?.lastWhereOrNull((e) =>
                   e.identifierType ==

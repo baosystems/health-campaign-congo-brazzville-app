@@ -704,6 +704,7 @@ class CustomMemberCard extends StatelessWidget {
                           await context.router.push(
                             CustomSideEffectsRoute(
                               tasks: tasks!,
+                              individual: individual,
                             ),
                           );
                         },

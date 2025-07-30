@@ -535,6 +535,7 @@ abstract class _$AppRouter extends RootStackRouter {
           key: args.key,
           appLocalizations: args.appLocalizations,
           tasks: args.tasks,
+          individual: args.individual,
           isEditing: args.isEditing,
         ),
       );
@@ -2760,6 +2761,7 @@ class CustomSideEffectsRoute extends PageRouteInfo<CustomSideEffectsRouteArgs> {
     Key? key,
     RegistrationDeliveryLocalization? appLocalizations,
     required List<TaskModel> tasks,
+    IndividualModel? individual,
     bool isEditing = false,
     List<PageRouteInfo>? children,
   }) : super(
@@ -2768,6 +2770,7 @@ class CustomSideEffectsRoute extends PageRouteInfo<CustomSideEffectsRouteArgs> {
             key: key,
             appLocalizations: appLocalizations,
             tasks: tasks,
+            individual: individual,
             isEditing: isEditing,
           ),
           initialChildren: children,
@@ -2784,6 +2787,7 @@ class CustomSideEffectsRouteArgs {
     this.key,
     this.appLocalizations,
     required this.tasks,
+    this.individual,
     this.isEditing = false,
   });
 
@@ -2793,11 +2797,13 @@ class CustomSideEffectsRouteArgs {
 
   final List<TaskModel> tasks;
 
+  final IndividualModel? individual;
+
   final bool isEditing;
 
   @override
   String toString() {
-    return 'CustomSideEffectsRouteArgs{key: $key, appLocalizations: $appLocalizations, tasks: $tasks, isEditing: $isEditing}';
+    return 'CustomSideEffectsRouteArgs{key: $key, appLocalizations: $appLocalizations, tasks: $tasks, individual: $individual, isEditing: $isEditing}';
   }
 }
 

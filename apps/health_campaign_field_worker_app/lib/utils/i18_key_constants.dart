@@ -207,6 +207,7 @@ class DeliverIntervention {
       'ALPHABETS_ONLY_VALIDATION';
 
   String get vaccinsSelectionLabel => 'VACCINS_DETAILS_LABEL';
+  String get vaccinsSelectionLabelForGroup => 'VACCINS_DETAILS_LABEL_FOR_GROUP';
 
   String get otherReasonLabel =>
       'DELIVER_INTERVENTION_OTHER_REASON_FOR_REDOSE_LABEL';
@@ -1363,6 +1364,12 @@ class SearchBeneficiary {
 
   String get beneficiarySearchHintText => 'BENEFICIARY_SEARCH_HINT_TEXT';
 
+  String get beneficiarySearchByBeneficiaryIdHintText =>
+      'BENEFICIARY_SEARCH_BY_BENEFICIARY_ID_HINT_TEXT';
+
+  String get beneficiarySearchByMobileNumberHintText =>
+      'BENEFICIARY_SEARCH_BY_MOBILE_NUMBER_HINT_TEXT';
+
   String get beneficiaryIndividualSearchHintText =>
       'BENEFICIARY_INDIVIDUAL_SEARCH_HINT_TEXT';
 
@@ -1381,6 +1388,10 @@ class SearchBeneficiary {
   String get proximityLabel => 'PROXIMITY_LABEL';
   String get beneficiaryIdValidInfoDescription =>
       'BENEFICIARY_ID_VALID_INFO_DESCRIPTION';
+
+  String get mobileNumberValidInfoDescription =>
+      'MOBILE_NUMBER_VALID_INFO_DESCRIPTION';
+  String get mobileNumberInfoTitle => 'MOBILE_NUMBER_VALID_INFO_TITLE';
 }
 
 class IndividualDetails {
@@ -1479,6 +1490,7 @@ class BeneficiaryDetails {
       "ERROR_VALIDATION_FOR_EXCESS_STOCK_DISPATCH";
   String get searchbybeneficiaryidtextupdate =>
       'SEARCH_BY_BENEFICIARY_ID_TEXT_UPDATE';
+  String get searchByMobileNumber => 'SEARCH_BY_MOBILE_NUMBER';
   String get validationForExcessStockReturn =>
       "ERROR_VALIDATION_FOR_EXCESS_STOCK_RETURN";
   String get validationForExcessStockAcceptReturn =>

@@ -318,6 +318,8 @@ class CustomReferBeneficiarySMCPageState
                                             EligibilityAssessmentStatus
                                                 .smcDone.name,
                                           ),
+                                          ...getIndividualAdditionalFields(
+                                              widget.individual)
                                         ],
                                       ),
                                       address: widget.individual.address?.first
@@ -361,6 +363,10 @@ class CustomReferBeneficiarySMCPageState
                                               EligibilityAssessmentType.smc,
                                           isAdministration: false,
                                           task: task,
+                                          projectBeneficiaryClientReferenceId: task
+                                                  .projectBeneficiaryClientReferenceId ??
+                                              widget
+                                                  .projectBeneficiaryClientRefId,
                                         ),
                                         // CustomHouseholdAcknowledgementRoute(
                                         //   enableViewHousehold: true,

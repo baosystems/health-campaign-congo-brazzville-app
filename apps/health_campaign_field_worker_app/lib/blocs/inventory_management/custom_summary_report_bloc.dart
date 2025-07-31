@@ -7,6 +7,7 @@ import 'package:registration_delivery/models/entities/household_member.dart';
 import 'package:registration_delivery/models/entities/task.dart';
 import 'package:registration_delivery/models/entities/task_resource.dart';
 import 'package:registration_delivery/utils/typedefs.dart';
+import 'package:registration_delivery/utils/utils.dart';
 
 import '../../models/entities/assessment_checklist/status.dart';
 import '../../utils/app_enums.dart';
@@ -40,20 +41,41 @@ class SummaryReportBloc extends Bloc<SummaryReportEvent, SummaryReportState> {
   ) async {
     emit(const SummaryReportLoadingState());
 
-    List<HouseholdMemberModel> householdMemberList = [];
-    List<TaskModel> taskList = [];
+    List<HouseholdMemberModel> householdMemberListData = [];
+    List<TaskModel> taskListData = [];
     List<TaskModel> refusalCasesList = [];
     List<TaskModel> administeredChildrenList = [];
     List<ProductVariantModel> productVariantList = [];
     List<TaskResourceModel> spaq1List = [];
     List<TaskResourceModel> spaq2List = [];
     List<TaskModel> zeroDoseChildrenList = [];
-    householdMemberList = await (householdMemberRepository)
+    final currentCycle =
+        RegistrationDeliverySingleton().projectType?.cycles?.firstWhere(
+              (e) =>
+                  (e.startDate) < DateTime.now().millisecondsSinceEpoch &&
+                  (e.endDate) > DateTime.now().millisecondsSinceEpoch,
+            );
+    householdMemberListData = await (householdMemberRepository)
         .search(HouseholdMemberSearchModel(isHeadOfHousehold: false));
-    taskList = await (taskDataRepository).search(TaskSearchModel());
+    taskListData = await (taskDataRepository).search(TaskSearchModel());
     productVariantList = await (productVariantDataRepository)
         .search(ProductVariantSearchModel());
+    final householdMemberList = currentCycle == null
+        ? householdMemberListData
+        : householdMemberListData.where((member) {
+            final createdTime = member.auditDetails?.createdTime ?? 0;
+            return createdTime >= currentCycle.startDate &&
+                createdTime <= currentCycle.endDate;
+          }).toList();
+    final taskList = currentCycle == null
+        ? taskListData
+        : taskListData.where((task) {
+            final createdTime = task.auditDetails?.createdTime ?? 0;
+            return createdTime >= currentCycle.startDate &&
+                createdTime <= currentCycle.endDate;
+          }).toList();
     for (var element in taskList) {
+      if (element.status == null) continue;
       final status = StatusMapper.fromValue(element.status);
 
       if (status == Status.administeredSuccess) {
@@ -62,11 +84,12 @@ class SummaryReportBloc extends Bloc<SummaryReportEvent, SummaryReportState> {
         refusalCasesList.add(element);
       }
 
-      if (element.additionalFields?.fields.firstWhereOrNull((element) =>
-              element.key ==
-              additional_fields_local.AdditionalFieldsType.zeroDoseStatus
-                  .toValue()) !=
-          null) {
+      if ((element.additionalFields?.fields.firstWhereOrNull((element) =>
+                  element.key ==
+                  additional_fields_local.AdditionalFieldsType.zeroDoseStatus
+                      .toValue()) !=
+              null) &&
+          element.status != Status.delivered.toValue()) {
         zeroDoseChildrenList.add(element);
       }
     }
@@ -102,34 +125,52 @@ class SummaryReportBloc extends Bloc<SummaryReportEvent, SummaryReportState> {
     for (var element in householdMemberList) {
       var dateKey = DigitDateUtils.getDateFromTimestamp(
           element.clientAuditDetails!.createdTime);
-      dateVsHouseholdMembersList.putIfAbsent(dateKey, () => []).add(element);
+      if (element.clientAuditDetails!.createdTime >= currentCycle!.startDate &&
+          element.clientAuditDetails!.createdTime <= currentCycle.endDate) {
+        dateVsHouseholdMembersList.putIfAbsent(dateKey, () => []).add(element);
+      }
     }
     for (var element in administeredChildrenList) {
       var dateKey = DigitDateUtils.getDateFromTimestamp(
           element.clientAuditDetails!.createdTime);
-      dateVsAdministeredChilderenList
-          .putIfAbsent(dateKey, () => [])
-          .add(element);
+      if (element.clientAuditDetails!.createdTime >= currentCycle!.startDate &&
+          element.clientAuditDetails!.createdTime <= currentCycle.endDate) {
+        dateVsAdministeredChilderenList
+            .putIfAbsent(dateKey, () => [])
+            .add(element);
+      }
     }
     for (var element in refusalCasesList) {
       var dateKey = DigitDateUtils.getDateFromTimestamp(
           element.clientAuditDetails!.createdTime);
-      dateVsRefusalCasesList.putIfAbsent(dateKey, () => []).add(element);
+      if (element.clientAuditDetails!.createdTime >= currentCycle!.startDate &&
+          element.clientAuditDetails!.createdTime <= currentCycle.endDate) {
+        dateVsRefusalCasesList.putIfAbsent(dateKey, () => []).add(element);
+      }
     }
     for (var element in zeroDoseChildrenList) {
       var dateKey = DigitDateUtils.getDateFromTimestamp(
           element.clientAuditDetails!.createdTime);
-      dateVsZeroDoseChildrenList.putIfAbsent(dateKey, () => []).add(element);
+      if (element.clientAuditDetails!.createdTime >= currentCycle!.startDate &&
+          element.clientAuditDetails!.createdTime <= currentCycle.endDate) {
+        dateVsZeroDoseChildrenList.putIfAbsent(dateKey, () => []).add(element);
+      }
     }
     for (var element in spaq1List) {
       var dateKey = DigitDateUtils.getDateFromTimestamp(
           element.auditDetails!.createdTime);
-      dateVsSpaq1List.putIfAbsent(dateKey, () => []).add(element);
+      if (element.auditDetails!.createdTime >= currentCycle!.startDate &&
+          element.auditDetails!.createdTime <= currentCycle.endDate) {
+        dateVsSpaq1List.putIfAbsent(dateKey, () => []).add(element);
+      }
     }
     for (var element in spaq2List) {
       var dateKey = DigitDateUtils.getDateFromTimestamp(
           element.auditDetails!.createdTime);
-      dateVsSpaq2List.putIfAbsent(dateKey, () => []).add(element);
+      if (element.auditDetails!.createdTime >= currentCycle!.startDate &&
+          element.auditDetails!.createdTime <= currentCycle.endDate) {
+        dateVsSpaq2List.putIfAbsent(dateKey, () => []).add(element);
+      }
     }
 
     // get a set of unique dates

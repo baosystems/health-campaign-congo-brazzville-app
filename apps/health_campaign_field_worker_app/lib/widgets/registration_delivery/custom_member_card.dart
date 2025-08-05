@@ -434,57 +434,8 @@ class CustomMemberCard extends StatelessWidget {
     }
     return BlocBuilder<DeliverInterventionBloc, DeliverInterventionState>(
         builder: (context, deliverState) {
-      List<TaskModel>? pastTasks = tasks;
-      if (tasks?.lastOrNull?.status ==
-          Status.beneficiaryRefused.toValue().toString()) {
-        pastTasks?.removeLast();
-      }
-      final lastDose = pastTasks != null && pastTasks!.isNotEmpty
-          ? pastTasks?.last.additionalFields?.fields
-                  .firstWhereOrNull(
-                    (e) =>
-                        e.key ==
-                        additional_fields_local.AdditionalFieldsType.doseIndex
-                            .toValue(),
-                  )
-                  ?.value ??
-              '0'
-          : '0';
-      final lastCycle = pastTasks != null && pastTasks!.isNotEmpty
-          ? pastTasks?.last.additionalFields?.fields
-                  .firstWhereOrNull(
-                    (e) =>
-                        e.key ==
-                        additional_fields_local.AdditionalFieldsType.cycleIndex
-                            .toValue(),
-                  )
-                  ?.value ??
-              '1'
-          : '1';
-
       final ProjectTypeModel projectType =
           RegistrationDeliverySingleton().projectType!;
-
-      if (projectType != null) {
-        context.read<DeliverInterventionBloc>().add(
-              DeliverInterventionEvent.setActiveCycleDose(
-                lastDose: tasks != null && tasks!.isNotEmpty
-                    ? int.tryParse(
-                          lastDose,
-                        ) ??
-                        1
-                    : 0,
-                lastCycle: tasks != null && tasks!.isNotEmpty
-                    ? int.tryParse(
-                          lastCycle,
-                        ) ??
-                        1
-                    : 1,
-                individualModel: individual,
-                projectType: projectType,
-              ),
-            );
-      }
       return Column(
         children: [
           if (smcAssessmentPendingStatus &&
@@ -764,6 +715,7 @@ class CustomMemberCard extends StatelessWidget {
                           await context.router.push(
                             CustomSideEffectsRoute(
                               tasks: tasks!,
+                              individual: individual,
                             ),
                           );
                         },

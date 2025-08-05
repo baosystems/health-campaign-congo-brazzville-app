@@ -802,18 +802,10 @@ class ZeroDoseCheckPageState extends LocalizedState<ZeroDoseCheckPage> {
                                                       //       .beneficiaryInEligible
                                                       //       .toValue(),
                                                       // ),
-                                                      if (widget
-                                                              .hasSideEffects ??
-                                                          false == false) ...[
-                                                        AdditionalField(
-                                                          'ineligibleReasons',
-                                                          ineligibilityReasons
-                                                              .join(","),
-                                                        ),
-                                                        AdditionalField(
-                                                            'ageBelow3Months',
-                                                            true.toString()),
-                                                      ] else ...[
+                                                      if (widget.hasSideEffects !=
+                                                              null &&
+                                                          widget.hasSideEffects ==
+                                                              true) ...[
                                                         AdditionalField(
                                                             'ineligibleReasons',
                                                             ["SIDE_EFFECTS"]
@@ -823,6 +815,15 @@ class ZeroDoseCheckPageState extends LocalizedState<ZeroDoseCheckPage> {
                                                                 .AdditionalFieldsType
                                                                 .hasSideEffects
                                                                 .toValue(),
+                                                            true.toString()),
+                                                      ] else ...[
+                                                        AdditionalField(
+                                                          'ineligibleReasons',
+                                                          ineligibilityReasons
+                                                              .join(","),
+                                                        ),
+                                                        AdditionalField(
+                                                            'ageBelow3Months',
                                                             true.toString()),
                                                       ],
                                                       AdditionalField(

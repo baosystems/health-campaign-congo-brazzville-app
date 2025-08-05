@@ -1191,20 +1191,22 @@ class _VaccineSelectionPageState extends LocalizedState<VaccineSelectionPage> {
                                                     .toValue(),
                                                 ZeroDoseStatus.done.name,
                                               ),
-                                              AdditionalField(
-                                                additional_fields_local
-                                                    .AdditionalFieldsType
-                                                    .selectedVaccines
-                                                    .toValue(),
-                                                selectedCodes.join('.'),
-                                              ),
-                                              AdditionalField(
-                                                additional_fields_local
-                                                    .AdditionalFieldsType
-                                                    .noSelectedVaccines
-                                                    .toValue(),
-                                                noSelectedCodes.join('.'),
-                                              ),
+                                              if (selectedCodes.isNotEmpty)
+                                                AdditionalField(
+                                                  additional_fields_local
+                                                      .AdditionalFieldsType
+                                                      .selectedVaccines
+                                                      .toValue(),
+                                                  selectedCodes.join('.'),
+                                                ),
+                                              if (noSelectedCodes.isNotEmpty)
+                                                AdditionalField(
+                                                  additional_fields_local
+                                                      .AdditionalFieldsType
+                                                      .noSelectedVaccines
+                                                      .toValue(),
+                                                  noSelectedCodes.join('.'),
+                                                ),
                                               ...getIndividualAdditionalFields(
                                                   widget.individual)
                                             ],

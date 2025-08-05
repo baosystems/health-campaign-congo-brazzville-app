@@ -1202,7 +1202,7 @@ class _VaccineSelectionPageState extends LocalizedState<VaccineSelectionPage> {
                                                 AdditionalField(
                                                   'boundaryCode',
                                                   selectedBoundary!.value!.code
-                                                      .toString(),
+                                                      .toString()),
 
                                               if (selectedCodes.isNotEmpty)
                                                 AdditionalField(

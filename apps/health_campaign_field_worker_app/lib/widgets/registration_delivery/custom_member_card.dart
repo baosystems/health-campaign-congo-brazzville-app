@@ -933,14 +933,15 @@ class CustomMemberCard extends StatelessWidget {
                   ),
                 ],
               ),
-              ((tasks == null || tasks!.isEmpty) &&
-                      !isSMCDelivered &&
-                      !isVASDelivered &&
-                      // !isNotEligibleSMC &&
-                      // !isNotEligibleVAS &&
-                      !isBeneficiaryIneligible &&
-                      !isBeneficiaryReferred)
-                  ? Positioned(
+              // ((tasks == null || tasks!.isEmpty) &&
+              //         !isSMCDelivered &&
+              //         !isVASDelivered &&
+              //         // !isNotEligibleSMC &&
+              //         // !isNotEligibleVAS &&
+              //         !isBeneficiaryIneligible &&
+              //         !isBeneficiaryReferred)
+              //     ? 
+                  Positioned(
                       child: Align(
                         alignment: Alignment.topRight,
                         child: DigitIconButton(
@@ -965,7 +966,7 @@ class CustomMemberCard extends StatelessWidget {
                         ),
                       ),
                     )
-                  : const Offstage(),
+                  // : const Offstage(),
             ],
           ),
           SizedBox(

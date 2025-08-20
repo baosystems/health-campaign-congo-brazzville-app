@@ -1149,27 +1149,36 @@ class CustomIndividualDetailsPageState
 
     String? individualName = form.control(_individualNameKey).value as String?;
     individual = individual.copyWith(
-        name: name.copyWith(
-          givenName: individualName?.trim(),
-        ),
-        gender: form.control(_genderKey).value == null
-            ? null
-            : Gender.values.byName(
-                form.control(_genderKey).value.toString().toLowerCase()),
-        mobileNumber: form.control(_mobileNumberKey).value,
-        dateOfBirth: dobString,
-        identifiers: isEditIndividual && identifier.identifierId != null
-            ? identifiers
-            : [
-                identifier.copyWith(
-                  identifierId: beneficiaryId,
-                  identifierType: IdentifierTypes.uniqueBeneficiaryID.toValue(),
-                ),
-              ],
-        additionalFields: IndividualAdditionalFields(version: 1, fields: [
-          AdditionalField('previousBeneficiaryId',
-              form.control(_previousBeneficiaryIdKey).value ?? '')
-        ]));
+      name: name.copyWith(
+        givenName: individualName?.trim(),
+      ),
+      gender: form.control(_genderKey).value == null
+          ? null
+          : Gender.values
+              .byName(form.control(_genderKey).value.toString().toLowerCase()),
+      mobileNumber: form.control(_mobileNumberKey).value,
+      dateOfBirth: dobString,
+      identifiers: isEditIndividual && identifier.identifierId != null
+          ? identifiers
+          : [
+              identifier.copyWith(
+                identifierId: beneficiaryId,
+                identifierType: IdentifierTypes.uniqueBeneficiaryID.toValue(),
+              ),
+            ],
+      additionalFields: IndividualAdditionalFields(
+        version: 1,
+        fields: [
+          if (form.control(_previousBeneficiaryIdKey).value != null &&
+              // ignore: avoid_dynamic_calls
+              form.control(_previousBeneficiaryIdKey).value!.isNotEmpty)
+            AdditionalField(
+              'previousBeneficiaryId',
+              form.control(_previousBeneficiaryIdKey).value!,
+            ),
+        ],
+      ),
+    );
 
     return individual;
   }

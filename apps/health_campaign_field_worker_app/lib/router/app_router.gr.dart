@@ -825,6 +825,9 @@ abstract class _$AppRouter extends RootStackRouter {
           hasSideEffects: args.hasSideEffects,
           sideEffect: args.sideEffect,
           isZeroDoseAlreadyDone: args.isZeroDoseAlreadyDone,
+          hasImmunizationCard: args.hasImmunizationCard,
+          immunizationCardLost: args.immunizationCardLost,
+          receivedPenta1: args.receivedPenta1,
         ),
       );
     },
@@ -3792,6 +3795,9 @@ class VaccineSelectionRoute extends PageRouteInfo<VaccineSelectionRouteArgs> {
     bool? hasSideEffects = false,
     required SideEffectModel sideEffect,
     bool isZeroDoseAlreadyDone = false,
+    String? hasImmunizationCard,
+    String? immunizationCardLost,
+    String? receivedPenta1,
     List<PageRouteInfo>? children,
   }) : super(
           VaccineSelectionRoute.name,
@@ -3808,6 +3814,9 @@ class VaccineSelectionRoute extends PageRouteInfo<VaccineSelectionRouteArgs> {
             hasSideEffects: hasSideEffects,
             sideEffect: sideEffect,
             isZeroDoseAlreadyDone: isZeroDoseAlreadyDone,
+            hasImmunizationCard: hasImmunizationCard,
+            immunizationCardLost: immunizationCardLost,
+            receivedPenta1: receivedPenta1,
           ),
           initialChildren: children,
         );
@@ -3831,6 +3840,9 @@ class VaccineSelectionRouteArgs {
     this.hasSideEffects = false,
     required this.sideEffect,
     this.isZeroDoseAlreadyDone = false,
+    this.hasImmunizationCard,
+    this.immunizationCardLost,
+    this.receivedPenta1,
   });
 
   final Key? key;
@@ -3855,9 +3867,15 @@ class VaccineSelectionRouteArgs {
 
   final bool isZeroDoseAlreadyDone;
 
+  final String? hasImmunizationCard;
+
+  final String? immunizationCardLost;
+
+  final String? receivedPenta1;
+
   @override
   String toString() {
-    return 'VaccineSelectionRouteArgs{key: $key, appLocalizations: $appLocalizations, isAdministration: $isAdministration, eligibilityAssessmentType: $eligibilityAssessmentType, isChecklistAssessmentDone: $isChecklistAssessmentDone, projectBeneficiaryClientReferenceId: $projectBeneficiaryClientReferenceId, individual: $individual, task: $task, hasSideEffects: $hasSideEffects, sideEffect: $sideEffect, isZeroDoseAlreadyDone: $isZeroDoseAlreadyDone}';
+    return 'VaccineSelectionRouteArgs{key: $key, appLocalizations: $appLocalizations, isAdministration: $isAdministration, eligibilityAssessmentType: $eligibilityAssessmentType, isChecklistAssessmentDone: $isChecklistAssessmentDone, projectBeneficiaryClientReferenceId: $projectBeneficiaryClientReferenceId, individual: $individual, task: $task, hasSideEffects: $hasSideEffects, sideEffect: $sideEffect, isZeroDoseAlreadyDone: $isZeroDoseAlreadyDone, hasImmunizationCard: $hasImmunizationCard, immunizationCardLost: $immunizationCardLost, receivedPenta1: $receivedPenta1}';
   }
 }
 

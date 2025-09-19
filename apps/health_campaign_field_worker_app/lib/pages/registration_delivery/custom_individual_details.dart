@@ -973,10 +973,14 @@ class CustomIndividualDetailsPageState
                                     localizations.translate(i18_local
                                         .individualDetails
                                         .mobileNumberLengthValidationMessage),
+                                'minLength': (_) => localizations
+                                    .translate(i18_local.individualDetails
+                                        .mobileNumberLengthValidationMessage)
+                                    .replaceAll('{}', '9'),
                                 'maxLength': (object) => localizations
                                     .translate(i18_local.individualDetails
                                         .mobileNumberLengthValidationMessage)
-                                    .replaceAll('{}', '8'),
+                                    .replaceAll('{}', '9'),
                                 'startsWith7or9': (object) =>
                                     localizations.translate(i18_local
                                         .individualDetails
@@ -988,15 +992,26 @@ class CustomIndividualDetailsPageState
                                 ),
                                 child: DigitTextFormInput(
                                   keyboardType: TextInputType.number,
-                                  maxLength: 11,
+                                  maxLength: 9,
                                   inputFormatters: [
                                     FilteringTextInputFormatter.digitsOnly,
+                                    LengthLimitingTextInputFormatter(9),
                                   ],
                                   initialValue:
                                       form.control(_mobileNumberKey).value,
                                   onChange: (value) {
-                                    form.control(_mobileNumberKey).value =
-                                        value;
+                                    final c = form.control(_mobileNumberKey);
+                                    c.value = value;
+
+                                    if (value.isEmpty) {
+                                      c
+                                        ..removeError('mobileNumber')
+                                        ..removeError('startsWith7or9')
+                                        ..removeError('maxLength')
+                                        ..removeError('minLength');
+                                    } else {
+                                      c.updateValueAndValidity();
+                                    }
                                   },
                                   errorMessage: field.errorText,
                                 ),
@@ -1190,7 +1205,8 @@ class CustomIndividualDetailsPageState
           FormControl<String>(value: individual?.mobileNumber, validators: [
         Validators.delegate((validator) =>
             local_utils.CustomValidator.validMobileNumber(validator)),
-        Validators.maxLength(8),
+        Validators.minLength(9),
+        Validators.maxLength(9),
         Validators.delegate((validator) =>
             local_utils.CustomValidator.startsWith7or9(validator)),
         // Validators.required,

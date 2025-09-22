@@ -10,7 +10,8 @@ import 'package:health_campaign_field_worker_app/models/entities/assessment_chec
 import 'package:registration_delivery/models/entities/task.dart';
 import 'package:registration_delivery/models/entities/task_resource.dart';
 import 'package:registration_delivery/utils/global_search_parameters.dart';
-
+import 'package:dart_mappable/dart_mappable.dart';
+import 'dart:convert';
 // import '../../../models/entities/status.dart';
 // import '../../../models/entities/task.dart';
 // import '../../../models/entities/task_resource.dart';
@@ -668,5 +669,24 @@ class CustomIndividualGlobalSearchRepository extends LocalRepository {
         .toList();
 
     return {'total_count': count, 'data': data};
+  }
+
+  Future<void> updateIndividualAdditionalFields({
+    required String clientReferenceId,
+    required IndividualAdditionalFields? af,
+  }) async {
+    // same format you read with `...fromJson(...)`
+    final String? jsonString =
+        af == null ? null : MapperContainer.globals.toJson(af);
+
+    // no need for IndividualsCompanion; do a direct SQL update
+    await sql.customUpdate(
+      'UPDATE individual SET additional_fields = ? WHERE client_reference_id = ?',
+      variables: [
+        jsonString == null ? const Variable(null) : Variable(jsonString),
+        Variable(clientReferenceId),
+      ],
+      updates: {sql.individual},
+    );
   }
 }

@@ -46,6 +46,7 @@ import '../../router/app_router.dart';
 import '../../utils/utils.dart' as local_utils;
 import '../../utils/registration_delivery/registration_delivery_utils.dart';
 import 'custom_beneficiary_acknowledgement.dart';
+import 'package:drift/drift.dart' show Variable;
 
 @RoutePage()
 class CustomIndividualDetailsPage extends LocalizedStatefulWidget {
@@ -82,6 +83,22 @@ class CustomIndividualDetailsPageState
       return s.isEmpty ? null : s;
     }
     return null;
+  }
+
+  IndividualAdditionalFields _mergeAF(
+    IndividualAdditionalFields? existing,
+    List<AdditionalField> incoming,
+  ) {
+    final map = <String, AdditionalField>{
+      for (final f in (existing?.fields ?? const <AdditionalField>[])) f.key: f,
+    };
+    for (final f in incoming) {
+      map[f.key] = f;
+    }
+    return IndividualAdditionalFields(
+      version: existing?.version ?? 1,
+      fields: map.values.toList(),
+    );
   }
 
   bool isDuplicateTag = false;
@@ -146,9 +163,9 @@ class CustomIndividualDetailsPageState
 
   String? getGenderOptions(IndividualModel? individual) {
     final options = RegistrationDeliverySingleton().genderOptions;
-    return options?.map((e) => e).firstWhereOrNull(
-          (element) => element.toLowerCase() == individual?.gender?.name,
-        );
+    return options?.firstWhereOrNull(
+      (o) => o.toLowerCase() == individual?.gender?.name,
+    );
   }
 
   onBeneficiarySubmit(name, individual) async {
@@ -333,7 +350,6 @@ class CustomIndividualDetailsPageState
                                     oldIndividual: null,
                                     beneficiaryId: beneficiaryId?.first,
                                   );
-
                                   final boundary =
                                       RegistrationDeliverySingleton().boundary;
 
@@ -376,6 +392,25 @@ class CustomIndividualDetailsPageState
                                       ),
                                     );
                                     // router.push(CustomSummaryRoute());
+                                    final sql =
+                                        context.read<LocalSqlDataStore>();
+                                    final String afJson =
+                                        individual.additionalFields == null
+                                            ? ''
+                                            : MapperContainer.globals.toJson(
+                                                individual.additionalFields!);
+
+                                    await sql.customUpdate(
+                                      "UPDATE individual "
+                                      "SET additional_fields = NULLIF(?, '') "
+                                      "WHERE client_reference_id = ?",
+                                      variables: [
+                                        Variable<String>(afJson),
+                                        Variable<String>(
+                                            individual.clientReferenceId!),
+                                      ],
+                                      updates: {sql.individual},
+                                    );
                                     await onSubmit(individual, true);
                                   }
                                 },
@@ -385,7 +420,7 @@ class CustomIndividualDetailsPageState
                                   addressModel,
                                   projectBeneficiaryModel,
                                   loading,
-                                ) {
+                                ) async {
                                   isEditIndividual = true;
                                   final scannerBloc =
                                       context.read<DigitScannerBloc>();
@@ -398,6 +433,7 @@ class CustomIndividualDetailsPageState
                                     oldIndividual: individualModel,
                                     beneficiaryId: beneficiaryId?.first,
                                   );
+
                                   final tag =
                                       scannerBloc.state.qrCodes.isNotEmpty
                                           ? scannerBloc.state.qrCodes.first
@@ -426,6 +462,29 @@ class CustomIndividualDetailsPageState
                                         ),
                                         type: ToastType.error);
                                   } else {
+                                    final modelToSave = individual.copyWith(
+                                      clientAuditDetails: (individual
+                                                      .clientAuditDetails
+                                                      ?.createdBy !=
+                                                  null &&
+                                              individual.clientAuditDetails
+                                                      ?.createdTime !=
+                                                  null)
+                                          ? individual.clientAuditDetails!
+                                              .copyWith(
+                                              lastModifiedBy:
+                                                  RegistrationDeliverySingleton()
+                                                      .loggedInUserUuid,
+                                              lastModifiedTime:
+                                                  ContextUtilityExtensions(
+                                                          context)
+                                                      .millisecondsSinceEpoch(),
+                                            )
+                                          : null,
+                                    );
+                                    debugPrint('[SAVE OUT] AF: '
+                                        '${modelToSave.additionalFields?.fields.map((e) => '${e.key}=${e.value}').join(', ')}');
+
                                     bloc.add(
                                       BeneficiaryRegistrationUpdateIndividualDetailsEvent(
                                         addressModel: addressModel,
@@ -460,6 +519,25 @@ class CustomIndividualDetailsPageState
                                             ? scannerBloc.state.qrCodes.first
                                             : null,
                                       ),
+                                    );
+                                    final sql =
+                                        context.read<LocalSqlDataStore>();
+                                    final String afJson =
+                                        individual.additionalFields == null
+                                            ? ''
+                                            : MapperContainer.globals.toJson(
+                                                individual.additionalFields!);
+
+                                    await sql.customUpdate(
+                                      "UPDATE individual "
+                                      "SET additional_fields = NULLIF(?, '') "
+                                      "WHERE client_reference_id = ?",
+                                      variables: [
+                                        Variable<String>(afJson),
+                                        Variable<String>(
+                                            individual.clientReferenceId!),
+                                      ],
+                                      updates: {sql.individual},
                                     );
                                     onSubmit(individual, false);
                                   }
@@ -1075,186 +1153,129 @@ class CustomIndividualDetailsPageState
     IndividualModel? oldIndividual,
     String? beneficiaryId,
   }) {
-    final dob = form.control(_dobKey).value as DateTime?;
-    String? dobString;
-    if (dob != null) {
-      dobString = DateFormat(Constants().dateFormat).format(dob);
-    }
+    final nowMs = ContextUtilityExtensions(context).millisecondsSinceEpoch();
+    final tenantId = RegistrationDeliverySingleton().tenantId;
+    final user = RegistrationDeliverySingleton().loggedInUserUuid!;
 
-    var individual = oldIndividual;
-    individual ??= IndividualModel(
-      clientReferenceId: IdGen.i.identifier,
-      tenantId: RegistrationDeliverySingleton().tenantId,
-      rowVersion: 1,
-      auditDetails: AuditDetails(
-        createdBy: RegistrationDeliverySingleton().loggedInUserUuid!,
-        createdTime: ContextUtilityExtensions(context).millisecondsSinceEpoch(),
-        lastModifiedBy: RegistrationDeliverySingleton().loggedInUserUuid,
-        lastModifiedTime:
-            ContextUtilityExtensions(context).millisecondsSinceEpoch(),
-      ),
-      clientAuditDetails: ClientAuditDetails(
-        createdBy: RegistrationDeliverySingleton().loggedInUserUuid!,
-        createdTime: ContextUtilityExtensions(context).millisecondsSinceEpoch(),
-        lastModifiedBy: RegistrationDeliverySingleton().loggedInUserUuid,
-        lastModifiedTime:
-            ContextUtilityExtensions(context).millisecondsSinceEpoch(),
-      ),
+    final incomingDob = form.control(_dobKey).value as DateTime?;
+    final dobString = incomingDob == null
+        ? null
+        : DateFormat(Constants().dateFormat).format(incomingDob);
+
+    final base = (oldIndividual ??
+        IndividualModel(
+          clientReferenceId: IdGen.i.identifier,
+          tenantId: tenantId,
+          rowVersion: 1,
+          auditDetails: AuditDetails(
+            createdBy: user,
+            createdTime: nowMs,
+            lastModifiedBy: user,
+            lastModifiedTime: nowMs,
+          ),
+          clientAuditDetails: ClientAuditDetails(
+            createdBy: user,
+            createdTime: nowMs,
+            lastModifiedBy: user,
+            lastModifiedTime: nowMs,
+          ),
+        ));
+
+    final nameModel = (base.name ??
+            NameModel(
+              individualClientReferenceId: base.clientReferenceId,
+              tenantId: tenantId,
+              rowVersion: 1,
+              auditDetails: base.auditDetails!,
+              clientAuditDetails: base.clientAuditDetails!,
+            ))
+        .copyWith(
+      givenName:
+          (form.control(_individualNameKey).value as String? ?? '').trim(),
     );
-
-    var name = individual.name;
-    name ??= NameModel(
-      individualClientReferenceId: individual.clientReferenceId,
-      tenantId: RegistrationDeliverySingleton().tenantId,
-      rowVersion: 1,
-      auditDetails: AuditDetails(
-        createdBy: RegistrationDeliverySingleton().loggedInUserUuid!,
-        createdTime: ContextUtilityExtensions(context).millisecondsSinceEpoch(),
-        lastModifiedBy: RegistrationDeliverySingleton().loggedInUserUuid,
-        lastModifiedTime:
-            ContextUtilityExtensions(context).millisecondsSinceEpoch(),
-      ),
-      clientAuditDetails: ClientAuditDetails(
-        createdBy: RegistrationDeliverySingleton().loggedInUserUuid!,
-        createdTime: ContextUtilityExtensions(context).millisecondsSinceEpoch(),
-        lastModifiedBy: RegistrationDeliverySingleton().loggedInUserUuid,
-        lastModifiedTime:
-            ContextUtilityExtensions(context).millisecondsSinceEpoch(),
-      ),
-    );
-
-    var identifier = (individual.identifiers?.isNotEmpty ?? false)
-        ? individual.identifiers!.first
-        : null;
-
-    identifier ??= IdentifierModel(
-      clientReferenceId: individual.clientReferenceId,
-      tenantId: RegistrationDeliverySingleton().tenantId,
-      rowVersion: 1,
-      auditDetails: AuditDetails(
-        createdBy: RegistrationDeliverySingleton().loggedInUserUuid!,
-        createdTime: ContextUtilityExtensions(context).millisecondsSinceEpoch(),
-        lastModifiedBy: RegistrationDeliverySingleton().loggedInUserUuid,
-        lastModifiedTime:
-            ContextUtilityExtensions(context).millisecondsSinceEpoch(),
-      ),
-      clientAuditDetails: ClientAuditDetails(
-        createdBy: RegistrationDeliverySingleton().loggedInUserUuid!,
-        createdTime: ContextUtilityExtensions(context).millisecondsSinceEpoch(),
-        lastModifiedBy: RegistrationDeliverySingleton().loggedInUserUuid,
-        lastModifiedTime:
-            ContextUtilityExtensions(context).millisecondsSinceEpoch(),
-      ),
-    );
-
-    List<IdentifierModel>? identifiers = individual.identifiers;
-    if (isEditIndividual == false) {
-      identifiers?.add(IdentifierModel(
-        clientReferenceId: individual.clientReferenceId,
-        identifierId: beneficiaryId,
-        identifierType: IdentifierTypes.uniqueBeneficiaryID.toValue(),
-        clientAuditDetails: individual.clientAuditDetails,
-        auditDetails: individual.auditDetails,
-      ));
-    }
-
-    String? individualName = form.control(_individualNameKey).value as String?;
 
     Gender? safeGender(String? g) {
       if (g == null) return null;
-      final key = g.toLowerCase();
       try {
-        return Gender.values.byName(key);
+        return Gender.values.byName(g.toLowerCase());
       } catch (_) {
         return null;
       }
     }
 
-    final updatedBase = individual.copyWith(
-      name: name.copyWith(givenName: (individualName ?? '').trim()),
-      gender: safeGender(form.control(_genderKey).value as String?),
-      mobileNumber: form.control(_mobileNumberKey).value as String?,
-      dateOfBirth: dobString,
+    final existingIds =
+        List<IdentifierModel>.from(base.identifiers ?? const []);
+    final hasUbi = existingIds.any(
+      (x) => x.identifierType == IdentifierTypes.uniqueBeneficiaryID.toValue(),
     );
 
-    final existingIds =
-        (individual.identifiers ?? <IdentifierModel>[]).toList();
-    final hasUbi = existingIds.any((x) =>
-        x.identifierType == IdentifierTypes.uniqueBeneficiaryID.toValue());
-
-    final updatedIdentifiers = isEditIndividual || hasUbi
-        ? existingIds
-        : <IdentifierModel>[
+    final ids = (!isEditIndividual && !hasUbi && beneficiaryId != null)
+        ? [
             ...existingIds,
             IdentifierModel(
-              clientReferenceId: individual.clientReferenceId,
-              tenantId: RegistrationDeliverySingleton().tenantId,
+              clientReferenceId: base.clientReferenceId,
+              tenantId: tenantId,
               rowVersion: 1,
-              auditDetails: individual.auditDetails,
-              clientAuditDetails: individual.clientAuditDetails,
+              auditDetails: base.auditDetails!,
+              clientAuditDetails: base.clientAuditDetails!,
               identifierId: beneficiaryId,
               identifierType: IdentifierTypes.uniqueBeneficiaryID.toValue(),
-            )
-          ];
+            ),
+          ]
+        : existingIds;
 
-    final bool hasDisability =
+    final hasDisability =
         (form.control(_hasDisabilityKey).value as bool?) ?? false;
-    final String disabilityDetail =
+    final detail =
         ((form.control(_disabilityDetailKey).value as String?) ?? '').trim();
 
-    List<AdditionalField> upsertAF(
-      List<AdditionalField> existing,
-      List<AdditionalField> incoming,
-    ) {
-      final map = {for (final f in existing) f.key: f};
-      for (final f in incoming) {
-        map[f.key] = f;
-      }
-      return map.values.toList();
-    }
-
-    var baseAF =
-        updatedBase.additionalFields?.fields ?? const <AdditionalField>[];
-
-    if (!hasDisability) {
-      baseAF = baseAF.where((f) => f.key != afDisabilityDetail).toList();
-    }
+    var existingAF = base.additionalFields;
 
     if (widget.isHeadOfHousehold) {
-      baseAF = baseAF
-          .where((f) => f.key != afHasDisability && f.key != afDisabilityDetail)
-          .toList();
-
-      return updatedBase.copyWith(
-        identifiers: updatedIdentifiers,
-        additionalFields: baseAF.isEmpty
-            ? null
-            : IndividualAdditionalFields(version: 1, fields: baseAF),
+      existingAF = IndividualAdditionalFields(
+        version: existingAF?.version ?? 1,
+        fields: (existingAF?.fields ?? const [])
+            .where(
+                (f) => f.key != afHasDisability && f.key != afDisabilityDetail)
+            .toList(),
       );
     }
 
-    final incomingAF = <AdditionalField>[
-      AdditionalField(afHasDisability, hasDisability.toString()),
-      if (hasDisability && disabilityDetail.isNotEmpty)
-        AdditionalField(afDisabilityDetail, disabilityDetail),
-    ];
+    final incomingAF = widget.isHeadOfHousehold
+        ? const <AdditionalField>[]
+        : <AdditionalField>[
+            AdditionalField(afHasDisability, hasDisability.toString()),
+            if (hasDisability && detail.isNotEmpty)
+              AdditionalField(afDisabilityDetail, detail),
+          ];
 
-    if (!hasDisability) {
-      baseAF = baseAF.where((f) => f.key != afDisabilityDetail).toList();
-    }
+    final cleanedExisting = (existingAF?.fields ?? const [])
+        .where((f) => hasDisability ? true : f.key != afDisabilityDetail)
+        .toList();
 
-    final mergedAF = upsertAF(baseAF, incomingAF);
-    debugPrint(
-        '[SAVE] AF after merge: ${mergedAF.map((f) => '${f.key}=${f.value}').join(', ')}');
+    final mergedAF = _mergeAF(
+      IndividualAdditionalFields(
+        version: existingAF?.version ?? 1,
+        fields: cleanedExisting,
+      ),
+      incomingAF,
+    );
 
-// For HoH path (where you strip the keys)
-    debugPrint('[SAVE] HoH path, AF after strip: '
-        '${baseAF.map((f) => '${f.key}=${f.value}').join(', ')}');
-    return updatedBase.copyWith(
-      identifiers: updatedIdentifiers,
-      additionalFields: mergedAF.isEmpty
-          ? null
-          : IndividualAdditionalFields(version: 1, fields: mergedAF),
+    return base.copyWith(
+      name: nameModel,
+      gender: safeGender(form.control(_genderKey).value as String?),
+      mobileNumber: form.control(_mobileNumberKey).value as String?,
+      dateOfBirth: dobString,
+      identifiers: ids,
+      additionalFields: (mergedAF.fields.isEmpty) ? null : mergedAF,
+      clientAuditDetails: base.clientAuditDetails?.copyWith(
+        lastModifiedBy: user,
+        lastModifiedTime: nowMs,
+      ),
+      auditDetails: base.auditDetails?.copyWith(
+        lastModifiedBy: user,
+        lastModifiedTime: nowMs,
+      ),
     );
   }
 
@@ -1285,61 +1306,62 @@ class CustomIndividualDetailsPageState
         _getAF(individual?.additionalFields, afHasDisability);
     final disabilityDetailStr =
         _getAF(individual?.additionalFields, afDisabilityDetail);
-    final initialHasDisability = hasDisabilityStr == 'true';
+    bool toBool(Object? v) {
+      final s = (v?.toString() ?? '').trim().toLowerCase();
+      return s == 'true' || s == 'yes' || s == '1';
+    }
 
+    final initialHasDisability = toBool(hasDisabilityStr);
+    debugPrint('[EDIT OPEN] AF from server: '
+        '${individual?.additionalFields?.fields.map((e) => '${e.key}=${e.value}').join(', ')}');
     final form = fb.group(<String, Object>{
       _individualNameKey: FormControl<String>(
         validators: [
           Validators.required,
-          Validators.delegate(
-              (validator) => CustomValidator.requiredMin(validator)),
+          Validators.delegate((v) => CustomValidator.requiredMin(v)),
           Validators.maxLength(200),
-          Validators.delegate((validator) =>
-              local_utils.CustomValidator.onlyAlphabets(validator)),
+          Validators.delegate(
+              (v) => local_utils.CustomValidator.onlyAlphabets(v)),
         ],
         value: individual?.name?.givenName ??
             ((RegistrationDeliverySingleton().householdType ==
                     HouseholdType.community)
                 ? null
-                : searchQuery?.trim()),
+                : state.mapOrNull(create: (v) => v.searchQuery?.trim())),
       ),
       _dobKey: FormControl<DateTime>(
         validators: [Validators.required],
         value: individual?.dateOfBirth != null
-            ? DateFormat(Constants().dateFormat).parse(
-                individual!.dateOfBirth!,
-              )
+            ? DateFormat(Constants().dateFormat).parse(individual!.dateOfBirth!)
             : null,
       ),
       _idTypeKey: FormControl<String>(
-        value: individual?.identifiers?.firstOrNull?.identifierType,
-      ),
+          value: individual?.identifiers?.firstOrNull?.identifierType),
       _idNumberKey: FormControl<String>(
-        value: individual?.identifiers?.firstOrNull?.identifierId,
+          value: individual?.identifiers?.firstOrNull?.identifierId),
+      _genderKey: FormControl<String>(
+        value: getGenderOptions(individual),
+        validators: [Validators.required],
       ),
-      _genderKey: FormControl<String>(value: getGenderOptions(individual)),
-      _mobileNumberKey:
-          FormControl<String>(value: individual?.mobileNumber, validators: [
-        Validators.delegate((validator) =>
-            local_utils.CustomValidator.validMobileNumber(validator)),
-        Validators.maxLength(8),
-        Validators.delegate((validator) =>
-            local_utils.CustomValidator.startsWith7or9(validator)),
-      ]),
+      _mobileNumberKey: FormControl<String>(
+        value: individual?.mobileNumber,
+        validators: [
+          Validators.delegate(
+              (v) => local_utils.CustomValidator.validMobileNumber(v)),
+          Validators.maxLength(8),
+          Validators.delegate(
+              (v) => local_utils.CustomValidator.startsWith7or9(v)),
+        ],
+      ),
       _hasDisabilityKey: FormControl<bool>(value: initialHasDisability),
       _disabilityDetailKey: FormControl<String>(
         value: disabilityDetailStr ?? '',
         validators: [
-          Validators.delegate((AbstractControl control) {
-            final parent = control.parent;
-            if (parent is FormGroup) {
-              final has =
-                  parent.control(_hasDisabilityKey).value as bool? ?? false;
-              final detail = (control.value as String? ?? '').trim();
-              if (has && detail.isEmpty) {
-                return {'required': true};
-              }
-            }
+          Validators.delegate((AbstractControl c) {
+            final fg = c.parent as FormGroup?;
+            final has = fg?.control(_hasDisabilityKey).value as bool? ?? false;
+            final detail = (c.value as String? ?? '').trim();
+            if (has && detail.isEmpty) return {'required': true};
             return null;
           }),
         ],
@@ -1349,12 +1371,9 @@ class CustomIndividualDetailsPageState
     if (widget.isHeadOfHousehold) {
       form.control(_hasDisabilityKey).value = false;
       form.control(_disabilityDetailKey).value = '';
-      form.control(_disabilityDetailKey).removeError('required');
+      (form.control(_disabilityDetailKey) as FormControl<String>)
+          .removeError('required');
     }
-    debugPrint('[FORM INIT] isHead=${widget.isHeadOfHousehold} '
-        'initialHas="${hasDisabilityStr}" '
-        'initialDetail="${disabilityDetailStr}" '
-        'individualId=${individual?.clientReferenceId}');
     return form;
   }
 

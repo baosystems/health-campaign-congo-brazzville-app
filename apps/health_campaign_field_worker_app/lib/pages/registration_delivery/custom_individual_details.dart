@@ -411,6 +411,14 @@ class CustomIndividualDetailsPageState
                                       ],
                                       updates: {sql.individual},
                                     );
+                                    final result = await sql
+                                        .customSelect(
+                                            "PRAGMA table_info(individual);")
+                                        .get();
+
+                                    for (final row in result) {
+                                      debugPrint("[SCHEMA] ${row.data}");
+                                    }
                                     await onSubmit(individual, true);
                                   }
                                 },
@@ -1267,7 +1275,7 @@ class CustomIndividualDetailsPageState
       mobileNumber: form.control(_mobileNumberKey).value as String?,
       dateOfBirth: dobString,
       identifiers: ids,
-      additionalFields: (mergedAF.fields.isEmpty) ? null : mergedAF,
+      additionalFields: mergedAF,
       clientAuditDetails: base.clientAuditDetails?.copyWith(
         lastModifiedBy: user,
         lastModifiedTime: nowMs,

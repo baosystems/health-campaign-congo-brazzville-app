@@ -46,6 +46,8 @@ import '../../router/app_router.dart';
 import '../../utils/utils.dart' as local_utils;
 import '../../utils/registration_delivery/registration_delivery_utils.dart';
 import 'custom_beneficiary_acknowledgement.dart';
+import 'package:reactive_forms/reactive_forms.dart' as rf
+    show Validator, Validators, AbstractControl;
 
 @RoutePage()
 class CustomIndividualDetailsPage extends LocalizedStatefulWidget {
@@ -70,6 +72,8 @@ class CustomIndividualDetailsPageState
   static const _mobileNumberKey = 'mobileNumber';
   static const _idTypeKey = 'idType';
   static const _idNumberKey = 'idNumber';
+  static const _hasDisabilityKey = 'hasDisability';
+  static const _disabilityDetailKey = 'disabilityDetail';
   bool isDuplicateTag = false;
   static const maxLength = 200;
   final clickedStatus = ValueNotifier<bool>(false);
@@ -130,6 +134,13 @@ class CustomIndividualDetailsPageState
         ));
       }
     }
+  }
+
+  String? getGenderOptions(IndividualModel? individual) {
+    final options = RegistrationDeliverySingleton().genderOptions;
+    return options?.map((e) => e).firstWhereOrNull(
+          (element) => element.toLowerCase() == individual?.gender?.name,
+        );
   }
 
   onBeneficiarySubmit(name, individual) async {
@@ -1138,7 +1149,6 @@ class CustomIndividualDetailsPageState
           context.read<DigitScannerBloc>().add(DigitScannerScanEvent(
               barCode: [], qrCode: [value.projectBeneficiaryModel!.tag!]));
         }
-
         return value.individualModel;
       },
       create: (value) {
@@ -1155,7 +1165,7 @@ class CustomIndividualDetailsPageState
       },
     );
 
-    return fb.group(<String, Object>{
+    final form = fb.group(<String, Object>{
       _individualNameKey: FormControl<String>(
         validators: [
           Validators.required,
@@ -1193,17 +1203,38 @@ class CustomIndividualDetailsPageState
         Validators.maxLength(8),
         Validators.delegate((validator) =>
             local_utils.CustomValidator.startsWith7or9(validator)),
-        // Validators.required,
       ]),
+      _hasDisabilityKey: FormControl<bool>(value: false),
+      _disabilityDetailKey: FormControl<String>(),
     });
-  }
 
-  getGenderOptions(IndividualModel? individual) {
-    final options = RegistrationDeliverySingleton().genderOptions;
+    Map<String, dynamic>? disabilityDetailRequired(
+      rf.AbstractControl<dynamic> control,
+    ) {
+      final form = control as FormGroup;
+      final bool has =
+          (form.control(_hasDisabilityKey).value as bool?) ?? false;
 
-    return options?.map((e) => e).firstWhereOrNull(
-          (element) => element.toLowerCase() == individual?.gender?.name,
-        );
+      final String detail =
+          (form.control(_disabilityDetailKey).value as String? ?? '').trim();
+
+      if (has && detail.isEmpty) {
+        form
+            .control(_disabilityDetailKey)
+            .setErrors(<String, dynamic>{'required': true});
+        return <String, dynamic>{'disabilityDetailRequired': true};
+      }
+
+      form.control(_disabilityDetailKey).removeError('required');
+      return null;
+    }
+
+    form.setValidators([
+      disabilityDetailRequired as rf.Validator<dynamic>,
+    ]);
+
+    form.updateValueAndValidity();
+    return form;
   }
 
   getInitialDateValue(FormGroup form) {

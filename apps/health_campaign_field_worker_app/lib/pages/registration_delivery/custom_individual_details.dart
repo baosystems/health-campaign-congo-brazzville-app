@@ -527,11 +527,6 @@ class CustomIndividualDetailsPageState
                                       //         : null,
                                       //   ),
                                       // );
-                                      bloc.add(
-                                          BeneficiaryRegistrationSaveIndividualDetailsEvent(
-                                        model: individual,
-                                        isHeadOfHousehold: false,
-                                      ));
                                       final boundary =
                                           RegistrationDeliverySingleton()
                                               .boundary;
@@ -906,12 +901,10 @@ class CustomIndividualDetailsPageState
                             },
                           ),
                         Offstage(
-                          offstage: widget
-                              .isHeadOfHousehold, // <<< hide whole section for HoH
+                          offstage: widget.isHeadOfHousehold,
                           child: ReactiveFormConsumer(
                             builder: (context, form, _) {
-                              final group = form;
-                              final bool has = group
+                              final bool has = form
                                       .control(_hasDisabilityKey)
                                       .value as bool? ??
                                   false;
@@ -919,65 +912,81 @@ class CustomIndividualDetailsPageState
                               return Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
+                                  const SizedBox(height: spacer2),
                                   LabeledField(
                                     label: localizations.translate(
                                       i18_local.individualDetails
                                           .hasDisabilityLabelText,
                                     ),
-                                    child: Row(
-                                      children: [
-                                        Expanded(
-                                          child: RadioListTile<bool>(
-                                            contentPadding: EdgeInsets.zero,
-                                            title: Text(localizations.translate(
-                                              i18_local.householdDetails
-                                                  .capitalYesLabelText,
-                                            )),
-                                            value: true,
-                                            groupValue: has,
-                                            onChanged: (v) {
-                                              group
-                                                  .control(_hasDisabilityKey)
-                                                  .value = v ?? false;
-                                              group
-                                                  .control(_disabilityDetailKey)
-                                                ..updateValueAndValidity();
-                                              setState(() {});
-                                            },
+                                    child: Container(
+                                      decoration: BoxDecoration(
+                                        border: Border.all(color: Colors.grey),
+                                        borderRadius: BorderRadius.circular(4),
+                                      ),
+                                      child: Row(
+                                        children: [
+                                          Expanded(
+                                            child: RadioListTile<bool>(
+                                              contentPadding: EdgeInsets.zero,
+                                              title:
+                                                  Text(localizations.translate(
+                                                i18_local.householdDetails
+                                                    .capitalYesLabelText,
+                                              )),
+                                              value: true,
+                                              groupValue: has,
+                                              onChanged: (v) {
+                                                form
+                                                    .control(_hasDisabilityKey)
+                                                    .value = v ?? false;
+                                                // Don't clear the detail field when switching to Yes
+                                                form
+                                                    .control(
+                                                        _disabilityDetailKey)
+                                                    .updateValueAndValidity();
+                                              },
+                                            ),
                                           ),
-                                        ),
-                                        Expanded(
-                                          child: RadioListTile<bool>(
-                                            contentPadding: EdgeInsets.zero,
-                                            title: Text(localizations.translate(
-                                              i18_local.householdDetails
-                                                  .capitalNoLabelText,
-                                            )),
-                                            value: false,
-                                            groupValue: has,
-                                            onChanged: (v) {
-                                              group
-                                                  .control(_hasDisabilityKey)
-                                                  .value = v ?? false;
-                                              group
-                                                  .control(_disabilityDetailKey)
-                                                ..value = ''
-                                                ..removeError('required')
-                                                ..markAsPristine()
-                                                ..updateValueAndValidity();
-                                              setState(() {});
-                                            },
+                                          Expanded(
+                                            child: RadioListTile<bool>(
+                                              contentPadding: EdgeInsets.zero,
+                                              title:
+                                                  Text(localizations.translate(
+                                                i18_local.householdDetails
+                                                    .capitalNoLabelText,
+                                              )),
+                                              value: false,
+                                              groupValue: has,
+                                              onChanged: (v) {
+                                                form
+                                                    .control(_hasDisabilityKey)
+                                                    .value = v ?? false;
+                                                if (v == false) {
+                                                  // Only clear when selecting No
+                                                  form
+                                                      .control(
+                                                          _disabilityDetailKey)
+                                                      .value = '';
+                                                  form
+                                                      .control(
+                                                          _disabilityDetailKey)
+                                                      .removeError('required');
+                                                }
+                                                form
+                                                    .control(
+                                                        _disabilityDetailKey)
+                                                    .updateValueAndValidity();
+                                              },
+                                            ),
                                           ),
-                                        ),
-                                      ],
+                                        ],
+                                      ),
                                     ),
                                   ),
                                   const SizedBox(height: spacer2),
-
-                                  // IMPORTANT: hide when HoH OR when "has" is false
-                                  Offstage(
-                                    offstage: widget.isHeadOfHousehold || !has,
-                                    child: ReactiveWrapperField(
+                                  // Show disability detail field when Yes is selected
+                                  if (has && !widget.isHeadOfHousehold)
+                                    ReactiveWrapperField(
                                       formControlName: _disabilityDetailKey,
                                       validationMessages: {
                                         'required': (_) =>
@@ -992,17 +1001,18 @@ class CustomIndividualDetailsPageState
                                               .disabilityDetailLabelText,
                                         ),
                                         child: DigitTextFormInput(
-                                          initialValue: group
+                                          initialValue: form
                                               .control(_disabilityDetailKey)
                                               .value as String?,
-                                          onChange: (value) => group
-                                              .control(_disabilityDetailKey)
-                                              .value = value,
+                                          onChange: (value) {
+                                            form
+                                                .control(_disabilityDetailKey)
+                                                .value = value;
+                                          },
                                           errorMessage: field.errorText,
                                         ),
                                       ),
                                     ),
-                                  ),
                                 ],
                               );
                             },
@@ -1234,7 +1244,12 @@ class CustomIndividualDetailsPageState
     }
 
     final mergedAF = upsertAF(baseAF, incomingAF);
+    debugPrint(
+        '[SAVE] AF after merge: ${mergedAF.map((f) => '${f.key}=${f.value}').join(', ')}');
 
+// For HoH path (where you strip the keys)
+    debugPrint('[SAVE] HoH path, AF after strip: '
+        '${baseAF.map((f) => '${f.key}=${f.value}').join(', ')}');
     return updatedBase.copyWith(
       identifiers: updatedIdentifiers,
       additionalFields: mergedAF.isEmpty
@@ -1321,7 +1336,9 @@ class CustomIndividualDetailsPageState
               final has =
                   parent.control(_hasDisabilityKey).value as bool? ?? false;
               final detail = (control.value as String? ?? '').trim();
-              if (has && detail.isEmpty) return {'required': true};
+              if (has && detail.isEmpty) {
+                return {'required': true};
+              }
             }
             return null;
           }),
@@ -1334,6 +1351,10 @@ class CustomIndividualDetailsPageState
       form.control(_disabilityDetailKey).value = '';
       form.control(_disabilityDetailKey).removeError('required');
     }
+    debugPrint('[FORM INIT] isHead=${widget.isHeadOfHousehold} '
+        'initialHas="${hasDisabilityStr}" '
+        'initialDetail="${disabilityDetailStr}" '
+        'individualId=${individual?.clientReferenceId}');
     return form;
   }
 

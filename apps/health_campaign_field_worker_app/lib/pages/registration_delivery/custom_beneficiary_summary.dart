@@ -26,6 +26,21 @@ import '../../blocs/registration_delivery/custom_beneficairy_registration.dart';
 import '../../blocs/registration_delivery/custom_search_household.dart';
 import '../../router/app_router.dart';
 import 'custom_beneficiary_acknowledgement.dart';
+import 'package:collection/collection.dart';
+import '../../utils/i18_key_constants.dart' as i18_local;
+
+String? _getAF(IndividualAdditionalFields? af, String key) {
+  final f = af?.fields.firstWhereOrNull((e) => e.key == key);
+  final v = f?.value;
+  if (v is String) {
+    final s = v.trim();
+    return s.isEmpty ? null : s;
+  }
+  return null;
+}
+
+const _afHasDisability = 'hasDisability';
+const _afDisabilityDetail = 'disabilityDetail';
 
 @RoutePage()
 class CustomBeneficiarySummaryPage extends LocalizedStatefulWidget {
@@ -106,6 +121,13 @@ class CustomSummaryBeneficiaryPageState
           );
         },
         builder: (context, householdState) {
+          final showDisability = (() {
+            final has = _getAF(
+                widget.individualModel.additionalFields, _afHasDisability);
+            return has == 'true';
+          })();
+          final disabilityDetail = _getAF(
+              widget.individualModel.additionalFields, _afDisabilityDetail);
           return ScrollableContent(
               enableFixedDigitButton: true,
               header: Column(children: [
@@ -346,6 +368,34 @@ class CustomSummaryBeneficiaryPageState
                                       labelFlex: 5,
                                       padding:
                                           const EdgeInsets.only(top: spacer2)),
+                                  if (showDisability) ...[
+                                    LabelValueItem(
+                                      label: localizations.translate(
+                                        i18_local.individualDetails
+                                            .hasDisabilityLabelText,
+                                      ),
+                                      value: localizations.translate(
+                                        i18_local.householdDetails
+                                            .capitalYesLabelText,
+                                      ),
+                                      labelFlex: 5,
+                                      padding:
+                                          const EdgeInsets.only(top: spacer2),
+                                    ),
+                                    LabelValueItem(
+                                      label: localizations.translate(
+                                        i18_local.individualDetails
+                                            .disabilityDetailLabelText,
+                                      ),
+                                      value: (disabilityDetail?.isEmpty ?? true)
+                                          ? localizations.translate(
+                                              i18.common.coreCommonNA)
+                                          : disabilityDetail!,
+                                      labelFlex: 5,
+                                      padding:
+                                          const EdgeInsets.only(top: spacer2),
+                                    ),
+                                  ],
                                 ]),
                           ]),
                     ],

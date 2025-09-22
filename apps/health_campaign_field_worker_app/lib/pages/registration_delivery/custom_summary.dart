@@ -1,4 +1,5 @@
 import 'package:auto_route/auto_route.dart';
+import 'package:digit_data_model/data_model.dart';
 import 'package:digit_ui_components/digit_components.dart';
 import 'package:digit_ui_components/theme/digit_extended_theme.dart';
 import 'package:digit_ui_components/utils/date_utils.dart';
@@ -24,6 +25,9 @@ import '../../blocs/registration_delivery/custom_beneficairy_registration.dart';
 import '../../blocs/registration_delivery/custom_search_household.dart';
 import '../../router/app_router.dart';
 import 'custom_beneficiary_acknowledgement.dart';
+import 'package:collection/collection.dart';
+
+import '../../utils/i18_key_constants.dart' as i18_local;
 
 @RoutePage()
 class CustomSummaryPage extends LocalizedStatefulWidget {
@@ -37,6 +41,19 @@ class CustomSummaryPage extends LocalizedStatefulWidget {
   @override
   State<CustomSummaryPage> createState() => CustomSummaryPageState();
 }
+
+String? _getAF(IndividualAdditionalFields? af, String key) {
+  final field = af?.fields.firstWhereOrNull((f) => f.key == key);
+  final v = field?.value;
+  if (v is String) {
+    final s = v.trim();
+    return s.isEmpty ? null : s;
+  }
+  return null;
+}
+
+const _afHasDisability = 'hasDisability';
+const _afDisabilityDetail = 'disabilityDetail';
 
 class CustomSummaryPageState extends LocalizedState<CustomSummaryPage> {
   final clickedStatus = ValueNotifier<bool>(false);
@@ -88,6 +105,24 @@ class CustomSummaryPageState extends LocalizedState<CustomSummaryPage> {
           );
         },
         builder: (context, householdState) {
+          final showDisability = householdState.maybeWhen(
+            summary: (
+              nav,
+              hh,
+              ind,
+              pb,
+              reg,
+              addr,
+              loading,
+              isHeadOfHousehold,
+            ) {
+              if (isHeadOfHousehold) return false;
+              final has = _getAF(ind?.additionalFields, _afHasDisability);
+              return has != null;
+            },
+            orElse: () => false,
+          );
+
           return ScrollableContent(
               enableFixedDigitButton: true,
               header: Column(children: [
@@ -393,6 +428,7 @@ class CustomSummaryPageState extends LocalizedState<CustomSummaryPage> {
                       //                     const EdgeInsets.only(top: spacer2)),
                       //           ]),
                       //     ]),
+
                       DigitCard(
                           margin: const EdgeInsets.all(spacer2),
                           children: [
@@ -458,6 +494,67 @@ class CustomSummaryPageState extends LocalizedState<CustomSummaryPage> {
                                                     i18.common.coreCommonNA)),
                                     labelFlex: 5,
                                   ),
+                                  if (showDisability)
+                                    LabelValueItem(
+                                      label: localizations.translate(
+                                        i18_local.individualDetails
+                                            .hasDisabilityLabelText,
+                                      ),
+                                      value: householdState.maybeWhen(
+                                        orElse: () => localizations
+                                            .translate(i18.common.coreCommonNA),
+                                        summary: (_, __, ind, ___, ____, _____,
+                                            ______, _______) {
+                                          final has = _getAF(
+                                              ind?.additionalFields,
+                                              _afHasDisability);
+                                          if (has == null) {
+                                            return localizations.translate(
+                                                i18.common.coreCommonNA);
+                                          }
+                                          return has.toLowerCase() == 'true'
+                                              ? localizations.translate(
+                                                  i18_local.householdDetails
+                                                      .capitalYesLabelText)
+                                              : localizations.translate(
+                                                  i18_local.householdDetails
+                                                      .capitalNoLabelText);
+                                        },
+                                      ),
+                                      labelFlex: 5,
+                                      padding:
+                                          const EdgeInsets.only(top: spacer2),
+                                    ),
+                                  if (showDisability)
+                                    LabelValueItem(
+                                      label: localizations.translate(
+                                        i18_local.individualDetails
+                                            .disabilityDetailLabelText,
+                                      ),
+                                      value: householdState.maybeWhen(
+                                        orElse: () => localizations
+                                            .translate(i18.common.coreCommonNA),
+                                        summary: (_, __, ind, ___, ____, _____,
+                                            ______, _______) {
+                                          final has = _getAF(
+                                                  ind?.additionalFields,
+                                                  _afHasDisability) ==
+                                              'true';
+                                          final detail = _getAF(
+                                              ind?.additionalFields,
+                                              _afDisabilityDetail);
+                                          if (!has)
+                                            return localizations.translate(
+                                                i18.common.coreCommonNA);
+                                          return (detail == null ||
+                                                  detail.isEmpty)
+                                              ? localizations.translate(
+                                                  i18.common.coreCommonNA)
+                                              : detail;
+                                        },
+                                      ),
+                                      labelFlex: 5,
+                                    ),
                                   LabelValueItem(
                                       label: localizations.translate(i18
                                           .individualDetails.genderLabelText),

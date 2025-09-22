@@ -46,8 +46,6 @@ import '../../router/app_router.dart';
 import '../../utils/utils.dart' as local_utils;
 import '../../utils/registration_delivery/registration_delivery_utils.dart';
 import 'custom_beneficiary_acknowledgement.dart';
-import 'package:reactive_forms/reactive_forms.dart' as rf
-    show Validator, Validators, AbstractControl;
 
 @RoutePage()
 class CustomIndividualDetailsPage extends LocalizedStatefulWidget {
@@ -74,6 +72,18 @@ class CustomIndividualDetailsPageState
   static const _idNumberKey = 'idNumber';
   static const _hasDisabilityKey = 'hasDisability';
   static const _disabilityDetailKey = 'disabilityDetail';
+  static const afHasDisability = 'hasDisability';
+  static const afDisabilityDetail = 'disabilityDetail';
+  String? _getAF(IndividualAdditionalFields? af, String key) {
+    final field = af?.fields.firstWhereOrNull((f) => f.key == key);
+    final v = field?.value;
+    if (v is String) {
+      final s = v.trim();
+      return s.isEmpty ? null : s;
+    }
+    return null;
+  }
+
   bool isDuplicateTag = false;
   static const maxLength = 200;
   final clickedStatus = ValueNotifier<bool>(false);
@@ -84,8 +94,6 @@ class CustomIndividualDetailsPageState
   bool isBeneficaryRegistration = false;
   final String yes = "yes";
   final String no = "no";
-  String? yesNoValue;
-  bool get isRelocated => yesNoValue == yes;
   final RegExp uuidRegex = RegExp(
       r'^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$');
   final trainingRegex = RegExp(r'^cps-f\d{5}$');
@@ -159,7 +167,6 @@ class CustomIndividualDetailsPageState
     DateTime before150Years = DateTime(now.year - 150, now.month, now.day);
     DateTime lastDate = DateTime(now.year, now.month - 3, now.day);
     DateTime firstDate = DateTime(now.year, now.month - 59, now.day);
-    yesNoValue ??= no;
 
     final textTheme = theme.digitTextTheme(context);
 
@@ -520,6 +527,11 @@ class CustomIndividualDetailsPageState
                                       //         : null,
                                       //   ),
                                       // );
+                                      bloc.add(
+                                          BeneficiaryRegistrationSaveIndividualDetailsEvent(
+                                        model: individual,
+                                        isHeadOfHousehold: false,
+                                      ));
                                       final boundary =
                                           RegistrationDeliverySingleton()
                                               .boundary;
@@ -534,6 +546,7 @@ class CustomIndividualDetailsPageState
                                       //         : null,
                                       //   ),
                                       // );
+
                                       onBeneficiarySubmit(
                                           individual.name?.givenName ?? "",
                                           individual);
@@ -892,88 +905,109 @@ class CustomIndividualDetailsPageState
                               );
                             },
                           ),
-                        if (!widget.isHeadOfHousehold)
-                          Text(
-                              localizations.translate(i18_local
-                                  .individualDetails
-                                  .relocatedBeneficiaryQuestion),
-                              style: TextStyle(
-                                fontSize: 16,
-                                color: theme.colorTheme.text.primary,
-                              )),
-                        if (!widget.isHeadOfHousehold)
-                          Container(
-                            decoration: BoxDecoration(
-                              border: Border.all(
-                                color: Colors.grey,
-                              ),
-                              borderRadius: BorderRadius.circular(4),
-                            ),
-                            child: StatefulBuilder(
-                              builder: (context, setState) {
-                                return Row(
-                                  children: [
-                                    Expanded(
-                                      child: RadioListTile<String>(
-                                        title: Text(localizations.translate(
-                                          i18_local.householdDetails
-                                              .capitalYesLabelText,
-                                        )),
-                                        value: yes,
-                                        groupValue: yesNoValue,
-                                        onChanged: (value) {
-                                          setState(() {
-                                            yesNoValue = value!;
-                                          });
-                                          // Force rebuild to show/hide button
-                                          this.setState(() {});
-                                        },
-                                      ),
+                        Offstage(
+                          offstage: widget
+                              .isHeadOfHousehold, // <<< hide whole section for HoH
+                          child: ReactiveFormConsumer(
+                            builder: (context, form, _) {
+                              final group = form;
+                              final bool has = group
+                                      .control(_hasDisabilityKey)
+                                      .value as bool? ??
+                                  false;
+
+                              return Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  LabeledField(
+                                    label: localizations.translate(
+                                      i18_local.individualDetails
+                                          .hasDisabilityLabelText,
                                     ),
-                                    Expanded(
-                                      child: RadioListTile<String>(
-                                        title: Text(localizations.translate(
-                                          i18_local.householdDetails
-                                              .capitalNoLabelText,
-                                        )),
-                                        value: no,
-                                        groupValue: yesNoValue,
-                                        onChanged: (value) {
-                                          setState(() {
-                                            yesNoValue = value!;
-                                          });
-                                          this.setState(() {});
-                                        },
-                                      ),
+                                    child: Row(
+                                      children: [
+                                        Expanded(
+                                          child: RadioListTile<bool>(
+                                            contentPadding: EdgeInsets.zero,
+                                            title: Text(localizations.translate(
+                                              i18_local.householdDetails
+                                                  .capitalYesLabelText,
+                                            )),
+                                            value: true,
+                                            groupValue: has,
+                                            onChanged: (v) {
+                                              group
+                                                  .control(_hasDisabilityKey)
+                                                  .value = v ?? false;
+                                              group
+                                                  .control(_disabilityDetailKey)
+                                                ..updateValueAndValidity();
+                                              setState(() {});
+                                            },
+                                          ),
+                                        ),
+                                        Expanded(
+                                          child: RadioListTile<bool>(
+                                            contentPadding: EdgeInsets.zero,
+                                            title: Text(localizations.translate(
+                                              i18_local.householdDetails
+                                                  .capitalNoLabelText,
+                                            )),
+                                            value: false,
+                                            groupValue: has,
+                                            onChanged: (v) {
+                                              group
+                                                  .control(_hasDisabilityKey)
+                                                  .value = v ?? false;
+                                              group
+                                                  .control(_disabilityDetailKey)
+                                                ..value = ''
+                                                ..removeError('required')
+                                                ..markAsPristine()
+                                                ..updateValueAndValidity();
+                                              setState(() {});
+                                            },
+                                          ),
+                                        ),
+                                      ],
                                     ),
-                                  ],
-                                );
-                              },
-                            ),
-                          ),
-                        if (!widget.isHeadOfHousehold && isRelocated)
-                          DigitButton(
-                            capitalizeLetters: false,
-                            label: localizations.translate(i18_local
-                                .householdDetails.previousBeneficiaryQRCode),
-                            mainAxisSize: MainAxisSize.max,
-                            type: DigitButtonType.secondary,
-                            size: DigitButtonSize.large,
-                            isDisabled: false,
-                            onPressed: () {
-                              Navigator.of(context).push(
-                                MaterialPageRoute(
-                                  builder: (context) => const DigitScannerPage(
-                                    quantity: 5,
-                                    isGS1code: false,
-                                    singleValue: false,
                                   ),
-                                  settings:
-                                      const RouteSettings(name: '/qr-scanner'),
-                                ),
+                                  const SizedBox(height: spacer2),
+
+                                  // IMPORTANT: hide when HoH OR when "has" is false
+                                  Offstage(
+                                    offstage: widget.isHeadOfHousehold || !has,
+                                    child: ReactiveWrapperField(
+                                      formControlName: _disabilityDetailKey,
+                                      validationMessages: {
+                                        'required': (_) =>
+                                            localizations.translate(
+                                              i18_local.individualDetails
+                                                  .disabilityDetailRequiredText,
+                                            ),
+                                      },
+                                      builder: (field) => LabeledField(
+                                        label: localizations.translate(
+                                          i18_local.individualDetails
+                                              .disabilityDetailLabelText,
+                                        ),
+                                        child: DigitTextFormInput(
+                                          initialValue: group
+                                              .control(_disabilityDetailKey)
+                                              .value as String?,
+                                          onChange: (value) => group
+                                              .control(_disabilityDetailKey)
+                                              .value = value,
+                                          errorMessage: field.errorText,
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                ],
                               );
                             },
                           ),
+                        ),
                         individualDetailsShowcaseData.mobile.buildWith(
                           child: Offstage(
                             offstage: !widget.isHeadOfHousehold,
@@ -1115,31 +1149,98 @@ class CustomIndividualDetailsPageState
     }
 
     String? individualName = form.control(_individualNameKey).value as String?;
-    individual = individual.copyWith(
-      name: name.copyWith(
-        givenName: individualName?.trim(),
-      ),
-      gender: form.control(_genderKey).value == null
-          ? null
-          : Gender.values
-              .byName(form.control(_genderKey).value.toString().toLowerCase()),
-      mobileNumber: form.control(_mobileNumberKey).value,
+
+    Gender? safeGender(String? g) {
+      if (g == null) return null;
+      final key = g.toLowerCase();
+      try {
+        return Gender.values.byName(key);
+      } catch (_) {
+        return null;
+      }
+    }
+
+    final updatedBase = individual.copyWith(
+      name: name.copyWith(givenName: (individualName ?? '').trim()),
+      gender: safeGender(form.control(_genderKey).value as String?),
+      mobileNumber: form.control(_mobileNumberKey).value as String?,
       dateOfBirth: dobString,
-      identifiers: isEditIndividual && identifier.identifierId != null
-          ? identifiers
-          : [
-              identifier.copyWith(
-                identifierId: beneficiaryId,
-                identifierType: IdentifierTypes.uniqueBeneficiaryID.toValue(),
-              ),
-            ],
-      // additionalFields: IndividualAdditionalFields(version: 1, fields: [
-      //   AdditionalField(form.control(_idTypeKey).value ?? '',
-      //       form.control(_idNumberKey).value ?? '')
-      // ])
     );
 
-    return individual;
+    final existingIds =
+        (individual.identifiers ?? <IdentifierModel>[]).toList();
+    final hasUbi = existingIds.any((x) =>
+        x.identifierType == IdentifierTypes.uniqueBeneficiaryID.toValue());
+
+    final updatedIdentifiers = isEditIndividual || hasUbi
+        ? existingIds
+        : <IdentifierModel>[
+            ...existingIds,
+            IdentifierModel(
+              clientReferenceId: individual.clientReferenceId,
+              tenantId: RegistrationDeliverySingleton().tenantId,
+              rowVersion: 1,
+              auditDetails: individual.auditDetails,
+              clientAuditDetails: individual.clientAuditDetails,
+              identifierId: beneficiaryId,
+              identifierType: IdentifierTypes.uniqueBeneficiaryID.toValue(),
+            )
+          ];
+
+    final bool hasDisability =
+        (form.control(_hasDisabilityKey).value as bool?) ?? false;
+    final String disabilityDetail =
+        ((form.control(_disabilityDetailKey).value as String?) ?? '').trim();
+
+    List<AdditionalField> upsertAF(
+      List<AdditionalField> existing,
+      List<AdditionalField> incoming,
+    ) {
+      final map = {for (final f in existing) f.key: f};
+      for (final f in incoming) {
+        map[f.key] = f;
+      }
+      return map.values.toList();
+    }
+
+    var baseAF =
+        updatedBase.additionalFields?.fields ?? const <AdditionalField>[];
+
+    if (!hasDisability) {
+      baseAF = baseAF.where((f) => f.key != afDisabilityDetail).toList();
+    }
+
+    if (widget.isHeadOfHousehold) {
+      baseAF = baseAF
+          .where((f) => f.key != afHasDisability && f.key != afDisabilityDetail)
+          .toList();
+
+      return updatedBase.copyWith(
+        identifiers: updatedIdentifiers,
+        additionalFields: baseAF.isEmpty
+            ? null
+            : IndividualAdditionalFields(version: 1, fields: baseAF),
+      );
+    }
+
+    final incomingAF = <AdditionalField>[
+      AdditionalField(afHasDisability, hasDisability.toString()),
+      if (hasDisability && disabilityDetail.isNotEmpty)
+        AdditionalField(afDisabilityDetail, disabilityDetail),
+    ];
+
+    if (!hasDisability) {
+      baseAF = baseAF.where((f) => f.key != afDisabilityDetail).toList();
+    }
+
+    final mergedAF = upsertAF(baseAF, incomingAF);
+
+    return updatedBase.copyWith(
+      identifiers: updatedIdentifiers,
+      additionalFields: mergedAF.isEmpty
+          ? null
+          : IndividualAdditionalFields(version: 1, fields: mergedAF),
+    );
   }
 
   FormGroup buildForm(BeneficiaryRegistrationState state) {
@@ -1164,6 +1265,12 @@ class CustomIndividualDetailsPageState
         return value.searchQuery;
       },
     );
+
+    final hasDisabilityStr =
+        _getAF(individual?.additionalFields, afHasDisability);
+    final disabilityDetailStr =
+        _getAF(individual?.additionalFields, afDisabilityDetail);
+    final initialHasDisability = hasDisabilityStr == 'true';
 
     final form = fb.group(<String, Object>{
       _individualNameKey: FormControl<String>(
@@ -1204,36 +1311,29 @@ class CustomIndividualDetailsPageState
         Validators.delegate((validator) =>
             local_utils.CustomValidator.startsWith7or9(validator)),
       ]),
-      _hasDisabilityKey: FormControl<bool>(value: false),
-      _disabilityDetailKey: FormControl<String>(),
+      _hasDisabilityKey: FormControl<bool>(value: initialHasDisability),
+      _disabilityDetailKey: FormControl<String>(
+        value: disabilityDetailStr ?? '',
+        validators: [
+          Validators.delegate((AbstractControl control) {
+            final parent = control.parent;
+            if (parent is FormGroup) {
+              final has =
+                  parent.control(_hasDisabilityKey).value as bool? ?? false;
+              final detail = (control.value as String? ?? '').trim();
+              if (has && detail.isEmpty) return {'required': true};
+            }
+            return null;
+          }),
+        ],
+      ),
     });
 
-    Map<String, dynamic>? disabilityDetailRequired(
-      rf.AbstractControl<dynamic> control,
-    ) {
-      final form = control as FormGroup;
-      final bool has =
-          (form.control(_hasDisabilityKey).value as bool?) ?? false;
-
-      final String detail =
-          (form.control(_disabilityDetailKey).value as String? ?? '').trim();
-
-      if (has && detail.isEmpty) {
-        form
-            .control(_disabilityDetailKey)
-            .setErrors(<String, dynamic>{'required': true});
-        return <String, dynamic>{'disabilityDetailRequired': true};
-      }
-
+    if (widget.isHeadOfHousehold) {
+      form.control(_hasDisabilityKey).value = false;
+      form.control(_disabilityDetailKey).value = '';
       form.control(_disabilityDetailKey).removeError('required');
-      return null;
     }
-
-    form.setValidators([
-      disabilityDetailRequired as rf.Validator<dynamic>,
-    ]);
-
-    form.updateValueAndValidity();
     return form;
   }
 

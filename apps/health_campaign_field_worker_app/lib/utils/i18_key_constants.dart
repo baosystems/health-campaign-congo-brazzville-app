@@ -1481,6 +1481,12 @@ class IndividualDetails {
   String get relocatedBeneficiaryQuestion => 'RELOCATED_BENEFICIARY_QUESTION';
 
   String get monthsExceedErrorText => 'MONTHS_EXCEED_ERROR_TEXT';
+
+  String get hasDisabilityLabelText => 'HAS_DISABILITY_LABEL_TEXT';
+
+  String get disabilityDetailRequiredText => 'DISABILITY_DETAIL_REQUIRED';
+
+  String get disabilityDetailLabelText => 'DISABILITY_DETAIL_LABEL_TEXT';
 }
 
 class BeneficiaryDetails {

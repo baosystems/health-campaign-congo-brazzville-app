@@ -527,69 +527,23 @@ class CustomMemberCard extends StatelessWidget {
                 int spaq1 = context.spaq1;
                 int spaq2 = context.spaq2;
 
-                if (value != null &&
-                    ((value.contains(
-                              Constants.spaq1,
-                            ) &&
-                            spaq1 > 0) ||
-                        (value.contains(
-                              Constants.spaq2,
-                            ) &&
-                            spaq2 > 0))) {
-                  final bloc = context.read<HouseholdOverviewBloc>();
-                  bloc.add(
-                    HouseholdOverviewEvent.selectedIndividual(
-                      individualModel: individual,
-                    ),
-                  );
+                final bloc = context.read<HouseholdOverviewBloc>();
+                bloc.add(
+                  HouseholdOverviewEvent.selectedIndividual(
+                    individualModel: individual,
+                  ),
+                );
 
-                  if ((smcTasks ?? []).isEmpty) {
-                    context.router.push(
-                      EligibilityChecklistViewRoute(
-                        projectBeneficiaryClientReferenceId:
-                            projectBeneficiaryClientReferenceId,
-                        individual: individual,
-                        eligibilityAssessmentType:
-                            EligibilityAssessmentType.smc,
-                      ),
-                    );
-                  }
-                } else {
-                  String descriptionText = localizations.translate(
-                    i18_local.beneficiaryDetails.insufficientStockMessage,
-                  );
-
-                  if (spaq1 == 0) {
-                    descriptionText +=
-                        "\n${localizations.translate(i18_local.beneficiaryDetails.spaq1DoseUnit)}";
-                  }
-                  if (spaq2 == 0) {
-                    descriptionText +=
-                        "\n${localizations.translate(i18_local.beneficiaryDetails.spaq2DoseUnit)}";
-                  }
-
-                  DigitDialog.show(
-                    context,
-                    options: DigitDialogOptions(
-                      titleText: localizations.translate(
-                        i18_local.beneficiaryDetails.insufficientStockHeading,
-                      ),
-                      titleIcon: Icon(
-                        Icons.warning,
-                        color: DigitTheme.instance.colorScheme.error,
-                      ),
-                      contentText: descriptionText,
-                      primaryAction: DigitDialogActions(
-                        label: localizations.translate(
-                          i18_local.beneficiaryDetails.backToHouseholdDetails,
-                        ),
-                        action: (ctx) {
-                          Navigator.of(ctx, rootNavigator: true).pop();
-                        },
-                      ),
-                    ),
-                  );
-                }
+                context.router.push(
+                  ZeroDoseCheckRoute(
+                    eligibilityAssessmentType: EligibilityAssessmentType.smc,
+                    isAdministration: false,
+                    isChecklistAssessmentDone: false,
+                    projectBeneficiaryClientReferenceId:
+                        projectBeneficiaryClientReferenceId,
+                    individual: individual,
+                  ),
+                );
               },
             ),
           if (smcAssessmentPendingStatus &&

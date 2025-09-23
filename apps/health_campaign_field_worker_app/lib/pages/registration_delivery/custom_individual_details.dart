@@ -78,10 +78,6 @@ class CustomIndividualDetailsPageState
   bool isEditIndividual = false;
   bool isAddIndividual = false;
   bool isBeneficaryRegistration = false;
-  final String yes = "yes";
-  final String no = "no";
-  String? yesNoValue;
-  bool get isRelocated => yesNoValue == yes;
   final RegExp uuidRegex = RegExp(
       r'^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$');
   final trainingRegex = RegExp(r'^cps-f\d{5}$');
@@ -148,7 +144,6 @@ class CustomIndividualDetailsPageState
     DateTime before150Years = DateTime(now.year - 150, now.month, now.day);
     DateTime lastDate = DateTime(now.year, now.month - 3, now.day);
     DateTime firstDate = DateTime(now.year, now.month - 59, now.day);
-    yesNoValue ??= no;
 
     final textTheme = theme.digitTextTheme(context);
 
@@ -863,88 +858,6 @@ class CustomIndividualDetailsPageState
                               i18_local.individualDetails
                                   .linkQrCodeToBeneficiaryLabel,
                             ),
-                            mainAxisSize: MainAxisSize.max,
-                            type: DigitButtonType.secondary,
-                            size: DigitButtonSize.large,
-                            isDisabled: false,
-                            onPressed: () {
-                              Navigator.of(context).push(
-                                MaterialPageRoute(
-                                  builder: (context) => const DigitScannerPage(
-                                    quantity: 5,
-                                    isGS1code: false,
-                                    singleValue: false,
-                                  ),
-                                  settings:
-                                      const RouteSettings(name: '/qr-scanner'),
-                                ),
-                              );
-                            },
-                          ),
-                        if (!widget.isHeadOfHousehold)
-                          Text(
-                              localizations.translate(i18_local
-                                  .individualDetails
-                                  .relocatedBeneficiaryQuestion),
-                              style: TextStyle(
-                                fontSize: 16,
-                                color: theme.colorTheme.text.primary,
-                              )),
-                        if (!widget.isHeadOfHousehold)
-                          Container(
-                            decoration: BoxDecoration(
-                              border: Border.all(
-                                color: Colors.grey,
-                              ),
-                              borderRadius: BorderRadius.circular(4),
-                            ),
-                            child: StatefulBuilder(
-                              builder: (context, setState) {
-                                return Row(
-                                  children: [
-                                    Expanded(
-                                      child: RadioListTile<String>(
-                                        title: Text(localizations.translate(
-                                          i18_local.householdDetails
-                                              .capitalYesLabelText,
-                                        )),
-                                        value: yes,
-                                        groupValue: yesNoValue,
-                                        onChanged: (value) {
-                                          setState(() {
-                                            yesNoValue = value!;
-                                          });
-                                          // Force rebuild to show/hide button
-                                          this.setState(() {});
-                                        },
-                                      ),
-                                    ),
-                                    Expanded(
-                                      child: RadioListTile<String>(
-                                        title: Text(localizations.translate(
-                                          i18_local.householdDetails
-                                              .capitalNoLabelText,
-                                        )),
-                                        value: no,
-                                        groupValue: yesNoValue,
-                                        onChanged: (value) {
-                                          setState(() {
-                                            yesNoValue = value!;
-                                          });
-                                          this.setState(() {});
-                                        },
-                                      ),
-                                    ),
-                                  ],
-                                );
-                              },
-                            ),
-                          ),
-                        if (!widget.isHeadOfHousehold && isRelocated)
-                          DigitButton(
-                            capitalizeLetters: false,
-                            label: localizations.translate(i18_local
-                                .householdDetails.previousBeneficiaryQRCode),
                             mainAxisSize: MainAxisSize.max,
                             type: DigitButtonType.secondary,
                             size: DigitButtonSize.large,

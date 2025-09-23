@@ -88,6 +88,10 @@ class CustomMemberCard extends StatelessWidget {
     this.sideEffects,
     required this.variant,
   });
+  bool _canSeeUnableToDeliver(BuildContext context) {
+    final roles = context.loggedInUserRoles.map((r) => r.code).toSet();
+    return roles.contains('TEST_SUPERVISOR');
+  }
 
   bool _checkIfFutureTaskPresent(BuildContext context) {
     List<TaskModel>? tasks = this.tasks;
@@ -595,7 +599,8 @@ class CustomMemberCard extends StatelessWidget {
           if (smcAssessmentPendingStatus &&
               !isBeneficiaryReferredSMC &&
               !isBeneficiaryInEligibleSMC &&
-              !hasBeneficiaryRefused)
+              !hasBeneficiaryRefused &&
+              _canSeeUnableToDeliver(context))
             DigitButton(
               label: localizations.translate(
                 i18.memberCard.unableToDeliverLabel,

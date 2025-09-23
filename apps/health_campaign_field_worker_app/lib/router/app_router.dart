@@ -134,7 +134,7 @@ class AppRouter extends _$AppRouter {
   List<AutoRoute> routes = [
     AutoRoute(
       page: UnauthenticatedRouteWrapper.page,
-      path: '/',
+      path: '/auth',
       children: [
         // AutoRoute(
         //   page: LanguageSelectionRoute.page,
@@ -146,7 +146,7 @@ class AppRouter extends _$AppRouter {
     ),
     AutoRoute(
       page: AuthenticatedRouteWrapper.page,
-      path: '/',
+      path: '/app',
       children: [
         AutoRoute(page: HomeRoute.page, path: 'home'),
         AutoRoute(page: ProfileRoute.page, path: 'profile'),

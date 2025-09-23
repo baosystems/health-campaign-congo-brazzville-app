@@ -33,6 +33,7 @@ import '../../../models/entities/assessment_checklist/status.dart'
 import 'package:digit_ui_components/services/location_bloc.dart' as location;
 import '../../../models/entities/additional_fields_type.dart'
     as additional_fields_local;
+import 'package:collection/collection.dart';
 
 @RoutePage()
 class EligibilityChecklistViewPage extends LocalizedStatefulWidget {
@@ -122,20 +123,20 @@ class _EligibilityChecklistViewPage
                 builder: (context, state) {
                   state.mapOrNull(
                     serviceDefinitionFetch: (value) {
-                      // todo: verify the checklist name
-                      selectedServiceDefinition = value.serviceDefinitionList
-                          .where((element) => element.code.toString().contains(
-                                '${context.selectedProject.name}.$eligibilityAssessment.${context.isCommunityDistributor ? RolesType.communityDistributor.toValue() : RolesType.healthFacilitySupervisor.toValue()}',
-                              ))
-                          .toList()
-                          .firstOrNull;
-                      initialAttributes = selectedServiceDefinition?.attributes;
-                      if (!isControllersInitialized) {
-                        initialAttributes?.forEach((e) {
-                          controller.add(TextEditingController());
-                        });
+                      final code =
+                          '${context.selectedProject.name}.$eligibilityAssessment.'
+                          '${context.isCommunityDistributor ? RolesType.communityDistributor.toValue() : RolesType.healthFacilitySupervisor.toValue()}';
 
-                        // Set the flag to true after initializing controllers
+                      final def = value.serviceDefinitionList.firstWhereOrNull(
+                        (e) => e.code?.toString().contains(code) == true,
+                      );
+
+                      selectedServiceDefinition = def;
+                      initialAttributes = def?.attributes ?? [];
+
+                      if (!isControllersInitialized) {
+                        controller = List.generate(initialAttributes!.length,
+                            (_) => TextEditingController());
                         isControllersInitialized = true;
                       }
                     },
@@ -144,6 +145,26 @@ class _EligibilityChecklistViewPage
                   return state.maybeMap(
                     orElse: () => Text(state.runtimeType.toString()),
                     serviceDefinitionFetch: (value) {
+                      if (selectedServiceDefinition == null ||
+                          (initialAttributes?.isEmpty ?? true)) {
+                        // No checklist for this role/project – don’t crash, tell the user or route elsewhere
+                        return Center(
+                          child: Padding(
+                            padding: const EdgeInsets.all(24),
+                            child: DigitElevatedButton(
+                              onPressed: () {
+                                context.router.push(
+                                  CustomBeneficiaryDetailsRoute(
+                                    eligibilityAssessmentType:
+                                        widget.eligibilityAssessmentType,
+                                  ),
+                                );
+                              },
+                              child: Text('No checklist configured. Continue'),
+                            ),
+                          ),
+                        );
+                      }
                       return ScrollableContent(
                         header: Column(children: [
                           if (!(context.isHealthFacilitySupervisor &&
@@ -161,10 +182,10 @@ class _EligibilityChecklistViewPage
                             onPressed: () async {
                               submitTriggered = true;
                               final isValid =
-                                  checklistFormKey.currentState?.validate();
-                              if (!isValid!) {
-                                return;
-                              }
+                                  checklistFormKey.currentState?.validate() ??
+                                      false;
+                              if (!isValid) return;
+
                               final itemsAttributes = initialAttributes;
                               if (itemsAttributes != null) {
                                 for (int i = 0;
@@ -450,109 +471,104 @@ class _EligibilityChecklistViewPage
                                         ifReferral)) {
                                   final router = context.router;
                                   if (ifIneligible) {
-                                    // added the deliversubmitevent here
-                                    final clientReferenceId =
-                                        IdGen.i.identifier;
-                                    final task = TaskModel(
-                                      projectBeneficiaryClientReferenceId:
-                                          projectBeneficiaryClientReferenceId,
-                                      clientReferenceId: clientReferenceId,
-                                      tenantId: envConfig.variables.tenantId,
-                                      rowVersion: 1,
-                                      auditDetails: AuditDetails(
-                                        createdBy: context.loggedInUserUuid,
-                                        createdTime:
-                                            context.millisecondsSinceEpoch(),
-                                      ),
-                                      projectId: context.projectId,
-                                      status: status_local
-                                          .Status.beneficiaryInEligible
-                                          .toValue(),
-                                      clientAuditDetails: ClientAuditDetails(
-                                        createdBy: context.loggedInUserUuid,
-                                        createdTime:
-                                            context.millisecondsSinceEpoch(),
-                                        lastModifiedBy:
-                                            context.loggedInUserUuid,
-                                        lastModifiedTime:
-                                            context.millisecondsSinceEpoch(),
-                                      ),
-                                      additionalFields: TaskAdditionalFields(
-                                        version: 1,
-                                        fields: [
-                                          // AdditionalField(
-                                          //   'taskStatus',
-                                          //   status_local.Status
-                                          //       .beneficiaryInEligible
-                                          //       .toValue(),
-                                          // ),
-                                          AdditionalField(
-                                            AdditionalFieldsType.cycleIndex
-                                                .toValue(),
-                                            "0${context.selectedCycle?.id}",
-                                          ),
-                                          AdditionalField(
-                                            'ineligibleReasons',
-                                            ineligibilityReasons.join(","),
-                                          ),
-                                          AdditionalField(
-                                            additional_fields_local
-                                                .AdditionalFieldsType
-                                                .deliveryType
-                                                .toValue(),
-                                            (widget.eligibilityAssessmentType ==
-                                                    EligibilityAssessmentType
-                                                        .smc)
-                                                ? EligibilityAssessmentStatus
-                                                    .smcDone.name
-                                                : EligibilityAssessmentStatus
-                                                    .vasDone.name,
-                                          ),
-                                          ...getIndividualAdditionalFields(
-                                            widget.individual,
-                                          ),
-                                        ],
-                                      ),
-                                      address: widget.individual!.address?.first
-                                          .copyWith(
-                                        relatedClientReferenceId:
-                                            clientReferenceId,
-                                        id: null,
-                                      ),
-                                    );
+                                    if (shouldSubmit ?? false) {
+                                      if (!context.mounted) return;
 
-                                    // TODO: Currently, it's been shifted to the zero dose flow
-                                    // context.read<DeliverInterventionBloc>().add(
-                                    //       DeliverInterventionSubmitEvent(
-                                    //           task: task,
-                                    //           isEditing: false,
-                                    //           boundaryModel: context.boundary,
-                                    //           navigateToSummary: false,
-                                    //           householdMemberWrapper:
-                                    //               householdOverviewState
-                                    //                   .householdMemberWrapper),
-                                    //     );
-                                    // final searchBloc =
-                                    //     context.read<SearchHouseholdsBloc>();
-                                    // searchBloc.add(
-                                    //   const SearchHouseholdsClearEvent(),
-                                    // );
+                                      final router = context.router;
 
-                                    router.push(ZeroDoseCheckRoute(
-                                      eligibilityAssessmentType:
-                                          widget.eligibilityAssessmentType,
-                                      isAdministration: false,
-                                      task: task,
-                                      projectBeneficiaryClientReferenceId: task
-                                              .projectBeneficiaryClientReferenceId ??
-                                          projectBeneficiaryClientReferenceId,
-                                    ));
-                                    // router.push(
-                                    //   CustomHouseholdAcknowledgementRoute(
-                                    //       enableViewHousehold: true,
-                                    //       eligibilityAssessmentType:
-                                    //           widget.eligibilityAssessmentType),
-                                    // );
+                                      if (ifReferral) {
+                                        // Referral flow (unchanged)
+                                        router.push(
+                                            CustomReferBeneficiarySMCRoute(
+                                          projectBeneficiaryClientRefId:
+                                              projectBeneficiaryClientReferenceId ??
+                                                  "",
+                                          individual: widget.individual!,
+                                          referralReasons: referralReasons,
+                                        ));
+                                      } else {
+                                        // Build a Task only when INELIGIBLE (you already had this logic)
+                                        TaskModel? task;
+                                        if (ifIneligible) {
+                                          final clientReferenceId =
+                                              IdGen.i.identifier;
+                                          task = TaskModel(
+                                            projectBeneficiaryClientReferenceId:
+                                                projectBeneficiaryClientReferenceId,
+                                            clientReferenceId:
+                                                clientReferenceId,
+                                            tenantId:
+                                                envConfig.variables.tenantId,
+                                            rowVersion: 1,
+                                            auditDetails: AuditDetails(
+                                              createdBy:
+                                                  context.loggedInUserUuid,
+                                              createdTime: context
+                                                  .millisecondsSinceEpoch(),
+                                            ),
+                                            projectId: context.projectId,
+                                            status: status_local
+                                                .Status.beneficiaryInEligible
+                                                .toValue(),
+                                            clientAuditDetails:
+                                                ClientAuditDetails(
+                                              createdBy:
+                                                  context.loggedInUserUuid,
+                                              createdTime: context
+                                                  .millisecondsSinceEpoch(),
+                                              lastModifiedBy:
+                                                  context.loggedInUserUuid,
+                                              lastModifiedTime: context
+                                                  .millisecondsSinceEpoch(),
+                                            ),
+                                            additionalFields:
+                                                TaskAdditionalFields(
+                                              version: 1,
+                                              fields: [
+                                                AdditionalField(
+                                                  additional_fields_local
+                                                      .AdditionalFieldsType
+                                                      .deliveryType
+                                                      .toValue(),
+                                                  (widget.eligibilityAssessmentType ==
+                                                          EligibilityAssessmentType
+                                                              .smc)
+                                                      ? EligibilityAssessmentStatus
+                                                          .smcDone.name
+                                                      : EligibilityAssessmentStatus
+                                                          .vasDone.name,
+                                                ),
+                                                ...getIndividualAdditionalFields(
+                                                    widget.individual),
+                                              ],
+                                            ),
+                                            address: (widget.individual?.address
+                                                        ?.isNotEmpty ??
+                                                    false)
+                                                ? widget
+                                                    .individual!.address!.first
+                                                    .copyWith(
+                                                    relatedClientReferenceId:
+                                                        clientReferenceId,
+                                                    id: null,
+                                                  )
+                                                : null,
+                                          );
+                                        }
+
+                                        // >>> Go to Zero Dose flow next (both for administration and ineligible) <<<
+                                        router.push(ZeroDoseCheckRoute(
+                                          eligibilityAssessmentType:
+                                              widget.eligibilityAssessmentType,
+                                          isAdministration:
+                                              !ifIneligible, // false -> ineligible path; true -> admin path
+                                          task:
+                                              task, // null when administering, non-null when ineligible
+                                          projectBeneficiaryClientReferenceId:
+                                              projectBeneficiaryClientReferenceId,
+                                        ));
+                                      }
+                                    }
                                   } else if (ifReferral) {
                                     if (widget.eligibilityAssessmentType ==
                                         EligibilityAssessmentType.smc) {
@@ -600,9 +616,7 @@ class _EligibilityChecklistViewPage
                                       padding: const EdgeInsets.only(left: 8),
                                       child: Text(
                                         localizations.translate(
-                                          selectedServiceDefinition!.code
-                                              .toString(),
-                                        ),
+                                            '${selectedServiceDefinition?.code ?? ''}'),
                                         style: theme.textTheme.displayMedium,
                                         textAlign: TextAlign.left,
                                       ),
@@ -643,7 +657,7 @@ class _EligibilityChecklistViewPage
                                                         "${e.code}_REGEX");
                                               }
 
-                                              return null;
+                                              return "";
                                             },
                                             label: localizations.translate(
                                               '${selectedServiceDefinition?.code}.${e.code}',
@@ -681,7 +695,7 @@ class _EligibilityChecklistViewPage
                                                         "${e.code}_REGEX");
                                               }
 
-                                              return null;
+                                              return "";
                                             },
                                             controller: controller[index],
                                             label: '${localizations.translate(
@@ -948,7 +962,7 @@ class _EligibilityChecklistViewPage
                 : localizations.translate("${item.code}_REGEX");
           }
 
-          return null;
+          return "";
         },
         controller: controller[index],
         label: '${localizations.translate(

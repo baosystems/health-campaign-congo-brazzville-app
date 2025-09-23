@@ -13,6 +13,7 @@ import '../../models/auth/auth_model.dart';
 import '../../models/entities/roles_type.dart';
 import '../../models/role_actions/role_actions_model.dart';
 import '../../utils/environment_config.dart';
+import '../../utils/registration_delivery/registration_delivery_singleton.dart';
 
 // part 'auth.freezed.dart' need to be added to auto generate the files for freezed model
 part 'auth.freezed.dart';
@@ -55,7 +56,9 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
       final userIndividualId = await localSecureStore.userIndividualId;
       final spaq1 = await localSecureStore.spaq1;
       final spaq2 = await localSecureStore.spaq2;
-
+      RegistrationDeliverySingleton().hydrateRoles(
+        (userObject?.roles ?? []).map((r) => r.code).toList(),
+      );
       if (accessToken == null ||
           refreshToken == null ||
           userObject == null ||
@@ -120,7 +123,9 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
         await localSecureStore
             .setSelectedIndividual(loggedInIndividual.firstOrNull?.id);
       }
-
+      RegistrationDeliverySingleton().hydrateRoles(
+        result.userRequestModel.roles.map((r) => r.code).toList(),
+      );
       emit(
         AuthAuthenticatedState(
           accessToken: result.accessToken,

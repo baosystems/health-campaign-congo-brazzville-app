@@ -20,10 +20,12 @@ import 'package:registration_delivery/models/entities/task.dart';
 import 'package:registration_delivery/router/registration_delivery_router.gm.dart';
 import 'package:registration_delivery/utils/i18_key_constants.dart' as i18;
 import '../../blocs/localization/app_localization.dart';
-import '../../models/entities/additional_fields_type.dart';
+// import '../../models/entities/additional_fields_type.dart';
 import '../../models/entities/identifier_types.dart';
 // import '../../utils/registration_delivery/utils_smc.dart';
-import 'package:registration_delivery/utils/utils.dart';
+// import 'package:registration_delivery/utils/utils.dart';
+import 'package:registration_delivery/utils/utils.dart'
+    hide RegistrationDeliverySingleton;
 import '../../router/app_router.dart';
 import '../../utils/app_enums.dart';
 import '../../utils/environment_config.dart';
@@ -37,6 +39,9 @@ import '../../../models/entities/assessment_checklist/status.dart'
 import '../../models/entities/additional_fields_type.dart'
     as additional_fields_local;
 import '../../utils/date_utils.dart' as digits;
+import '../../models/entities/roles_type.dart' as roles;
+import '../../utils/registration_delivery/registration_delivery_singleton.dart'
+    as reg;
 
 class CustomMemberCard extends StatelessWidget {
   final List<ProductVariantModel> variant;
@@ -90,18 +95,40 @@ class CustomMemberCard extends StatelessWidget {
   });
 
   bool _checkIfFutureTaskPresent(BuildContext context) {
-    List<TaskModel>? tasks = this.tasks;
-    if (tasks == null || tasks.isEmpty) {
-      return false;
-    }
+    final tasks = this.tasks;
+    final cycleId = context.selectedCycle?.id;
+    if (tasks == null || tasks.isEmpty || cycleId == null) return false;
 
-    return tasks?.firstWhereOrNull((e) =>
-            e.additionalFields?.fields.firstWhereOrNull((field) =>
-                field.key == AdditionalFieldsType.cycleIndex.toValue() &&
-                int.tryParse(field.value)! > context.selectedCycle!.id) !=
-            null) !=
+    return tasks.firstWhereOrNull((e) {
+          final f = e.additionalFields?.fields.firstWhereOrNull((field) {
+            if (field.key !=
+                additional_fields_local.AdditionalFieldsType.cycleIndex
+                    .toValue()) return false;
+            final parsed = int.tryParse(field.value);
+            return parsed != null && parsed > cycleId;
+          });
+          return f != null;
+        }) !=
         null;
   }
+
+  void _showNoProjectDialog(BuildContext context) {
+    DigitDialog.show(
+      context,
+      options: DigitDialogOptions(
+        titleText: 'Project not configured',
+        contentText:
+            'Project cycles or deliveries are missing. Please set up a project first.',
+        primaryAction: DigitDialogActions(
+          label: 'OK',
+          action: (ctx) => Navigator.of(ctx, rootNavigator: true).pop(),
+        ),
+      ),
+    );
+  }
+
+  bool _canShowUnableToDeliver() =>
+      reg.RegistrationDeliverySingleton().canSeeUnableToDeliver;
 
   List<TaskModel>? _getCurrentCycleData(BuildContext context) {
     List<TaskModel>? tasks = this
@@ -109,7 +136,9 @@ class CustomMemberCard extends StatelessWidget {
         ?.where((e) =>
             e.additionalFields?.fields
                 .where((field) =>
-                    field.key == AdditionalFieldsType.cycleIndex.toValue() &&
+                    field.key ==
+                        additional_fields_local.AdditionalFieldsType.cycleIndex
+                            .toValue() &&
                     int.tryParse(field.value) == context.selectedCycle?.id)
                 .isNotEmpty ??
             false)
@@ -379,7 +408,16 @@ class CustomMemberCard extends StatelessWidget {
     final redosePendingStatus = smcAssessmentPendingStatus
         ? true
         : redosePending(smcTasks, context.selectedCycle);
+    final s = reg.RegistrationDeliverySingleton();
 
+    debugPrint('=== ACTION BUTTON GUARDS ===');
+    debugPrint('hasProject: ${s.hasProject}');
+    debugPrint('projectType: ${s.projectType}');
+    debugPrint('projectId: ${s.projectId}');
+    debugPrint('tenantId: ${s.tenantId}');
+    debugPrint('selectedProject: ${context.selectedProject}');
+    debugPrint('selectedCycle: ${context.selectedCycle}');
+    debugPrint('================================');
     if (isFutureTaskPresent) {
       return const Offstage();
     }
@@ -434,57 +472,37 @@ class CustomMemberCard extends StatelessWidget {
     }
     return BlocBuilder<DeliverInterventionBloc, DeliverInterventionState>(
         builder: (context, deliverState) {
-      List<TaskModel>? pastTasks = tasks;
-      if (tasks?.lastOrNull?.status ==
-          Status.beneficiaryRefused.toValue().toString()) {
-        pastTasks?.removeLast();
+      final List<TaskModel> pastTasks = (tasks ?? const <TaskModel>[]).toList();
+      if (pastTasks.lastOrNull?.status == Status.beneficiaryRefused.toValue()) {
+        pastTasks.removeLast();
       }
-      final lastDose = pastTasks != null && pastTasks!.isNotEmpty
-          ? pastTasks?.last.additionalFields?.fields
-                  .firstWhereOrNull(
-                    (e) =>
-                        e.key ==
-                        additional_fields_local.AdditionalFieldsType.doseIndex
-                            .toValue(),
-                  )
+
+      final lastDose = pastTasks.isNotEmpty
+          ? pastTasks.last.additionalFields?.fields
+                  .firstWhereOrNull((e) =>
+                      e.key ==
+                      additional_fields_local.AdditionalFieldsType.doseIndex
+                          .toValue())
                   ?.value ??
               '0'
           : '0';
-      final lastCycle = pastTasks != null && pastTasks!.isNotEmpty
-          ? pastTasks?.last.additionalFields?.fields
-                  .firstWhereOrNull(
-                    (e) =>
-                        e.key ==
-                        additional_fields_local.AdditionalFieldsType.cycleIndex
-                            .toValue(),
-                  )
+
+      final lastCycle = pastTasks.isNotEmpty
+          ? pastTasks.last.additionalFields?.fields
+                  .firstWhereOrNull((e) =>
+                      e.key ==
+                      additional_fields_local.AdditionalFieldsType.cycleIndex
+                          .toValue())
                   ?.value ??
               '1'
           : '1';
+      final selectedCycle = context.selectedCycle;
+      final projectTypeId = context.selectedProject?.projectTypeId;
 
-      final ProjectTypeModel projectType =
-          RegistrationDeliverySingleton().projectType!;
-
-      if (projectType != null) {
-        context.read<DeliverInterventionBloc>().add(
-              DeliverInterventionEvent.setActiveCycleDose(
-                lastDose: tasks != null && tasks!.isNotEmpty
-                    ? int.tryParse(
-                          lastDose,
-                        ) ??
-                        1
-                    : 0,
-                lastCycle: tasks != null && tasks!.isNotEmpty
-                    ? int.tryParse(
-                          lastCycle,
-                        ) ??
-                        1
-                    : 1,
-                individualModel: individual,
-                projectType: projectType,
-              ),
-            );
+      if (projectTypeId == null || selectedCycle == null) {
+        return const Offstage();
       }
+
       return Column(
         children: [
           if (smcAssessmentPendingStatus &&
@@ -501,101 +519,43 @@ class CustomMemberCard extends StatelessWidget {
                 ),
               ),
               onPressed: () async {
-                // Calculate the current cycle. If deliverInterventionState.cycle is negative, set it to 0.
-                final currentCycle =
-                    deliverState.cycle >= 0 ? deliverState.cycle : 0;
+                // Always select the individual first
+                final hovBloc = context.read<HouseholdOverviewBloc>();
+                hovBloc.add(HouseholdOverviewEvent.selectedIndividual(
+                    individualModel: individual));
 
-                // Calculate the current dose. If deliverInterventionState.dose is negative, set it to 0.
-                final currentDose =
-                    deliverState.dose >= 0 ? deliverState.dose : 0;
+                // Safe lookup: PB id for this individual (empty string fallback so no null)
+                final wrapper = hovBloc.state.householdMemberWrapper;
+                final pbId = (hovBloc.state.householdMemberWrapper
+                                .projectBeneficiaries ??
+                            const [])
+                        .firstWhereOrNull((b) =>
+                            b.beneficiaryClientReferenceId ==
+                            individual.clientReferenceId)
+                        ?.clientReferenceId ??
+                    '';
 
-                final item = projectType
-                    .cycles?[currentCycle - 1].deliveries?[currentDose - 1];
-                final productVariants =
-                    fetchProductVariant(item, individual, null)
-                        ?.productVariants!
-                        .first;
-
-                // Retrieve the SKU value for the product variant.
-                final value = variant
-                    ?.firstWhereOrNull(
-                      (element) =>
-                          element.id == productVariants!.productVariantId,
-                    )
-                    ?.sku;
-
-                int spaq1 = context.spaq1;
-                int spaq2 = context.spaq2;
-
-                if (value != null &&
-                    ((value.contains(
-                              Constants.spaq1,
-                            ) &&
-                            spaq1 > 0) ||
-                        (value.contains(
-                              Constants.spaq2,
-                            ) &&
-                            spaq2 > 0))) {
-                  final bloc = context.read<HouseholdOverviewBloc>();
-                  bloc.add(
-                    HouseholdOverviewEvent.selectedIndividual(
-                      individualModel: individual,
+                // Just go — no extra guards
+                try {
+                  await context.router.push(
+                    ZeroDoseCheckRoute(
+                      eligibilityAssessmentType: EligibilityAssessmentType.smc,
+                      isAdministration: false,
+                      isChecklistAssessmentDone: false,
+                      projectBeneficiaryClientReferenceId: pbId,
+                      individual: individual,
                     ),
                   );
-
-                  if ((smcTasks ?? []).isEmpty) {
-                    context.router.push(
-                      EligibilityChecklistViewRoute(
-                        projectBeneficiaryClientReferenceId:
-                            projectBeneficiaryClientReferenceId,
-                        individual: individual,
-                        eligibilityAssessmentType:
-                            EligibilityAssessmentType.smc,
-                      ),
-                    );
-                  }
-                } else {
-                  String descriptionText = localizations.translate(
-                    i18_local.beneficiaryDetails.insufficientStockMessage,
-                  );
-
-                  if (spaq1 == 0) {
-                    descriptionText +=
-                        "\n${localizations.translate(i18_local.beneficiaryDetails.spaq1DoseUnit)}";
-                  }
-                  if (spaq2 == 0) {
-                    descriptionText +=
-                        "\n${localizations.translate(i18_local.beneficiaryDetails.spaq2DoseUnit)}";
-                  }
-
-                  DigitDialog.show(
-                    context,
-                    options: DigitDialogOptions(
-                      titleText: localizations.translate(
-                        i18_local.beneficiaryDetails.insufficientStockHeading,
-                      ),
-                      titleIcon: Icon(
-                        Icons.warning,
-                        color: DigitTheme.instance.colorScheme.error,
-                      ),
-                      contentText: descriptionText,
-                      primaryAction: DigitDialogActions(
-                        label: localizations.translate(
-                          i18_local.beneficiaryDetails.backToHouseholdDetails,
-                        ),
-                        action: (ctx) {
-                          Navigator.of(ctx, rootNavigator: true).pop();
-                        },
-                      ),
-                    ),
-                  );
+                } catch (e, st) {
+                  debugPrint('NAV_ERR ZeroDoseCheckRoute: $e\n$st');
                 }
               },
             ),
           if (smcAssessmentPendingStatus &&
               !isBeneficiaryReferredSMC &&
               !isBeneficiaryInEligibleSMC &&
-              !hasBeneficiaryRefused)
+              !hasBeneficiaryRefused &&
+              _canShowUnableToDeliver())
             DigitButton(
               label: localizations.translate(
                 i18.memberCard.unableToDeliverLabel,
@@ -629,27 +589,43 @@ class CustomMemberCard extends StatelessWidget {
                         size: DigitButtonSize.large,
                         onPressed: () {
                           Navigator.of(context, rootNavigator: true).pop();
+                          final userId = context.loggedInUserUuid;
+                          if (userId == null) {
+                            DigitDialog.show(
+                              context,
+                              options: DigitDialogOptions(
+                                titleText: 'User not ready',
+                                contentText:
+                                    'Please wait for login to complete and try again.',
+                                primaryAction: DigitDialogActions(
+                                  label: 'OK',
+                                  action: (c) =>
+                                      Navigator.of(c, rootNavigator: true)
+                                          .pop(),
+                                ),
+                              ),
+                            );
+                            return;
+                          }
+
                           final clientReferenceId = IdGen.i.identifier;
-                          TaskModel refusalTask = TaskModel(
+
+                          final refusalTask = TaskModel(
                             projectBeneficiaryClientReferenceId:
                                 projectBeneficiaryClientReferenceId,
                             clientReferenceId: clientReferenceId,
-                            tenantId: RegistrationDeliverySingleton().tenantId,
+                            tenantId: envConfig.variables.tenantId,
                             rowVersion: 1,
                             auditDetails: AuditDetails(
-                              createdBy: RegistrationDeliverySingleton()
-                                  .loggedInUserUuid!,
+                              createdBy: userId,
                               createdTime: context.millisecondsSinceEpoch(),
                             ),
-                            projectId:
-                                RegistrationDeliverySingleton().projectId,
+                            projectId: context.projectId,
                             status: Status.beneficiaryRefused.toValue(),
                             clientAuditDetails: ClientAuditDetails(
-                              createdBy: RegistrationDeliverySingleton()
-                                  .loggedInUserUuid!,
+                              createdBy: userId,
                               createdTime: context.millisecondsSinceEpoch(),
-                              lastModifiedBy: RegistrationDeliverySingleton()
-                                  .loggedInUserUuid,
+                              lastModifiedBy: userId,
                               lastModifiedTime:
                                   context.millisecondsSinceEpoch(),
                             ),
@@ -657,17 +633,20 @@ class CustomMemberCard extends StatelessWidget {
                               version: 1,
                               fields: [
                                 AdditionalField(
-                                  AdditionalFieldsType.cycleIndex.toValue(),
-                                  "0${context.selectedCycle?.id}",
+                                  additional_fields_local
+                                      .AdditionalFieldsType.cycleIndex
+                                      .toValue(),
+                                  "${context.selectedCycle?.id}",
                                 ),
                                 AdditionalField(
                                   'taskStatus',
                                   Status.beneficiaryRefused.toValue(),
                                 ),
-                                ...getIndividualAdditionalFields(individual)
+                                ...getIndividualAdditionalFields(individual),
                               ],
                             ),
-                            address: individual!.address?.first.copyWith(
+                            // Also fix the null-assert here (see #3)
+                            address: individual.address?.firstOrNull?.copyWith(
                               relatedClientReferenceId: clientReferenceId,
                               id: null,
                             ),
@@ -691,10 +670,9 @@ class CustomMemberCard extends StatelessWidget {
                             () {
                               reloadState.add(
                                 HouseholdOverviewReloadEvent(
-                                  projectId: RegistrationDeliverySingleton()
-                                      .projectId!,
+                                  projectId: context.projectId,
                                   projectBeneficiaryType:
-                                      RegistrationDeliverySingleton()
+                                      reg.RegistrationDeliverySingleton()
                                           .beneficiaryType!,
                                 ),
                               );
@@ -751,9 +729,7 @@ class CustomMemberCard extends StatelessWidget {
                             rootNavigator: true,
                           ).pop();
                           await context.router.push(
-                            CustomSideEffectsRoute(
-                              tasks: tasks!,
-                            ),
+                            CustomSideEffectsRoute(tasks: tasks!),
                           );
                         },
                       ),
@@ -764,131 +740,93 @@ class CustomMemberCard extends StatelessWidget {
             ),
           if ((!smcAssessmentPendingStatus) && redosePendingStatus)
             CustomDigitElevatedButton(
-              child: Center(
-                child: Text(
-                  localizations.translate(
-                    i18_local
-                        .householdOverView.householdOverViewRedoseActionText,
+                child: Center(
+                  child: Text(
+                    localizations.translate(
+                      i18_local
+                          .householdOverView.householdOverViewRedoseActionText,
+                    ),
+                    style: textTheme.headingM.copyWith(color: Colors.white),
+                    textAlign: TextAlign.center,
+                    overflow: TextOverflow.visible,
+                    maxLines: 2,
                   ),
-                  style: textTheme.headingM.copyWith(color: Colors.white),
-                  textAlign: TextAlign.center,
-                  overflow: TextOverflow.visible,
-                  maxLines: 2,
                 ),
-              ),
-              onPressed: () async {
-                final bloc = context.read<HouseholdOverviewBloc>();
-                bloc.add(
-                  HouseholdOverviewEvent.selectedIndividual(
-                    individualModel: individual,
-                  ),
-                );
+                onPressed: () async {
+                  final bloc = context.read<HouseholdOverviewBloc>();
+                  bloc.add(
+                    HouseholdOverviewEvent.selectedIndividual(
+                      individualModel: individual,
+                    ),
+                  );
+                  if ((smcTasks ?? []).isNotEmpty) {
+                    TaskModel? successfulTask = smcTasks
+                        ?.where((e) =>
+                            e.status == Status.administeredSuccess.toValue())
+                        .lastOrNull;
 
-                if ((smcTasks ?? []).isNotEmpty) {
-                  TaskModel? successfulTask = smcTasks
-                      ?.where(
-                        (element) =>
-                            element.status ==
-                            Status.administeredSuccess.toValue(),
-                      )
-                      .lastOrNull;
-                  if (redosePendingStatus) {
-                    final spaq1 = context.spaq1;
-                    final spaq2 = context.spaq2;
-                    // final blueVas = context.blueVas;
-                    // final redVas = context.redVas;
+                    if (redosePendingStatus) {
+                      final spaq1 = context.spaq1;
+                      final spaq2 = context.spaq2;
 
-                    int doseCount = double.parse(
-                      successfulTask?.resources?.first.quantity ?? "0",
-                    ).round();
+                      final doseCount = double.parse(
+                        successfulTask?.resources?.firstOrNull?.quantity ?? '0',
+                      ).round();
 
-                    final value = variant
-                        .firstWhere(
-                          (element) =>
-                              element.id ==
-                              successfulTask!.resources!.first.productVariantId,
-                        )
-                        .sku;
+                      // ✅ Only inspect resources/variant inside the null guard
+                      if (successfulTask != null) {
+                        final res = successfulTask.resources?.firstOrNull;
+                        final pvId = res?.productVariantId;
+                        final value = pvId == null
+                            ? null
+                            : variant
+                                .firstWhereOrNull((v) => v.id == pvId)
+                                ?.sku;
 
-                    if (successfulTask != null &&
-                        value != null &&
-                        ((value.contains(
-                                  Constants.spaq1,
-                                ) &&
-                                spaq1 > 0) ||
-                            (value.contains(
-                                  Constants.spaq2,
-                                ) &&
-                                spaq2 > 0))) {
-                      context.router.push(
-                        RecordRedoseRoute(
-                          tasks: [successfulTask!],
-                        ),
-                      );
-                    }
-
-                    // if (successfulTask != null && spaq1 >= doseCount) {
-                    //   context.router.push(
-                    //     RecordRedoseRoute(
-                    //       tasks: [successfulTask],
-                    //     ),
-                    //   );
-                    // }
-                    else {
-                      DigitDialog.show(
-                        context,
-                        options: DigitDialogOptions(
-                          titleText: localizations.translate(
-                            i18_local
-                                .beneficiaryDetails.insufficientStockHeading,
-                          ),
-                          titleIcon: Icon(
-                            Icons.warning,
-                            color: DigitTheme.instance.colorScheme.error,
-                          ),
-                          contentText: (value == Constants.spaq1)
-                              ? "${localizations.translate(
+                        if (value != null &&
+                            ((value.contains(Constants.spaq1) && spaq1 > 0) ||
+                                (value.contains(Constants.spaq2) &&
+                                    spaq2 > 0))) {
+                          context.router
+                              .push(RecordRedoseRoute(tasks: [successfulTask]));
+                        } else {
+                          DigitDialog.show(
+                            context,
+                            options: DigitDialogOptions(
+                              titleText: localizations.translate(
+                                i18_local.beneficiaryDetails
+                                    .insufficientStockHeading,
+                              ),
+                              titleIcon: Icon(Icons.warning,
+                                  color: DigitTheme.instance.colorScheme.error),
+                              contentText: (value == Constants.spaq1)
+                                  ? "${localizations.translate(i18_local.beneficiaryDetails.insufficientAZTStockMessageDelivery)} \n ${localizations.translate(i18_local.beneficiaryDetails.spaq1DoseUnit)}"
+                                  : "${localizations.translate(i18_local.beneficiaryDetails.insufficientAZTStockMessageDelivery)} \n ${localizations.translate(i18_local.beneficiaryDetails.spaq2DoseUnit)}",
+                              primaryAction: DigitDialogActions(
+                                label: localizations.translate(
                                   i18_local.beneficiaryDetails
-                                      .insufficientAZTStockMessageDelivery,
-                                )} \n ${localizations.translate(
-                                  i18_local.beneficiaryDetails.spaq1DoseUnit,
-                                )}"
-                              : "${localizations.translate(
-                                  i18_local.beneficiaryDetails
-                                      .insufficientAZTStockMessageDelivery,
-                                )} \n ${localizations.translate(
-                                  i18_local.beneficiaryDetails.spaq2DoseUnit,
-                                )}",
-                          // contentText: (spaq1 < doseCountSpaq1)
-                          //     ? "${localizations.translate(
-                          //         i18_local.beneficiaryDetails
-                          //             .insufficientAZTStockMessageDelivery,
-                          //       )} \n ${localizations.translate(
-                          //         i18_local.beneficiaryDetails.spaq1DoseUnit,
-                          //       )}"
-                          //     : "${localizations.translate(
-                          //         i18_local.beneficiaryDetails
-                          //             .insufficientAZTStockMessageDelivery,
-                          //       )} \n ${localizations.translate(
-                          //         i18_local.beneficiaryDetails.spaq2DoseUnit,
-                          //       )}",
-                          primaryAction: DigitDialogActions(
-                            label: localizations.translate(i18_local
-                                .beneficiaryDetails.backToHouseholdDetails),
-                            action: (ctx) {
-                              Navigator.of(
-                                ctx,
-                                rootNavigator: true,
-                              ).pop();
-                            },
-                          ),
-                        ),
-                      );
+                                      .backToHouseholdDetails,
+                                ),
+                                action: (ctx) =>
+                                    Navigator.of(ctx, rootNavigator: true)
+                                        .pop(),
+                              ),
+                            ),
+                          );
+                        }
+                      }
                     }
                   }
-                }
-              },
-            ),
+
+                  // if (successfulTask != null && spaq1 >= doseCount) {
+                  //   context.router.push(
+                  //     RecordRedoseRoute(
+                  //       tasks: [successfulTask],
+                  //     ),
+                  //   );
+                  // }
+                  else {}
+                }),
         ],
       );
     });

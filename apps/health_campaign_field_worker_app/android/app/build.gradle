@@ -72,3 +72,10 @@ android {
 flutter {
     source '../..'
 }
+
+configurations.all {
+    resolutionStrategy {
+        force 'androidx.window:window:1.0.0'
+        force 'androidx.window:window-java:1.0.0'
+    }
+}

@@ -33,6 +33,7 @@ import '../../../models/entities/assessment_checklist/status.dart'
 import 'package:digit_ui_components/services/location_bloc.dart' as location;
 import '../../../models/entities/additional_fields_type.dart'
     as additional_fields_local;
+import 'package:collection/collection.dart';
 
 @RoutePage()
 class EligibilityChecklistViewPage extends LocalizedStatefulWidget {
@@ -61,7 +62,7 @@ class _EligibilityChecklistViewPage
   var submitTriggered = false;
   List<TextEditingController> controller = [];
   List<TextEditingController> additionalController = [];
-  List<AttributesModel>? initialAttributes;
+  List<AttributesModel> initialAttributes = const [];
   ServiceDefinitionModel? selectedServiceDefinition;
   bool isControllersInitialized = false;
   List<int> visibleChecklistIndexes = [];
@@ -122,22 +123,31 @@ class _EligibilityChecklistViewPage
                 builder: (context, state) {
                   state.mapOrNull(
                     serviceDefinitionFetch: (value) {
-                      // todo: verify the checklist name
-                      selectedServiceDefinition = value.serviceDefinitionList
-                          .where((element) => element.code.toString().contains(
-                                '${context.selectedProject.name}.$eligibilityAssessment.${context.isCommunityDistributor ? RolesType.communityDistributor.toValue() : RolesType.healthFacilitySupervisor.toValue()}',
-                              ))
-                          .toList()
-                          .firstOrNull;
-                      initialAttributes = selectedServiceDefinition?.attributes;
-                      if (!isControllersInitialized) {
-                        initialAttributes?.forEach((e) {
-                          controller.add(TextEditingController());
-                        });
+                      state.mapOrNull(serviceDefinitionFetch: (value) {
+                        final roleCode = context.isCommunityDistributor
+                            ? RolesType.communityDistributor.toValue()
+                            : RolesType.healthFacilitySupervisor.toValue();
 
-                        // Set the flag to true after initializing controllers
-                        isControllersInitialized = true;
-                      }
+                        selectedServiceDefinition =
+                            value.serviceDefinitionList.firstWhereOrNull(
+                          (def) =>
+                              (def.code
+                                      ?.toUpperCase()
+                                      .contains(roleCode.toUpperCase()) ??
+                                  false) &&
+                              isZeroDoseDefinition(def),
+                        );
+
+                        initialAttributes =
+                            selectedServiceDefinition?.attributes ?? [];
+                        if (!isControllersInitialized) {
+                          controller = List.generate(
+                            initialAttributes.length,
+                            (_) => TextEditingController(),
+                          );
+                          isControllersInitialized = true;
+                        }
+                      });
                     },
                   );
 

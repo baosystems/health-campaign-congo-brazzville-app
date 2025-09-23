@@ -67,6 +67,8 @@ import 'extensions/extensions.dart';
 export 'app_exception.dart';
 export 'constants.dart';
 export 'extensions/extensions.dart';
+import 'package:survey_form/survey_form.dart'
+    show ServiceDefinitionModel, AttributesModel;
 
 class CustomValidator {
   /// Validates that control's value must be `true`
@@ -880,4 +882,14 @@ class LocalizationParams {
   Locale? get locale => _locale;
 
   bool? get exclude => _exclude;
+}
+
+bool isZeroDoseDefinition(ServiceDefinitionModel? def) {
+  if (def == null) return false;
+  final code = def.code?.toUpperCase() ?? '';
+  if (code.contains('ZERO_DOSE_ASSESSMENT')) return true;
+
+  final hasZdaAttrs = (def.attributes ?? [])
+      .any((a) => (a.code ?? '').toUpperCase().startsWith('ZDA'));
+  return hasZdaAttrs;
 }

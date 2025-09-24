@@ -886,16 +886,16 @@ class _CustomSearchBeneficiaryPageState
                             i18_local
                                 .beneficiaryDetails.insufficientStockMessage);
 
-                        if (spaq1 == 0) {
+                        /* if (spaq1 == 0) {
                           descriptionText +=
                               "\n ${localizations.translate(i18_local.beneficiaryDetails.spaq1DoseUnit)}";
                         }
                         if (spaq2 == 0) {
                           descriptionText +=
                               "\n ${localizations.translate(i18_local.beneficiaryDetails.spaq2DoseUnit)}";
-                        }
+                        } */
 
-                        if ((spaq1 > 0 || spaq2 > 0)) {
+                        //if ((spaq1 > 0 || spaq2 > 0)) {
                           FocusManager.instance.primaryFocus?.unfocus();
                           context.read<DigitScannerBloc>().add(
                                 const DigitScannerEvent.handleScanner(),
@@ -911,7 +911,7 @@ class _CustomSearchBeneficiaryPageState
                           customSearchHouseholdsBloc.add(
                             const SearchHouseholdsClearEvent(),
                           );
-                        } else {
+                        /* } else {
                           showCustomPopup(
                             context: context,
                             builder: (popupContext) => Popup(
@@ -939,7 +939,7 @@ class _CustomSearchBeneficiaryPageState
                               ],
                             ),
                           );
-                        }
+                        } */
                       },
                     );
                   },

@@ -90,7 +90,7 @@ class CustomMemberCard extends StatelessWidget {
   });
   bool _canSeeUnableToDeliver(BuildContext context) {
     final roles = context.loggedInUserRoles.map((r) => r.code).toSet();
-    return roles.contains('TEST_SUPERVISOR');
+    return roles.contains('COMMUNITY_DISTRIBUTOR');
   }
 
   bool _checkIfFutureTaskPresent(BuildContext context) {

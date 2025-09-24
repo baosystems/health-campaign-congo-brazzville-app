@@ -53,5 +53,15 @@ enum AdditionalFieldsType {
   mobile,
   @MappableValue("EMPLOYEE")
   employee,
+  @MappableValue("ineligibleReasons")
+  ineligibleReasons,
+  @MappableValue("ageBelow3Months")
+  ageBelow3Months,
+  @MappableValue("zeroDose")
+  zeroDose,
+  @MappableValue("underVaccinated")
+  underVaccinated,
+  @MappableValue("fullyVaccinated")
+  fullyVaccinated,
   ;
 }

@@ -208,6 +208,8 @@ class DeliverIntervention {
 
   String get vaccinsSelectionLabel => 'VACCINS_DETAILS_LABEL';
   String get vaccinsSelectionLabelForGroup => 'VACCINS_DETAILS_LABEL_FOR_GROUP';
+  String get vaccinsSelectionInstruction =>
+      'DELIVER_INTERVENTION_VACCINS_SELECTION_INSTRUCTION';
 
   String get otherReasonLabel =>
       'DELIVER_INTERVENTION_OTHER_REASON_FOR_REDOSE_LABEL';
@@ -317,7 +319,7 @@ class Checklist {
       'CHECKLIST_BACK_DIALOG_SECONDARY_ACTION';
 
   String get noChecklistFound => 'NO_CHECKLISTS_FOUND';
-  
+
   String get zeroDoseBookOrEverVaccinatedQuestion => 'CHECKLIST_ZERO_DOSE_Q1';
 }
 

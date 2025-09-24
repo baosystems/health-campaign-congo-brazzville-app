@@ -102,7 +102,6 @@ class _VaccineSelectionPageState extends LocalizedState<VaccineSelectionPage> {
   String _baseCode(String code) {
     var c = code.toUpperCase().replaceFirst(RegExp(r'^HCM_VACCINE_'), '');
     c = c.replaceFirst(RegExp(r'[_-]\d+$'), '');
-
     switch (c) {
       case 'PCV13':
       case 'PCV':
@@ -118,90 +117,88 @@ class _VaccineSelectionPageState extends LocalizedState<VaccineSelectionPage> {
         return c;
     }
   }
+/*
+/// HARD-CODED FALLBACKS — DISABLED PER POLICY
+  // static const Map<String, Map<String, String>> _guidanceFallbackByLang = {
+  //   'en': {
+  //     'DELIVER_INTERVENTION_GUIDANCE_TITLE':
+  //         'Physical indicators of previous vaccination',
+  //     'DELIVER_INTERVENTION_GUIDANCE_BCG':
+  //         'BCG (left upper arm): Check for a scar; if absent, ask if an injection was given at birth.',
+  //     'DELIVER_INTERVENTION_GUIDANCE_VPO':
+  //         'OPV (mouth): Ask if the vaccine was given orally.',
+  //     'DELIVER_INTERVENTION_GUIDANCE_PENTA':
+  //         'Penta (thigh): Ask if injections were given in the thigh.',
+  //     'DELIVER_INTERVENTION_GUIDANCE_ROTA':
+  //         'Rota (mouth): Ask if an oral vaccine was given.',
+  //     'DELIVER_INTERVENTION_GUIDANCE_PNEUMO':
+  //         'PCV/Pneumo (thigh): Ask if a pneumonia vaccine injection was given.',
+  //     'DELIVER_INTERVENTION_GUIDANCE_VPI':
+  //         'IPV (thigh): Ask if a polio injection was given.',
+  //     'DELIVER_INTERVENTION_GUIDANCE_RR':
+  //         'MR (measles–rubella, left upper arm): Ask if an injection was given in the left upper arm.',
+  //     'DELIVER_INTERVENTION_GUIDANCE_VAA':
+  //         'Yellow Fever (right upper arm): Ask if an injection was given in the right upper arm.',
+  //     'DELIVER_INTERVENTION_GUIDANCE_MEN':
+  //         'Meningitis (arm): Ask if a meningitis vaccine injection was given.',
+  //     'DELIVER_INTERVENTION_GUIDANCE_VIT':
+  //         'Vitamin A (oral): Ask if the child received vitamin A drops.',
+  //   },
+  //   'fr': {
+  //     'DELIVER_INTERVENTION_GUIDANCE_TITLE':
+  //         'Indicateurs physiques de la vaccination antérieure',
+  //     'DELIVER_INTERVENTION_GUIDANCE_BCG':
+  //         'BCG (bras gauche) : Vérifiez la cicatrice ; si absente, demandez si une injection a été faite à la naissance.',
+  //     'DELIVER_INTERVENTION_GUIDANCE_VPO':
+  //         'VPO (bouche) : Demandez si le vaccin a été administré par voie orale.',
+  //     'DELIVER_INTERVENTION_GUIDANCE_PENTA':
+  //         'Penta (cuisse) : Demandez si des injections ont été administrées dans la cuisse.',
+  //     'DELIVER_INTERVENTION_GUIDANCE_ROTA':
+  //         'Rota (bouche) : Demandez si un vaccin oral a été administré.',
+  //     'DELIVER_INTERVENTION_GUIDANCE_PNEUMO':
+  //         'PCV/Pneumo (cuisse) : Demandez si une injection contre la pneumonie a été administrée.',
+  //     'DELIVER_INTERVENTION_GUIDANCE_VPI':
+  //         'VPI (cuisse) : Demandez si une injection contre la polio a été administrée.',
+  //     'DELIVER_INTERVENTION_GUIDANCE_RR':
+  //         'RR (rougeole–rubéole, bras gauche) : Demandez si une injection a été administrée dans le bras gauche.',
+  //     'DELIVER_INTERVENTION_GUIDANCE_VAA':
+  //         'Fièvre jaune (bras droit) : Demandez si une injection a été administrée dans le bras droit.',
+  //     'DELIVER_INTERVENTION_GUIDANCE_MEN':
+  //         'Méningite (bras) : Demandez si une injection contre la méningite a été administrée.',
+  //     'DELIVER_INTERVENTION_GUIDANCE_VIT':
+  //         'Vitamine A (orale) : Demandez si l’enfant a reçu des gouttes de vitamine A.',
+  //   },
+  // };
 
-  String t(BuildContext context, String key, {String? fallback}) {
-    final loc = AppLocalizations.of(context);
-    final value = loc.translate(key);
-    return (value == key && fallback != null) ? fallback : value;
+  // String _lang(BuildContext context) =>
+  //     Localizations.localeOf(context).languageCode.toLowerCase();
+
+  // String trf(BuildContext context, String key, {String? defaultText}) {
+  //   final mdms = AppLocalizations.of(context).translate(key);
+  //   if (mdms.isNotEmpty && mdms != key) return mdms;
+
+  //   final lang = _lang(context);
+  //   final byLang = _guidanceFallbackByLang[lang]?[key];
+  //   if (byLang != null && byLang.isNotEmpty) return byLang;
+
+  //   final en = _guidanceFallbackByLang['en']?[key];
+  //   if (en != null && en.isNotEmpty) return en;
+
+  //   return defaultText ?? key;
+  // }
+  */
+
+  String? _tOrNull(BuildContext context, String key) {
+    final s = AppLocalizations.of(context).translate(key);
+    if (s.isEmpty || s == key) return null;
+    return s;
   }
 
-  static const Map<String, Map<String, String>> _guidanceFallbackByLang = {
-    'en': {
-      'DELIVER_INTERVENTION_GUIDANCE_TITLE':
-          'Physical indicators of previous vaccination',
-      'DELIVER_INTERVENTION_GUIDANCE_BCG':
-          'BCG (left upper arm): Check for a scar; if absent, ask if an injection was given at birth.',
-      'DELIVER_INTERVENTION_GUIDANCE_VPO':
-          'OPV (mouth): Ask if the vaccine was given orally.',
-      'DELIVER_INTERVENTION_GUIDANCE_PENTA':
-          'Penta (thigh): Ask if injections were given in the thigh.',
-      'DELIVER_INTERVENTION_GUIDANCE_ROTA':
-          'Rota (mouth): Ask if an oral vaccine was given.',
-      'DELIVER_INTERVENTION_GUIDANCE_PNEUMO':
-          'PCV/Pneumo (thigh): Ask if a pneumonia vaccine injection was given.',
-      'DELIVER_INTERVENTION_GUIDANCE_VPI':
-          'IPV (thigh): Ask if a polio injection was given.',
-      'DELIVER_INTERVENTION_GUIDANCE_RR':
-          'MR (measles–rubella, left upper arm): Ask if an injection was given in the left upper arm.',
-      'DELIVER_INTERVENTION_GUIDANCE_VAA':
-          'Yellow Fever (right upper arm): Ask if an injection was given in the right upper arm.',
-      'DELIVER_INTERVENTION_GUIDANCE_MEN':
-          'Meningitis (arm): Ask if a meningitis vaccine injection was given.',
-      'DELIVER_INTERVENTION_GUIDANCE_VIT':
-          'Vitamin A (oral): Ask if the child received vitamin A drops.',
-    },
-    'fr': {
-      'DELIVER_INTERVENTION_GUIDANCE_TITLE':
-          'Indicateurs physiques de la vaccination antérieure',
-      'DELIVER_INTERVENTION_GUIDANCE_BCG':
-          'BCG (bras gauche) : Vérifiez la cicatrice ; si absente, demandez si une injection a été faite à la naissance.',
-      'DELIVER_INTERVENTION_GUIDANCE_VPO':
-          'VPO (bouche) : Demandez si le vaccin a été administré par voie orale.',
-      'DELIVER_INTERVENTION_GUIDANCE_PENTA':
-          'Penta (cuisse) : Demandez si des injections ont été administrées dans la cuisse.',
-      'DELIVER_INTERVENTION_GUIDANCE_ROTA':
-          'Rota (bouche) : Demandez si un vaccin oral a été administré.',
-      'DELIVER_INTERVENTION_GUIDANCE_PNEUMO':
-          'PCV/Pneumo (cuisse) : Demandez si une injection contre la pneumonie a été administrée.',
-      'DELIVER_INTERVENTION_GUIDANCE_VPI':
-          'VPI (cuisse) : Demandez si une injection contre la polio a été administrée.',
-      'DELIVER_INTERVENTION_GUIDANCE_RR':
-          'RR (rougeole–rubéole, bras gauche) : Demandez si une injection a été administrée dans le bras gauche.',
-      'DELIVER_INTERVENTION_GUIDANCE_VAA':
-          'Fièvre jaune (bras droit) : Demandez si une injection a été administrée dans le bras droit.',
-      'DELIVER_INTERVENTION_GUIDANCE_MEN':
-          'Méningite (bras) : Demandez si une injection contre la méningite a été administrée.',
-      'DELIVER_INTERVENTION_GUIDANCE_VIT':
-          'Vitamine A (orale) : Demandez si l’enfant a reçu des gouttes de vitamine A.',
-    },
-  };
-
-  String _lang(BuildContext context) =>
-      Localizations.localeOf(context).languageCode.toLowerCase();
-
-  String trf(BuildContext context, String key, {String? defaultText}) {
-    final lang = _lang(context);
-    final mdms = AppLocalizations.of(context).translate(key);
-
-    if (mdms.isNotEmpty && mdms != key) return mdms;
-
-    final byLang = _guidanceFallbackByLang[lang]?[key];
-    if (byLang != null && byLang.isNotEmpty) return byLang;
-
-    final en = _guidanceFallbackByLang['en']?[key];
-    if (en != null && en.isNotEmpty) return en;
-
-    return defaultText ?? key;
-  }
-
-  final String _yes = "YES";
-  final String _no = "NO";
-  final Map<String, String> _vaccineGuidanceKey = {
+  static final Map<String, String> _vaccineGuidanceKey = {
     'BCG': i18_local.deliverIntervention.guidanceBcg,
     'VPO': i18_local.deliverIntervention.guidanceVpo,
     'PENTA': i18_local.deliverIntervention.guidancePenta,
     'ROTA': i18_local.deliverIntervention.guidanceRota,
-    'PNEUMO': i18_local.deliverIntervention.guidancePneumo,
     'PCV': i18_local.deliverIntervention.guidancePneumo,
     'VPI': i18_local.deliverIntervention.guidanceVpi,
     'RR': i18_local.deliverIntervention.guidanceRr,
@@ -209,6 +206,9 @@ class _VaccineSelectionPageState extends LocalizedState<VaccineSelectionPage> {
     'MEN': i18_local.deliverIntervention.guidanceMen,
     'VIT': i18_local.deliverIntervention.guidanceVit,
   };
+
+  final String _yes = "YES";
+  final String _no = "NO";
 
   Widget _buildGuidancePanel({
     required BuildContext context,
@@ -220,18 +220,28 @@ class _VaccineSelectionPageState extends LocalizedState<VaccineSelectionPage> {
       'PENTA',
       'ROTA',
       'PCV',
-      'PNEUMO',
       'VPI',
       'RR',
       'VAA',
       'MEN',
       'VIT'
     ];
+
     final basesInBucket = vaccineCodesInBucket.map(_baseCode).toSet();
     final orderedBases = preferredOrder.where(basesInBucket.contains).toList();
-    final items =
-        orderedBases.map((b) => MapEntry(b, _vaccineGuidanceKey[b])).toList();
-    if (items.isEmpty) return const SizedBox.shrink();
+
+    final title =
+        _tOrNull(context, i18_local.deliverIntervention.guidanceTitle);
+    if (title == null) return const SizedBox.shrink();
+
+    final lines = orderedBases
+        .map((b) => _vaccineGuidanceKey[b])
+        .whereType<String>()
+        .map((key) => _tOrNull(context, key))
+        .whereType<String>()
+        .toList();
+
+    if (lines.isEmpty) return const SizedBox.shrink();
 
     final theme = Theme.of(context);
 
@@ -252,7 +262,7 @@ class _VaccineSelectionPageState extends LocalizedState<VaccineSelectionPage> {
                   const SizedBox(width: 8),
                   Expanded(
                     child: Text(
-                      trf(context, i18_local.deliverIntervention.guidanceTitle),
+                      title,
                       style: theme.textTheme.titleLarge?.copyWith(
                         fontWeight: FontWeight.w700,
                         color: Colors.black,
@@ -262,28 +272,30 @@ class _VaccineSelectionPageState extends LocalizedState<VaccineSelectionPage> {
                 ],
               ),
               const SizedBox(height: spacer3),
-              ...items.map((e) {
-                final line = trf(context, e.value ?? '', defaultText: e.key);
-                return Padding(
-                  padding: const EdgeInsets.only(bottom: spacer2),
-                  child: Row(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const Text('>  ', style: TextStyle(color: Colors.black)),
-                      Expanded(
-                        child: Text(
-                          line,
-                          softWrap: true,
-                          style: theme.textTheme.bodyLarge?.copyWith(
-                            height: 1.35,
-                            color: Colors.black87,
+              ...lines.map((line) => Padding(
+                    padding: const EdgeInsets.only(bottom: spacer2),
+                    child: Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Padding(
+                          padding: EdgeInsets.only(top: 2),
+                          child: Icon(Icons.chevron_right,
+                              size: 18, color: Colors.black),
+                        ),
+                        const SizedBox(width: 4),
+                        Expanded(
+                          child: Text(
+                            line,
+                            softWrap: true,
+                            style: theme.textTheme.bodyLarge?.copyWith(
+                              height: 1.35,
+                              color: Colors.black87,
+                            ),
                           ),
                         ),
-                      ),
-                    ],
-                  ),
-                );
-              }),
+                      ],
+                    ),
+                  )),
             ],
           ),
         ),
@@ -560,6 +572,15 @@ class _VaccineSelectionPageState extends LocalizedState<VaccineSelectionPage> {
               '${i18_local.deliverIntervention.vaccinsSelectionLabelForGroup}_${_numberToWords(index).toUpperCase()}',
             ),
             style: theme.textTheme.headlineLarge),
+            Text(
+  AppLocalizations.of(context).translate(
+    i18_local.deliverIntervention.vaccinsSelectionInstruction,
+  ),
+  style: Theme.of(context).textTheme.titleMedium?.copyWith(
+    color: const Color(0xFF4B5563), // same grey you have
+    height: 1.25,
+  ),
+),
         const SizedBox(height: spacer4),
         Column(
           children: [
@@ -735,23 +756,13 @@ class _VaccineSelectionPageState extends LocalizedState<VaccineSelectionPage> {
             break;
           }
         }
-        final int startIndex =
-            ageList.isEmpty ? 0 : lastIndex.clamp(0, ageList.length - 1);
-        if (currentIndex == 0 &&
-            (selectedCodes.isEmpty && noSelectedCodes.isEmpty)) {
-          currentIndex = startIndex;
-        }
+
         final Map<int, List<String>> ageToVaccineCodes = {};
         for (final v in vaccineDataList) {
           ageToVaccineCodes.putIfAbsent(v.ageInDays, () => []);
           ageToVaccineCodes[v.ageInDays]!.add(v.code);
         }
-        debugPrint('ageInDays=$ageInDays');
-        debugPrint('buckets=$ageList currentBucket=${ageList[currentIndex]} '
-            '-> ${ageToVaccineCodes[ageList[currentIndex]]}');
-        for (final entry in ageToVaccineCodes.entries) {
-          debugPrint('Bucket age=${entry.key} days -> vaccines=${entry.value}');
-        }
+
         Map<String, String?> currentResponses = {};
         List<String> currentVaccineCodes = [];
         for (int i = 0;

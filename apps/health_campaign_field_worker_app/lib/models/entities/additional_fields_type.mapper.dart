@@ -77,12 +77,8 @@ class AdditionalFieldsTypeMapper extends EnumMapper<AdditionalFieldsType> {
         return AdditionalFieldsType.ineligibleReasons;
       case "ageBelow3Months":
         return AdditionalFieldsType.ageBelow3Months;
-      case "zeroDose":
-        return AdditionalFieldsType.zeroDose;
-      case "underVaccinated":
-        return AdditionalFieldsType.underVaccinated;
-      case "fullyVaccinated":
-        return AdditionalFieldsType.fullyVaccinated;
+      case "doseStatus":
+        return AdditionalFieldsType.doseStatus;
       default:
         throw MapperException.unknownEnumValue(value);
     }
@@ -143,12 +139,8 @@ class AdditionalFieldsTypeMapper extends EnumMapper<AdditionalFieldsType> {
         return "ineligibleReasons";
       case AdditionalFieldsType.ageBelow3Months:
         return "ageBelow3Months";
-      case AdditionalFieldsType.zeroDose:
-        return "zeroDose";
-      case AdditionalFieldsType.underVaccinated:
-        return "underVaccinated";
-      case AdditionalFieldsType.fullyVaccinated:
-        return "fullyVaccinated";
+      case AdditionalFieldsType.doseStatus:
+        return "doseStatus";
     }
   }
 }

@@ -38,8 +38,8 @@ import '../../../utils/extensions/extensions.dart';
 import '../../../widgets/localized.dart';
 import 'package:digit_data_model/data_model.dart';
 
-import '../../../models/entities/additional_fields_type.dart'
-    as additional_fields_local;
+// import '../../../models/entities/additional_fields_type.dart'
+//     as additional_fields_local;
 import '../../../models/entities/assessment_checklist/status.dart'
     as status_local;
 import '../../../widgets/custom_back_navigation.dart';
@@ -103,6 +103,8 @@ class _VaccineSelectionPageState extends LocalizedState<VaccineSelectionPage> {
   final String _yes = "YES";
   final String _no = "NO";
 
+  DoseStatus doseStatus = DoseStatus.zeroDose;
+
   @override
   void initState() {
     context.read<LocationBloc>().add(const LocationEvent.load());
@@ -143,22 +145,13 @@ class _VaccineSelectionPageState extends LocalizedState<VaccineSelectionPage> {
         if (fields == null) return false;
 
         final hasZeroDoseStatus = fields.any(
-          (e) =>
-              e.key ==
-              additional_fields_local.AdditionalFieldsType.zeroDoseStatus
-                  .toValue(),
+          (e) => e.key == AdditionalFieldsType.zeroDoseStatus.toValue(),
         );
         final hasSelectedVaccines = fields.any(
-          (e) =>
-              e.key ==
-              additional_fields_local.AdditionalFieldsType.selectedVaccines
-                  .toValue(),
+          (e) => e.key == AdditionalFieldsType.selectedVaccines.toValue(),
         );
         final hasNoSelectedVaccines = fields.any(
-          (e) =>
-              e.key ==
-              additional_fields_local.AdditionalFieldsType.noSelectedVaccines
-                  .toValue(),
+          (e) => e.key == AdditionalFieldsType.noSelectedVaccines.toValue(),
         );
         return hasZeroDoseStatus &&
             (hasSelectedVaccines || hasNoSelectedVaccines);
@@ -169,18 +162,12 @@ class _VaccineSelectionPageState extends LocalizedState<VaccineSelectionPage> {
       lastVaccinationTask.sort((a, b) {
         final aCycle = a.additionalFields?.fields
             .firstWhereOrNull(
-              (e) =>
-                  e.key ==
-                  additional_fields_local.AdditionalFieldsType.cycleIndex
-                      .toValue(),
+              (e) => e.key == AdditionalFieldsType.cycleIndex.toValue(),
             )
             ?.value;
         final bCycle = b.additionalFields?.fields
             .firstWhereOrNull(
-              (e) =>
-                  e.key ==
-                  additional_fields_local.AdditionalFieldsType.cycleIndex
-                      .toValue(),
+              (e) => e.key == AdditionalFieldsType.cycleIndex.toValue(),
             )
             ?.value;
 
@@ -200,10 +187,7 @@ class _VaccineSelectionPageState extends LocalizedState<VaccineSelectionPage> {
       // ignore: avoid_dynamic_calls
       yesSelectedVaccines = ((lastVaccinationTask.last.additionalFields!.fields
                   .firstWhereOrNull((e) =>
-                      e.key ==
-                      additional_fields_local
-                          .AdditionalFieldsType.selectedVaccines
-                          .toValue())
+                      e.key == AdditionalFieldsType.selectedVaccines.toValue())
                   ?.value as String?) ??
               '')
           .split('.')
@@ -215,9 +199,7 @@ class _VaccineSelectionPageState extends LocalizedState<VaccineSelectionPage> {
       noSelectedVaccines = ((lastVaccinationTask.last.additionalFields!.fields
                   .firstWhereOrNull((e) =>
                       e.key ==
-                      additional_fields_local
-                          .AdditionalFieldsType.noSelectedVaccines
-                          .toValue())
+                      AdditionalFieldsType.noSelectedVaccines.toValue())
                   ?.value as String?) ??
               '')
           .split('.')
@@ -987,24 +969,20 @@ class _VaccineSelectionPageState extends LocalizedState<VaccineSelectionPage> {
                                         final updatedFields = [
                                           ...oldFields,
                                           AdditionalField(
-                                            additional_fields_local
-                                                .AdditionalFieldsType
-                                                .zeroDoseStatus
+                                            AdditionalFieldsType.zeroDoseStatus
                                                 .toValue(),
                                             ZeroDoseStatus.done.name,
                                           ),
                                           if (selectedCodes.isNotEmpty)
                                             AdditionalField(
-                                              additional_fields_local
-                                                  .AdditionalFieldsType
+                                              AdditionalFieldsType
                                                   .selectedVaccines
                                                   .toValue(),
                                               selectedCodes.join('.'),
                                             ),
                                           if (noSelectedCodes.isNotEmpty)
                                             AdditionalField(
-                                              additional_fields_local
-                                                  .AdditionalFieldsType
+                                              AdditionalFieldsType
                                                   .noSelectedVaccines
                                                   .toValue(),
                                               noSelectedCodes.join('.'),
@@ -1157,50 +1135,56 @@ class _VaccineSelectionPageState extends LocalizedState<VaccineSelectionPage> {
                                               if (widget.hasSideEffects ==
                                                   false) ...[
                                                 AdditionalField(
-                                                  'ineligibleReasons',
+                                                    AdditionalFieldsType
+                                                        .doseStatus
+                                                        .toValue(),
+                                                    doseStatus.name),
+                                                AdditionalField(
+                                                  AdditionalFieldsType
+                                                      .ineligibleReasons
+                                                      .toValue(),
                                                   ineligibilityReasons
                                                       .join(","),
                                                 ),
                                                 AdditionalField(
-                                                  'ageBelow3Months',
+                                                  AdditionalFieldsType
+                                                      .ageBelow3Months
+                                                      .toValue(),
                                                   true.toString(),
                                                 ),
                                               ] else ...[
                                                 AdditionalField(
-                                                    'ineligibleReasons',
+                                                    AdditionalFieldsType
+                                                        .ineligibleReasons
+                                                        .toValue(),
                                                     ["SIDE_EFFECTS"].join(",")),
                                                 AdditionalField(
-                                                    additional_fields_local
-                                                        .AdditionalFieldsType
+                                                    AdditionalFieldsType
                                                         .hasSideEffects
                                                         .toValue(),
                                                     true.toString()),
                                               ],
                                               AdditionalField(
-                                                additional_fields_local
-                                                    .AdditionalFieldsType
+                                                AdditionalFieldsType
                                                     .deliveryType
                                                     .toValue(),
                                                 EligibilityAssessmentStatus
                                                     .smcDone.name,
                                               ),
                                               AdditionalField(
-                                                additional_fields_local
-                                                    .AdditionalFieldsType
+                                                AdditionalFieldsType
                                                     .zeroDoseStatus
                                                     .toValue(),
                                                 ZeroDoseStatus.done.name,
                                               ),
                                               AdditionalField(
-                                                additional_fields_local
-                                                    .AdditionalFieldsType
+                                                AdditionalFieldsType
                                                     .selectedVaccines
                                                     .toValue(),
                                                 selectedCodes.join('.'),
                                               ),
                                               AdditionalField(
-                                                additional_fields_local
-                                                    .AdditionalFieldsType
+                                                AdditionalFieldsType
                                                     .noSelectedVaccines
                                                     .toValue(),
                                                 noSelectedCodes.join('.'),

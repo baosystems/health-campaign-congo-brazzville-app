@@ -181,17 +181,17 @@ class _VaccineSelectionPageState extends LocalizedState<VaccineSelectionPage> {
 
   String trf(BuildContext context, String key, {String? defaultText}) {
     final lang = _lang(context);
-    final loc = AppLocalizations.of(context);
-    final mdms = loc.translate(key);
-    if (lang == 'fr') {
-      final fr = _guidanceFallbackByLang['fr']?[key];
-      if (fr != null && fr.isNotEmpty) return fr;
-    }
+    final mdms = AppLocalizations.of(context).translate(key);
 
     if (mdms.isNotEmpty && mdms != key) return mdms;
-    return _guidanceFallbackByLang[lang]?[key] ??
-        _guidanceFallbackByLang['en']?[key] ??
-        (defaultText ?? key);
+
+    final byLang = _guidanceFallbackByLang[lang]?[key];
+    if (byLang != null && byLang.isNotEmpty) return byLang;
+
+    final en = _guidanceFallbackByLang['en']?[key];
+    if (en != null && en.isNotEmpty) return en;
+
+    return defaultText ?? key;
   }
 
   final String _yes = "YES";

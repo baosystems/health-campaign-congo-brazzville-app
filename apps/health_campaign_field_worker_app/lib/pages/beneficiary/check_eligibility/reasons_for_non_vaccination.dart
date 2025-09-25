@@ -108,8 +108,7 @@ class _ReasonsForNonVaccinationPageState
                     DigitToast.show(
                       context,
                       options: DigitToastOptions(
-                        AppLocalizations.of(context)
-                            .translate('Please select at least one reason.'),
+                         l.translate(i18_local.zeroDose.enterReason),
                         true,
                         Theme.of(context),
                       ),
@@ -122,8 +121,7 @@ class _ReasonsForNonVaccinationPageState
                     DigitToast.show(
                       context,
                       options: DigitToastOptions(
-                        AppLocalizations.of(context)
-                            .translate('Please enter details for "Other".'),
+                        l.translate(i18_local.zeroDose.reasonEnterOther),
                         true,
                         Theme.of(context),
                       ),

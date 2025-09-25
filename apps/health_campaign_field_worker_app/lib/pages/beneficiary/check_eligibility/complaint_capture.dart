@@ -141,7 +141,8 @@ class _ComplaintCapturePageState extends State<ComplaintCapturePage> {
                             DigitToast.show(
                               context,
                               options: DigitToastOptions(
-                                l.translate('Please enter a complaint.'),
+                                l.translate(
+                                    i18_local.zeroDose.reasonEnterComplaint),
                                 true,
                                 theme,
                               ),

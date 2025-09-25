@@ -918,10 +918,11 @@ class _CustomSearchBeneficiaryPageState
                                     i18_local.beneficiaryDetails.goToHome,
                                   ),
                                   onPressed: () {
-                                    Navigator.of(
-                                      popupContext,
-                                      rootNavigator: true,
-                                    ).pop();
+                                    (context.router.parent() as StackRouter)
+                                        .maybePop();
+                                    context.router.popUntil((route) =>
+                                        route.settings.name == HomeRoute.name);
+                                    context.router.maybePop();
                                   },
                                   type: DigitButtonType.primary,
                                   size: DigitButtonSize.large,

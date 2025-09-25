@@ -66,6 +66,23 @@ abstract class _$AppRouter extends RootStackRouter {
         ),
       );
     },
+    ComplaintCaptureRoute.name: (routeData) {
+      final args = routeData.argsAs<ComplaintCaptureRouteArgs>();
+      return AutoRoutePage<dynamic>(
+        routeData: routeData,
+        child: ComplaintCapturePage(
+          key: args.key,
+          projectBeneficiaryClientReferenceId:
+              args.projectBeneficiaryClientReferenceId,
+          individual: args.individual,
+          selectedYesCodes: args.selectedYesCodes,
+          selectedNoCodes: args.selectedNoCodes,
+          reasonCode: args.reasonCode,
+          reasonOther: args.reasonOther,
+          task: args.task,
+        ),
+      );
+    },
     CustomAttendanceDateSessionSelectionRoute.name: (routeData) {
       final args =
           routeData.argsAs<CustomAttendanceDateSessionSelectionRouteArgs>();
@@ -778,6 +795,21 @@ abstract class _$AppRouter extends RootStackRouter {
         ),
       );
     },
+    ReasonsForNonVaccinationRoute.name: (routeData) {
+      final args = routeData.argsAs<ReasonsForNonVaccinationRouteArgs>();
+      return AutoRoutePage<dynamic>(
+        routeData: routeData,
+        child: ReasonsForNonVaccinationPage(
+          key: args.key,
+          projectBeneficiaryClientReferenceId:
+              args.projectBeneficiaryClientReferenceId,
+          individual: args.individual,
+          selectedYesCodes: args.selectedYesCodes,
+          selectedNoCodes: args.selectedNoCodes,
+          task: args.task,
+        ),
+      );
+    },
     RecordRedoseRoute.name: (routeData) {
       final args = routeData.argsAs<RecordRedoseRouteArgs>();
       return AutoRoutePage<dynamic>(
@@ -1033,6 +1065,75 @@ class CaregiverConsentRouteArgs {
   @override
   String toString() {
     return 'CaregiverConsentRouteArgs{key: $key, appLocalizations: $appLocalizations}';
+  }
+}
+
+/// generated route for
+/// [ComplaintCapturePage]
+class ComplaintCaptureRoute extends PageRouteInfo<ComplaintCaptureRouteArgs> {
+  ComplaintCaptureRoute({
+    Key? key,
+    required String projectBeneficiaryClientReferenceId,
+    required IndividualModel? individual,
+    required List<String> selectedYesCodes,
+    required List<String> selectedNoCodes,
+    required String reasonCode,
+    String? reasonOther,
+    required TaskModel task,
+    List<PageRouteInfo>? children,
+  }) : super(
+          ComplaintCaptureRoute.name,
+          args: ComplaintCaptureRouteArgs(
+            key: key,
+            projectBeneficiaryClientReferenceId:
+                projectBeneficiaryClientReferenceId,
+            individual: individual,
+            selectedYesCodes: selectedYesCodes,
+            selectedNoCodes: selectedNoCodes,
+            reasonCode: reasonCode,
+            reasonOther: reasonOther,
+            task: task,
+          ),
+          initialChildren: children,
+        );
+
+  static const String name = 'ComplaintCaptureRoute';
+
+  static const PageInfo<ComplaintCaptureRouteArgs> page =
+      PageInfo<ComplaintCaptureRouteArgs>(name);
+}
+
+class ComplaintCaptureRouteArgs {
+  const ComplaintCaptureRouteArgs({
+    this.key,
+    required this.projectBeneficiaryClientReferenceId,
+    required this.individual,
+    required this.selectedYesCodes,
+    required this.selectedNoCodes,
+    required this.reasonCode,
+    this.reasonOther,
+    required this.task,
+  });
+
+  final Key? key;
+
+  final String projectBeneficiaryClientReferenceId;
+
+  final IndividualModel? individual;
+
+  final List<String> selectedYesCodes;
+
+  final List<String> selectedNoCodes;
+
+  final String reasonCode;
+
+  final String? reasonOther;
+
+  final TaskModel task;
+
+  @override
+  String toString() {
+    return 'ComplaintCaptureRouteArgs{key: $key, projectBeneficiaryClientReferenceId: $projectBeneficiaryClientReferenceId, individual: $individual, selectedYesCodes: $selectedYesCodes, selectedNoCodes: $selectedNoCodes, reasonCode: $reasonCode, reasonOther: $reasonOther, task: $task}';
   }
 }
 
@@ -3668,6 +3769,66 @@ class QRScannerRouteArgs {
   @override
   String toString() {
     return 'QRScannerRouteArgs{key: $key, appLocalizations: $appLocalizations}';
+  }
+}
+
+/// generated route for
+/// [ReasonsForNonVaccinationPage]
+class ReasonsForNonVaccinationRoute
+    extends PageRouteInfo<ReasonsForNonVaccinationRouteArgs> {
+  ReasonsForNonVaccinationRoute({
+    Key? key,
+    required String projectBeneficiaryClientReferenceId,
+    required IndividualModel? individual,
+    required List<String> selectedYesCodes,
+    required List<String> selectedNoCodes,
+    required TaskModel task,
+    List<PageRouteInfo>? children,
+  }) : super(
+          ReasonsForNonVaccinationRoute.name,
+          args: ReasonsForNonVaccinationRouteArgs(
+            key: key,
+            projectBeneficiaryClientReferenceId:
+                projectBeneficiaryClientReferenceId,
+            individual: individual,
+            selectedYesCodes: selectedYesCodes,
+            selectedNoCodes: selectedNoCodes,
+            task: task,
+          ),
+          initialChildren: children,
+        );
+
+  static const String name = 'ReasonsForNonVaccinationRoute';
+
+  static const PageInfo<ReasonsForNonVaccinationRouteArgs> page =
+      PageInfo<ReasonsForNonVaccinationRouteArgs>(name);
+}
+
+class ReasonsForNonVaccinationRouteArgs {
+  const ReasonsForNonVaccinationRouteArgs({
+    this.key,
+    required this.projectBeneficiaryClientReferenceId,
+    required this.individual,
+    required this.selectedYesCodes,
+    required this.selectedNoCodes,
+    required this.task,
+  });
+
+  final Key? key;
+
+  final String projectBeneficiaryClientReferenceId;
+
+  final IndividualModel? individual;
+
+  final List<String> selectedYesCodes;
+
+  final List<String> selectedNoCodes;
+
+  final TaskModel task;
+
+  @override
+  String toString() {
+    return 'ReasonsForNonVaccinationRouteArgs{key: $key, projectBeneficiaryClientReferenceId: $projectBeneficiaryClientReferenceId, individual: $individual, selectedYesCodes: $selectedYesCodes, selectedNoCodes: $selectedNoCodes, task: $task}';
   }
 }
 

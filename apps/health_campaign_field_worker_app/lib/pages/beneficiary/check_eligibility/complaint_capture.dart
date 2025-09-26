@@ -9,8 +9,8 @@ import 'package:digit_components/widgets/digit_dialog.dart';
 
 import '../../../widgets/custom_back_navigation.dart';
 
-import 'package:registration_delivery/utils/i18_key_constants.dart'
-    as i18_local;
+import 'package:registration_delivery/utils/i18_key_constants.dart' as i18;
+import '../../../utils/i18_key_constants.dart' as i18_local;
 import 'package:health_campaign_field_worker_app/blocs/localization/app_localization.dart';
 import 'package:digit_data_model/data_model.dart';
 
@@ -71,20 +71,18 @@ class _ComplaintCapturePageState extends State<ComplaintCapturePage> {
       barrierDismissible: false,
       builder: (ctx) => DigitDialog(
         options: DigitDialogOptions(
-          titleText: l.translate(i18_local.deliverIntervention.dialogTitle),
+          titleText: l.translate(i18.deliverIntervention.dialogTitle),
           content: Text(
             l
-                .translate(i18_local.deliverIntervention.dialogContent)
+                .translate(i18.deliverIntervention.dialogContent)
                 .replaceFirst('{}', ''),
           ),
           primaryAction: DigitDialogActions(
-            label:
-                l.translate(i18_local.checklist.checklistDialogPrimaryAction),
+            label: l.translate(i18.checklist.checklistDialogPrimaryAction),
             action: (c) => Navigator.of(c, rootNavigator: true).pop(true),
           ),
           secondaryAction: DigitDialogActions(
-            label:
-                l.translate(i18_local.checklist.checklistDialogSecondaryAction),
+            label: l.translate(i18.checklist.checklistDialogSecondaryAction),
             action: (c) => Navigator.of(c, rootNavigator: true).pop(false),
           ),
         ),
@@ -304,7 +302,7 @@ class _ComplaintCapturePageState extends State<ComplaintCapturePage> {
                             ),
                           );
                         },
-                  child: Text(l.translate(i18_local.common.coreCommonSubmit)),
+                  child: Text(l.translate(i18.common.coreCommonSubmit)),
                 ),
               ],
             ),

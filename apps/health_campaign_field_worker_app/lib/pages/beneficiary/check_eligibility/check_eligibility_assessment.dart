@@ -214,10 +214,11 @@ class _EligibilityChecklistViewPage
                               List<String?> ineligibilityReasons = [];
                               List<bool> checkIfIneligibleFlow = [];
 
-                              ifReferral = widget.eligibilityAssessmentType ==
+                              ifReferral = isReferral(responses, referralReasons);
+                              /* widget.eligibilityAssessmentType ==
                                       EligibilityAssessmentType.smc
                                   ? isReferral(responses, referralReasons)
-                                  : isVASReferral(responses, referralReasons);
+                                  : isVASReferral(responses, referralReasons); */
                               ifDeliver = isDelivery(responses);
                               checkIfIneligibleFlow = isIneligible(
                                 responses,
@@ -563,7 +564,7 @@ class _EligibilityChecklistViewPage
                                                 "",
                                         individual: widget.individual!,
                                         referralReasons: referralReasons,
-                                      ));
+                                      )); 
                                     }
                                   } else {
                                     router.push(CustomBeneficiaryDetailsRoute(
@@ -1102,52 +1103,36 @@ class _EligibilityChecklistViewPage
     Map<String?, String> responses,
     List<String?> referralReasons,
   ) {
-    var isReferral = false;
-    var q1Key = "KBEA1";
+    var isReferral = true;
+    /* var q1Key = "KBEA1";
     var q2Key = "KBEA2";
     var q3Key = "KBEA2.YES.KBEA2A";
     var q4Key = "KBEA2.YES.KBEA2A.POSITIVE.KBEA2AA";
-    Map<String, String> referralKeysVsCode = {
-      q1Key: "SICK",
-      q2Key: "FEVER",
-      q3Key: "MALARIA_CHECK",
-      q4Key: "MALARIA_DOSE_CHECK"
-    };
-    // TODO Configure the reasons ,verify hardcoded strings
-    if (responses.isNotEmpty) {
-      if (responses.containsKey(q1Key) && responses[q1Key]!.isNotEmpty) {
-        isReferral = responses[q1Key] == yes ? true : false;
-      }
-      if (responses.containsKey(q2Key) &&
-          responses[q2Key]!.isNotEmpty &&
-          responses[q2Key] == yes) {
-        if (!isReferral &&
-            (responses.containsKey(q3Key) && responses[q3Key]!.isNotEmpty)) {
-          isReferral = (responses[q3Key] == negative ||
-                  responses[q3Key] == test_unavailable)
-              ? true
-              : false;
-        }
-        if (!isReferral &&
-            (responses.containsKey(q4Key) && responses[q4Key]!.isNotEmpty)) {
-          isReferral = responses[q4Key] == no ? true : false;
-        }
-      }
-    }
-    if (isReferral) {
-      for (var entry in referralKeysVsCode.entries) {
-        if (responses.containsKey(entry.key) &&
-            responses[entry.key]!.isNotEmpty) {
-          if ((entry.key == q1Key && responses[q1Key] == yes) ||
-              (entry.key == q3Key && responses[q3Key] == negative) ||
-              (entry.key == q3Key && responses[q3Key] == test_unavailable) ||
-              (entry.key == q4Key && responses[q4Key] == no)) {
-            referralReasons.add(entry.value);
-          }
-        }
-      }
-    }
+    */
+    List<String> referralKeys = [
+      "SICK",
+      "FEVER",
+      "DRUG_SIDE_EFFECT"
+    ];
+    referralReasons.addAll(referralKeys);
 
+    var q2BKey = "CEAQ2.YES.CEAQ2B";
+    var q4BKey = "CEAQ4.YES.CEAQ4B";
+    var q5Key = "CEAQ5";
+
+    if (responses.isNotEmpty) {
+      if (responses.containsKey(q2BKey) && responses[q2BKey]!.isNotEmpty) {
+        isReferral = responses[q2BKey] == no ? true : false;
+      }
+
+      if (responses.containsKey(q4BKey) && responses[q4BKey]!.isNotEmpty) {
+        isReferral = responses[q4BKey] == no ? true : false;
+      }
+
+      if (responses.containsKey(q5Key) && responses[q5Key]!.isNotEmpty) {
+        isReferral = responses[q5Key] == yes ? true : false;
+      }
+    }
     return isReferral;
   }
 

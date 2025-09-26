@@ -44,6 +44,7 @@ const deliverIntervention = DeliverIntervention();
 const checklist = Checklist();
 const referBeneficiary = ReferBeneficiary();
 const householdDetails = HouseholdDetails();
+const memberCard = MemberCard();
 
 class Common {
   const Common();
@@ -198,6 +199,11 @@ class HouseholdOverView {
       'HOUSEHOLD_OVER_VIEW_INCOMPLETEMENT_VACCINE_LABEL';
   String get householdOverViewZeroDoseDeliveredIconLabel =>
       'HOUSEHOLD_OVER_VIEW_ZERO_DOSE_DELIVERED_ICON_LABEL';
+
+  String get householdOverViewBeneficiaryAbsentLabel =>
+      'HOUSEHOLD_OVER_VIEW_BENEFICIARY_ABSENT_STAUS_LABEL';
+  String get householdOverViewAdverseEffectsRecordedLabel =>
+      'HOUSEHOLD_OVER_VIEW_ADVERSE_EFFECT_RECORDED_LABEL';
 }
 
 class DeliverIntervention {
@@ -1635,4 +1641,11 @@ class Dashboard {
   const Dashboard();
 
   String get dashboardHeaderLabel => 'DASHBOARD_HEADER';
+}
+
+class MemberCard {
+  const MemberCard();
+
+  String get beneficiaryAbsentButtonLabel =>
+      'MEMBERCARD_BENEFICIARY_ABSENT_BUTTON_LABEL';
 }

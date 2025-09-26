@@ -38,6 +38,15 @@ import '../../models/entities/additional_fields_type.dart'
     as additional_fields_local;
 import '../../utils/date_utils.dart' as digits;
 
+// ---- TEMP status codes until the package adds proper enums ----
+const String kStatusBeneficiaryAbsent = 'BENEFICIARY_ABSENT';
+
+bool _taskHasStatus(TaskModel t, String code) {
+  if (t.status == code) return true;
+  final fields = t.additionalFields?.fields ?? const <AdditionalField>[];
+  return fields.any((f) => f.key == 'taskStatus' && f.value == code);
+}
+
 class CustomMemberCard extends StatelessWidget {
   final List<ProductVariantModel> variant;
   final String name;
@@ -183,6 +192,9 @@ class CustomMemberCard extends StatelessWidget {
         checkBeneficiaryInEligibleSMC(smcTasks, context.selectedCycle);
     List<TaskModel>? currentTasks = _getCurrentCycleData(context);
     bool hasBeneficiaryRefused = checkBeneficiaryRefusedSMC(currentTasks);
+    // ---- TEMP hasBeneficiaryAbsent check until the package adds proper enums ----
+    final bool hasBeneficiaryAbsent = (currentTasks ?? const [])
+        .any((t) => _taskHasStatus(t, kStatusBeneficiaryAbsent));
 
     final theme = Theme.of(context);
     if (isHead) {
@@ -355,6 +367,44 @@ class CustomMemberCard extends StatelessWidget {
             ),
         ],
       );
+    } else if (hasBeneficiaryAbsent) {
+      return Column(
+        children: [
+          Align(
+            alignment: Alignment.centerLeft,
+            child: DigitIconButton(
+              icon: Icons.info_rounded,
+              iconSize: 20,
+              iconText: localizations.translate(
+                i18_local
+                    .householdOverView.householdOverViewBeneficiaryAbsentLabel,
+              ),
+              iconTextColor: theme.colorScheme.error,
+              iconColor: theme.colorScheme.error,
+            ),
+          ),
+          if (isZeroDose || isIncompletementVaccine || isZeroDoseDelivered)
+            Align(
+              alignment: Alignment.centerLeft,
+              child: DigitIconButton(
+                icon: Icons.check_circle,
+                iconText: localizations.translate(
+                  isZeroDose
+                      ? i18_local
+                          .householdOverView.householdOverViewZeroDoseIconLabel
+                      : isIncompletementVaccine
+                          ? i18_local.householdOverView
+                              .householdOverViewIncompletementVaccineLabel
+                          : i18_local.householdOverView
+                              .householdOverViewZeroDoseDeliveredIconLabel,
+                ),
+                iconSize: 20,
+                iconTextColor: theme.colorScheme.onSurfaceVariant,
+                iconColor: theme.colorScheme.onSurfaceVariant,
+              ),
+            ),
+        ],
+      );
     } else {
       return Container();
     }
@@ -392,7 +442,6 @@ class CustomMemberCard extends StatelessWidget {
         !isSMCDelivered &&
         !isBeneficiaryReferredSMC &&
         !isBeneficiaryInEligibleSMC &&
-        !hasBeneficiaryRefused &&
         ageInMonths < 3 &&
         (zeroDoseTasks == null || zeroDoseTasks.isEmpty == true)) {
       return Column(
@@ -431,8 +480,9 @@ class CustomMemberCard extends StatelessWidget {
         ],
       );
     }
-    if ((isNotEligibleSMC || isBeneficiaryIneligible) && !doseStatus)
+    if ((isNotEligibleSMC || isBeneficiaryIneligible) && !doseStatus) {
       return const Offstage();
+    }
     if (isNotEligibleSMC || (!redosePendingStatus)) {
       return const Offstage();
     }
@@ -473,16 +523,10 @@ class CustomMemberCard extends StatelessWidget {
         context.read<DeliverInterventionBloc>().add(
               DeliverInterventionEvent.setActiveCycleDose(
                 lastDose: tasks != null && tasks!.isNotEmpty
-                    ? int.tryParse(
-                          lastDose,
-                        ) ??
-                        1
+                    ? int.tryParse(lastDose) ?? 1
                     : 0,
                 lastCycle: tasks != null && tasks!.isNotEmpty
-                    ? int.tryParse(
-                          lastCycle,
-                        ) ??
-                        1
+                    ? int.tryParse(lastCycle) ?? 1
                     : 1,
                 individualModel: individual,
                 projectType: projectType,
@@ -626,22 +670,11 @@ class CustomMemberCard extends StatelessWidget {
                                 ...getIndividualAdditionalFields(individual)
                               ],
                             ),
-                            address: individual!.address?.first.copyWith(
+                            address: individual.address?.first.copyWith(
                               relatedClientReferenceId: clientReferenceId,
                               id: null,
                             ),
                           );
-
-                          // TODO: Currently it's been shifted to the zero dose flow
-
-                          // context.read<DeliverInterventionBloc>().add(
-                          //       DeliverInterventionSubmitEvent(
-                          //         task: refusalTask,
-                          //         isEditing: false,
-                          //         boundaryModel:
-                          //             RegistrationDeliverySingleton().boundary!,
-                          //       ),
-                          //     );
 
                           final reloadState =
                               context.read<HouseholdOverviewBloc>();
@@ -663,7 +696,7 @@ class CustomMemberCard extends StatelessWidget {
                               CustomSplashAcknowledgementRoute(
                                 eligibilityAssessmentType:
                                     EligibilityAssessmentType.smc,
-                                enableRouteToZeroDose: true,
+                                enableBackToSearch: true,
                                 task: refusalTask,
                               ),
                             ),
@@ -672,26 +705,76 @@ class CustomMemberCard extends StatelessWidget {
                       ),
                       DigitButton(
                         label: localizations.translate(
-                          i18.memberCard.referBeneficiaryLabel,
+                          i18_local.memberCard.beneficiaryAbsentButtonLabel,
                         ),
                         type: DigitButtonType.secondary,
                         size: DigitButtonSize.large,
-                        onPressed: () async {
-                          Navigator.of(
-                            context,
-                            rootNavigator: true,
-                          ).pop();
-                          List<String> referralReasons = [
-                            "BENEFICIARY_REFERRED"
-                          ];
-                          await context.router.push(
-                            CustomReferBeneficiarySMCRoute(
-                              projectBeneficiaryClientRefId:
-                                  projectBeneficiaryClientReferenceId ?? '',
-                              individual: individual,
-                              referralReasons: referralReasons,
+                        onPressed: () {
+                          Navigator.of(context, rootNavigator: true).pop();
+
+                          final clientReferenceId = IdGen.i.identifier;
+
+                          final absentTask = TaskModel(
+                            projectBeneficiaryClientReferenceId:
+                                projectBeneficiaryClientReferenceId,
+                            clientReferenceId: clientReferenceId,
+                            tenantId: RegistrationDeliverySingleton().tenantId,
+                            rowVersion: 1,
+                            auditDetails: AuditDetails(
+                              createdBy: RegistrationDeliverySingleton()
+                                  .loggedInUserUuid!,
+                              createdTime: context.millisecondsSinceEpoch(),
+                            ),
+                            projectId:
+                                RegistrationDeliverySingleton().projectId,
+                            status: kStatusBeneficiaryAbsent,
+                            clientAuditDetails: ClientAuditDetails(
+                              createdBy: RegistrationDeliverySingleton()
+                                  .loggedInUserUuid!,
+                              createdTime: context.millisecondsSinceEpoch(),
+                              lastModifiedBy: RegistrationDeliverySingleton()
+                                  .loggedInUserUuid,
+                              lastModifiedTime:
+                                  context.millisecondsSinceEpoch(),
+                            ),
+                            additionalFields: TaskAdditionalFields(
+                              version: 1,
+                              fields: [
+                                AdditionalField(
+                                  AdditionalFieldsType.cycleIndex.toValue(),
+                                  "0${context.selectedCycle?.id}",
+                                ),
+                                AdditionalField(
+                                    'taskStatus', kStatusBeneficiaryAbsent),
+                                ...getIndividualAdditionalFields(individual),
+                              ],
+                            ),
+                            address: individual.address?.first.copyWith(
+                              relatedClientReferenceId: clientReferenceId,
+                              id: null,
                             ),
                           );
+
+                          final reloadState =
+                              context.read<HouseholdOverviewBloc>();
+                          Future.delayed(const Duration(milliseconds: 500), () {
+                            reloadState.add(
+                              HouseholdOverviewReloadEvent(
+                                projectId:
+                                    RegistrationDeliverySingleton().projectId!,
+                                projectBeneficiaryType:
+                                    RegistrationDeliverySingleton()
+                                        .beneficiaryType!,
+                              ),
+                            );
+                          }).then((_) => context.router.push(
+                                CustomSplashAcknowledgementRoute(
+                                  eligibilityAssessmentType:
+                                      EligibilityAssessmentType.smc,
+                                  enableBackToSearch: true,
+                                  task: absentTask,
+                                ),
+                              ));
                         },
                       ),
                       DigitButton(
@@ -771,29 +854,14 @@ class CustomMemberCard extends StatelessWidget {
 
                     if (successfulTask != null &&
                         value != null &&
-                        ((value.contains(
-                                  Constants.spaq1,
-                                ) &&
-                                spaq1 > 0) ||
-                            (value.contains(
-                                  Constants.spaq2,
-                                ) &&
-                                spaq2 > 0))) {
+                        ((value.contains(Constants.spaq1) && spaq1 > 0) ||
+                            (value.contains(Constants.spaq2) && spaq2 > 0))) {
                       context.router.push(
                         RecordRedoseRoute(
-                          tasks: [successfulTask!],
+                          tasks: [successfulTask],
                         ),
                       );
-                    }
-
-                    // if (successfulTask != null && spaq1 >= doseCount) {
-                    //   context.router.push(
-                    //     RecordRedoseRoute(
-                    //       tasks: [successfulTask],
-                    //     ),
-                    //   );
-                    // }
-                    else {
+                    } else {
                       DigitDialog.show(
                         context,
                         options: DigitDialogOptions(

@@ -577,7 +577,7 @@ class _VaccineSelectionPageState extends LocalizedState<VaccineSelectionPage> {
             i18_local.deliverIntervention.vaccinsSelectionInstruction,
           ),
           style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                color: const Color(0xFF4B5563), // same grey you have
+                color: const Color(0xFF4B5563),
                 height: 1.25,
               ),
         ),

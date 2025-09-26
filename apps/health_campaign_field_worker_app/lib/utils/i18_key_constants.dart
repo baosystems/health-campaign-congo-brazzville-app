@@ -171,6 +171,9 @@ class HouseholdOverView {
   String get householdOverViewSMCAssessmentActionText =>
       'HOUSEHOLD_OVER_VIEW_SMC_ASSESSMENT_ACTION_TEXT';
 
+  String get householdOverViewChildVaccinatedActionText =>
+      'HOUSEHOLD_OVER_VIEW_CHILD_VACCINATED_ACTION_TEXT';
+
   String get householdOverViewZeroDoseActionText =>
       'HOUSEHOLD_OVER_VIEW_ZERO_DOSE_ACTION_TEXT';
 
@@ -196,6 +199,10 @@ class HouseholdOverView {
 
   String get householdOverViewZeroDoseIconLabel =>
       'HOUSEHOLD_OVER_VIEW_ZERO_DOSE_ICON_LABEL';
+  String get householdOverViewUnderVaccinatedLabel =>
+      'HOUSEHOLD_OVER_VIEW_UNDER_VACCINATED_LABEL';
+  String get householdOverViewFullyVaccinatedLabel =>
+      'HOUSEHOLD_OVER_VIEW_FULLY_VACCINATED_ICON_LABEL';
   String get householdOverViewIncompletementVaccineLabel =>
       'HOUSEHOLD_OVER_VIEW_INCOMPLETEMENT_VACCINE_LABEL';
   String get householdOverViewZeroDoseDeliveredIconLabel =>
@@ -1638,7 +1645,6 @@ class Dashboard {
 
   String get dashboardHeaderLabel => 'DASHBOARD_HEADER';
 }
-
 
 class ZeroDose {
   const ZeroDose();

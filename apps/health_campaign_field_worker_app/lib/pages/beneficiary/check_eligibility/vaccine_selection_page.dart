@@ -38,8 +38,8 @@ import '../../../utils/extensions/extensions.dart';
 import '../../../widgets/localized.dart';
 import 'package:digit_data_model/data_model.dart';
 
-import '../../../models/entities/additional_fields_type.dart'
-    as additional_fields_local;
+// import '../../../models/entities/additional_fields_type.dart'
+//     as additional_fields_local;
 import '../../../models/entities/assessment_checklist/status.dart'
     as status_local;
 import '../../../widgets/custom_back_navigation.dart';
@@ -273,22 +273,13 @@ class _VaccineSelectionPageState extends LocalizedState<VaccineSelectionPage> {
         if (fields == null) return false;
 
         final hasZeroDoseStatus = fields.any(
-          (e) =>
-              e.key ==
-              additional_fields_local.AdditionalFieldsType.zeroDoseStatus
-                  .toValue(),
+          (e) => e.key == AdditionalFieldsType.doseStatus.toValue(),
         );
         final hasSelectedVaccines = fields.any(
-          (e) =>
-              e.key ==
-              additional_fields_local.AdditionalFieldsType.selectedVaccines
-                  .toValue(),
+          (e) => e.key == AdditionalFieldsType.selectedVaccines.toValue(),
         );
         final hasNoSelectedVaccines = fields.any(
-          (e) =>
-              e.key ==
-              additional_fields_local.AdditionalFieldsType.noSelectedVaccines
-                  .toValue(),
+          (e) => e.key == AdditionalFieldsType.noSelectedVaccines.toValue(),
         );
         return hasZeroDoseStatus &&
             (hasSelectedVaccines || hasNoSelectedVaccines);
@@ -299,18 +290,12 @@ class _VaccineSelectionPageState extends LocalizedState<VaccineSelectionPage> {
       lastVaccinationTask.sort((a, b) {
         final aCycle = a.additionalFields?.fields
             .firstWhereOrNull(
-              (e) =>
-                  e.key ==
-                  additional_fields_local.AdditionalFieldsType.cycleIndex
-                      .toValue(),
+              (e) => e.key == AdditionalFieldsType.cycleIndex.toValue(),
             )
             ?.value;
         final bCycle = b.additionalFields?.fields
             .firstWhereOrNull(
-              (e) =>
-                  e.key ==
-                  additional_fields_local.AdditionalFieldsType.cycleIndex
-                      .toValue(),
+              (e) => e.key == AdditionalFieldsType.cycleIndex.toValue(),
             )
             ?.value;
 
@@ -330,10 +315,7 @@ class _VaccineSelectionPageState extends LocalizedState<VaccineSelectionPage> {
       // ignore: avoid_dynamic_calls
       yesSelectedVaccines = ((lastVaccinationTask.last.additionalFields!.fields
                   .firstWhereOrNull((e) =>
-                      e.key ==
-                      additional_fields_local
-                          .AdditionalFieldsType.selectedVaccines
-                          .toValue())
+                      e.key == AdditionalFieldsType.selectedVaccines.toValue())
                   ?.value as String?) ??
               '')
           .split('.')
@@ -345,9 +327,7 @@ class _VaccineSelectionPageState extends LocalizedState<VaccineSelectionPage> {
       noSelectedVaccines = ((lastVaccinationTask.last.additionalFields!.fields
                   .firstWhereOrNull((e) =>
                       e.key ==
-                      additional_fields_local
-                          .AdditionalFieldsType.noSelectedVaccines
-                          .toValue())
+                      AdditionalFieldsType.noSelectedVaccines.toValue())
                   ?.value as String?) ??
               '')
           .split('.')
@@ -630,22 +610,23 @@ class _VaccineSelectionPageState extends LocalizedState<VaccineSelectionPage> {
     );
   }
 
-  Future<void> _finalizeFlowOrRoute(String pbId) async {
-    if (noSelectedCodes.isNotEmpty) {
-      final taskToPass =
-          context.read<DeliverInterventionBloc>().state.oldTask ?? widget.task;
-
-      await context.router.push(
-        ReasonsForNonVaccinationRoute(
-          projectBeneficiaryClientReferenceId: pbId,
-          individual: widget.individual,
-          selectedYesCodes: selectedCodes,
-          selectedNoCodes: noSelectedCodes,
-          task: taskToPass,
-        ),
-      );
-      return;
+  DoseStatus getDoseStatus(
+      List<String> selectedCodes, List<String> noSelectedCodes) {
+    if (selectedCodes.isEmpty && noSelectedCodes.isEmpty) {
+      return DoseStatus.none;
+    } else if ((selectedCodes.isEmpty && noSelectedCodes.isNotEmpty) ||
+        (selectedCodes.isNotEmpty &&
+            noSelectedCodes.isNotEmpty &&
+            noSelectedCodes.contains(Constants.penta1))) {
+      return DoseStatus.zeroDose;
+    } else if (selectedCodes.isNotEmpty &&
+        noSelectedCodes.isNotEmpty &&
+        selectedCodes.contains(Constants.penta1)) {
+      return DoseStatus.underVaccinated;
+    } else if (selectedCodes.isNotEmpty && noSelectedCodes.isEmpty) {
+      return DoseStatus.fullyVaccinated;
     }
+    return DoseStatus.none;
   }
 
   @override
@@ -701,11 +682,6 @@ class _VaccineSelectionPageState extends LocalizedState<VaccineSelectionPage> {
                   .selectedIndividual
                   ?.clientReferenceId ??
               '';
-          if (pbId.isNotEmpty) {
-            WidgetsBinding.instance.addPostFrameCallback((_) {
-              _finalizeFlowOrRoute(pbId);
-            });
-          }
           return const SizedBox.shrink();
         }
 
@@ -757,9 +733,6 @@ class _VaccineSelectionPageState extends LocalizedState<VaccineSelectionPage> {
                       .selectedIndividual
                       ?.clientReferenceId ??
                   '';
-              if (pbId.isNotEmpty) {
-                await _finalizeFlowOrRoute(pbId);
-              }
             }
           });
           return const SizedBox.shrink();
@@ -923,25 +896,6 @@ class _VaccineSelectionPageState extends LocalizedState<VaccineSelectionPage> {
                                             'Missing beneficiary ID',
                                             true,
                                             Theme.of(context)),
-                                      );
-                                      return;
-                                    }
-
-                                    if (noSelectedCodes.isNotEmpty) {
-                                      final taskToPass = context
-                                              .read<DeliverInterventionBloc>()
-                                              .state
-                                              .oldTask ??
-                                          widget.task;
-                                      await context.router.push(
-                                        ReasonsForNonVaccinationRoute(
-                                          projectBeneficiaryClientReferenceId:
-                                              pbId,
-                                          individual: widget.individual,
-                                          selectedYesCodes: selectedCodes,
-                                          selectedNoCodes: noSelectedCodes,
-                                          task: taskToPass,
-                                        ),
                                       );
                                       return;
                                     }
@@ -1218,24 +1172,22 @@ class _VaccineSelectionPageState extends LocalizedState<VaccineSelectionPage> {
                                         final updatedFields = [
                                           ...oldFields,
                                           AdditionalField(
-                                            additional_fields_local
-                                                .AdditionalFieldsType
-                                                .zeroDoseStatus
+                                            AdditionalFieldsType.doseStatus
                                                 .toValue(),
-                                            ZeroDoseStatus.done.name,
+                                            getDoseStatus(selectedCodes,
+                                                    noSelectedCodes)
+                                                .name,
                                           ),
                                           if (selectedCodes.isNotEmpty)
                                             AdditionalField(
-                                              additional_fields_local
-                                                  .AdditionalFieldsType
+                                              AdditionalFieldsType
                                                   .selectedVaccines
                                                   .toValue(),
                                               selectedCodes.join('.'),
                                             ),
                                           if (noSelectedCodes.isNotEmpty)
                                             AdditionalField(
-                                              additional_fields_local
-                                                  .AdditionalFieldsType
+                                              AdditionalFieldsType
                                                   .noSelectedVaccines
                                                   .toValue(),
                                               noSelectedCodes.join('.'),
@@ -1388,50 +1340,52 @@ class _VaccineSelectionPageState extends LocalizedState<VaccineSelectionPage> {
                                               if (widget.hasSideEffects ==
                                                   false) ...[
                                                 AdditionalField(
-                                                  'ineligibleReasons',
+                                                  AdditionalFieldsType
+                                                      .ineligibleReasons
+                                                      .toValue(),
                                                   ineligibilityReasons
                                                       .join(","),
                                                 ),
                                                 AdditionalField(
-                                                  'ageBelow3Months',
+                                                  AdditionalFieldsType
+                                                      .ageBelow3Months
+                                                      .toValue(),
                                                   true.toString(),
                                                 ),
                                               ] else ...[
                                                 AdditionalField(
-                                                    'ineligibleReasons',
+                                                    AdditionalFieldsType
+                                                        .ineligibleReasons
+                                                        .toValue(),
                                                     ["SIDE_EFFECTS"].join(",")),
                                                 AdditionalField(
-                                                    additional_fields_local
-                                                        .AdditionalFieldsType
+                                                    AdditionalFieldsType
                                                         .hasSideEffects
                                                         .toValue(),
                                                     true.toString()),
                                               ],
                                               AdditionalField(
-                                                additional_fields_local
-                                                    .AdditionalFieldsType
+                                                AdditionalFieldsType
                                                     .deliveryType
                                                     .toValue(),
                                                 EligibilityAssessmentStatus
                                                     .smcDone.name,
                                               ),
                                               AdditionalField(
-                                                additional_fields_local
-                                                    .AdditionalFieldsType
-                                                    .zeroDoseStatus
+                                                AdditionalFieldsType.doseStatus
                                                     .toValue(),
-                                                ZeroDoseStatus.done.name,
+                                                getDoseStatus(selectedCodes,
+                                                        noSelectedCodes)
+                                                    .name,
                                               ),
                                               AdditionalField(
-                                                additional_fields_local
-                                                    .AdditionalFieldsType
+                                                AdditionalFieldsType
                                                     .selectedVaccines
                                                     .toValue(),
                                                 selectedCodes.join('.'),
                                               ),
                                               AdditionalField(
-                                                additional_fields_local
-                                                    .AdditionalFieldsType
+                                                AdditionalFieldsType
                                                     .noSelectedVaccines
                                                     .toValue(),
                                                 noSelectedCodes.join('.'),
@@ -1481,20 +1435,48 @@ class _VaccineSelectionPageState extends LocalizedState<VaccineSelectionPage> {
                                         searchBloc.add(
                                           const SearchHouseholdsClearEvent(),
                                         );
-                                        if (widget.isAdministration == true) {
+                                        final pbId = widget
+                                                .projectBeneficiaryClientReferenceId ??
+                                            context
+                                                .read<HouseholdOverviewBloc>()
+                                                .state
+                                                .selectedIndividual
+                                                ?.clientReferenceId ??
+                                            '';
+                                        if (noSelectedCodes.isNotEmpty) {
+                                          final taskToPass = context
+                                                  .read<
+                                                      DeliverInterventionBloc>()
+                                                  .state
+                                                  .oldTask ??
+                                              widget.task;
+
                                           router.push(
-                                            CustomSplashAcknowledgementRoute(
-                                                enableBackToSearch: false,
-                                                eligibilityAssessmentType: widget
-                                                    .eligibilityAssessmentType),
+                                            ReasonsForNonVaccinationRoute(
+                                              projectBeneficiaryClientReferenceId:
+                                                  pbId,
+                                              individual: widget.individual,
+                                              selectedYesCodes: selectedCodes,
+                                              selectedNoCodes: noSelectedCodes,
+                                              task: taskToPass,
+                                            ),
                                           );
                                         } else {
-                                          router.push(
-                                            CustomHouseholdAcknowledgementRoute(
-                                                enableViewHousehold: true,
-                                                eligibilityAssessmentType: widget
-                                                    .eligibilityAssessmentType),
-                                          );
+                                          if (widget.isAdministration == true) {
+                                            router.push(
+                                              CustomSplashAcknowledgementRoute(
+                                                  enableBackToSearch: false,
+                                                  eligibilityAssessmentType: widget
+                                                      .eligibilityAssessmentType),
+                                            );
+                                          } else {
+                                            router.push(
+                                              CustomHouseholdAcknowledgementRoute(
+                                                  enableViewHousehold: true,
+                                                  eligibilityAssessmentType: widget
+                                                      .eligibilityAssessmentType),
+                                            );
+                                          }
                                         }
                                       }
                                     }

@@ -147,7 +147,10 @@ class CustomBeneficiaryAcknowledgementPageState
                             .acknowledgementSuccess
                             .backToSearchActionLabelText),
                         onPressed: () {
-                          context.router.maybePop();
+                          (context.router.parent() as StackRouter).maybePop();
+                          context.router.popUntil((route) =>
+                              route.settings.name ==
+                              SearchBeneficiaryRoute.name);
                         },
                         type: DigitButtonType.secondary,
                         size: DigitButtonSize.large),

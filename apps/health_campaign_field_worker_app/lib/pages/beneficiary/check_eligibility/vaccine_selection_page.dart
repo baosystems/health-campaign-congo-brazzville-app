@@ -840,7 +840,7 @@ class _VaccineSelectionPageState extends LocalizedState<VaccineSelectionPage> {
                 builder: (context, householdOverviewState) {
                   double? latitude = locationState.latitude;
                   double? longitude = locationState.longitude;
-                  String vaccineSelection = "ZERO_DOSE_ASSESSMENT";
+                  String vaccineSelection = "ZERODOSE_ASSESSMENT";
                   return BlocBuilder<ServiceDefinitionBloc,
                       ServiceDefinitionState>(
                     builder: (context, state) {
@@ -851,7 +851,7 @@ class _VaccineSelectionPageState extends LocalizedState<VaccineSelectionPage> {
                               .serviceDefinitionList
                               .where(
                                   (element) => element.code.toString().contains(
-                                        '${context.selectedProject.name}.$vaccineSelection.${context.isCommunityDistributor ? RolesType.communityDistributor.toValue() : RolesType.healthFacilitySupervisor.toValue()}',
+                                        '${context.selectedProject.name}.$vaccineSelection.${RolesType.communityDistributor.toValue()}',
                                       ))
                               .toList()
                               .firstOrNull;

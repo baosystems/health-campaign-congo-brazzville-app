@@ -7,6 +7,7 @@ import 'package:digit_components/widgets/digit_elevated_button.dart';
 import 'package:digit_components/widgets/atoms/digit_toaster.dart';
 import 'package:digit_components/widgets/digit_dialog.dart';
 
+import '../../../utils/constants.dart';
 import '../../../widgets/custom_back_navigation.dart';
 
 import 'package:registration_delivery/utils/i18_key_constants.dart' as i18;
@@ -248,9 +249,9 @@ class _ComplaintCapturePageState extends State<ComplaintCapturePage> {
                           );
                           upsert(
                             additional_fields_local
-                                .AdditionalFieldsType.zeroDoseStatus
+                                .AdditionalFieldsType.doseStatus
                                 .toValue(),
-                            ZeroDoseStatus.done.name,
+                            DoseStatus.fullyVaccinated.name,
                           );
 
                           final ensuredPBId = (baseTask

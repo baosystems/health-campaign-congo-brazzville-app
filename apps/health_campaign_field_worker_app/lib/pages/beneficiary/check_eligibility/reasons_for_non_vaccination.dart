@@ -6,8 +6,7 @@ import 'package:digit_ui_components/widgets/molecules/digit_card.dart';
 import 'package:digit_components/widgets/digit_elevated_button.dart';
 import 'package:digit_components/widgets/atoms/digit_toaster.dart';
 
-import 'package:registration_delivery/utils/i18_key_constants.dart'
-    as i18_local;
+import '../../../utils/i18_key_constants.dart' as i18_local;
 import 'package:digit_data_model/data_model.dart';
 import 'package:health_campaign_field_worker_app/blocs/localization/app_localization.dart';
 

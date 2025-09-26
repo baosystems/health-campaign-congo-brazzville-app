@@ -118,6 +118,8 @@ class Constants {
   static const String spaq1Name = "SPAQ1_NAME";
   static const String spaq2Name = "SPAQ2_NAME";
 
+  static const String penta1 = "HCM_VACCINE_PENTA_1";
+
   static const Map<String, String> spaqCodeNameMap = {
     Constants.spaq1: Constants.spaq1Name,
     Constants.spaq2: Constants.spaq2Name,
@@ -132,7 +134,7 @@ class Constants {
   static const String zeroDose = 'zeroDose';
 
   // todo enable before cycle2
-  static const bool isDownSyncEnabled = true;
+  static const bool isDownSyncEnabled = false;
   static const String dashboardAnalyticsPath =
       '/dashboard-analytics/dashboard/getChartV2';
 
@@ -376,6 +378,8 @@ enum DigitProgressDialogType {
   checkFailed,
   pendingSync,
 }
+
+enum DoseStatus { none, zeroDose, underVaccinated, fullyVaccinated }
 
 class DownloadBeneficiary {
   String title;

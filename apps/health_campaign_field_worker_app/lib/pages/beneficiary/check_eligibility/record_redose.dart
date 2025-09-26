@@ -229,7 +229,7 @@ class _RecordRedosePageState extends LocalizedState<RecordRedosePage> {
                                                       otherControl.setErrors({
                                                         'onlyAlphabets': true
                                                       });
-                                                      
+
                                                       return;
                                                     }
                                                   }

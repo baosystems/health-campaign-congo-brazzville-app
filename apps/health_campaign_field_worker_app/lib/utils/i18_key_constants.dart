@@ -46,6 +46,8 @@ const referBeneficiary = ReferBeneficiary();
 const householdDetails = HouseholdDetails();
 const memberCard = MemberCard();
 
+const zeroDose = ZeroDose();
+
 class Common {
   const Common();
 
@@ -170,6 +172,9 @@ class HouseholdOverView {
   String get householdOverViewSMCAssessmentActionText =>
       'HOUSEHOLD_OVER_VIEW_SMC_ASSESSMENT_ACTION_TEXT';
 
+  String get householdOverViewChildVaccinatedActionText =>
+      'HOUSEHOLD_OVER_VIEW_CHILD_VACCINATED_ACTION_TEXT';
+
   String get householdOverViewZeroDoseActionText =>
       'HOUSEHOLD_OVER_VIEW_ZERO_DOSE_ACTION_TEXT';
 
@@ -195,6 +200,10 @@ class HouseholdOverView {
 
   String get householdOverViewZeroDoseIconLabel =>
       'HOUSEHOLD_OVER_VIEW_ZERO_DOSE_ICON_LABEL';
+  String get householdOverViewUnderVaccinatedLabel =>
+      'HOUSEHOLD_OVER_VIEW_UNDER_VACCINATED_LABEL';
+  String get householdOverViewFullyVaccinatedLabel =>
+      'HOUSEHOLD_OVER_VIEW_FULLY_VACCINATED_ICON_LABEL';
   String get householdOverViewIncompletementVaccineLabel =>
       'HOUSEHOLD_OVER_VIEW_INCOMPLETEMENT_VACCINE_LABEL';
   String get householdOverViewZeroDoseDeliveredIconLabel =>
@@ -1643,9 +1652,42 @@ class Dashboard {
   String get dashboardHeaderLabel => 'DASHBOARD_HEADER';
 }
 
+
 class MemberCard {
   const MemberCard();
 
   String get beneficiaryAbsentButtonLabel =>
       'MEMBERCARD_BENEFICIARY_ABSENT_BUTTON_LABEL';
+}
+
+class ZeroDose {
+  const ZeroDose();
+
+  String get reasonsTitle => 'ZERO_DOSE_REASONS_TITLE';
+  String get reasonsSubtitle => 'ZERO_DOSE_REASONS_SUBTITLE';
+  String get reasonsOtherLabel => 'ZERO_DOSE_REASONS_OTHER_LABEL';
+  String get reasonStockOut => 'ZERO_DOSE_REASON_STOCK_OUT';
+  String get reasonFacilityFar => 'ZERO_DOSE_REASON_FACILITY_FAR';
+  String get reasonForgotAppointment => 'ZERO_DOSE_REASON_FORGOT_APPOINTMENT';
+  String get reasonCaregiverBusy => 'ZERO_DOSE_REASON_CAREGIVER_BUSY';
+  String get reasonPriorAefi => 'ZERO_DOSE_REASON_PRIOR_AEFI';
+  String get reasonNoTransportMoney => 'ZERO_DOSE_REASON_NO_TRANSPORT_MONEY';
+  String get reasonBadStaffAttitude => 'ZERO_DOSE_REASON_BAD_STAFF_ATTITUDE';
+  String get reasonFacilityClosed => 'ZERO_DOSE_REASON_FACILITY_CLOSED';
+  String get reasonNotImportantToCaregiver =>
+      'ZERO_DOSE_REASON_NOT_IMPORTANT_TO_CAREGIVER';
+  String get reasonRumorsMisinformation =>
+      'ZERO_DOSE_REASON_RUMORS_MISINFORMATION';
+  String get reasonHardToAccessArea => 'ZERO_DOSE_REASON_HARD_TO_ACCESS_AREA';
+  String get reasonRefugeeOrIdp => 'ZERO_DOSE_REASON_REFUGEE_OR_IDP';
+  String get reasonIndigenousStigma => 'ZERO_DOSE_REASON_INDIGENOUS_STIGMA';
+  String get reasonOther => 'ZERO_DOSE_REASON_OTHER';
+  String get complaintTitle => 'ZERO_DOSE_COMPLAINT_TITLE';
+  String get complaintLabel => 'ZERO_DOSE_COMPLAINT_LABEL';
+  String get complaintHelp => 'ZERO_DOSE_COMPLAINT_HELP';
+  String get complaintRequired => 'ZERO_DOSE_COMPLAINT_REQUIRED';
+  String get complaintBoxPlaceholder => 'ZERO_DOSE_COMPLAINT_PLACEHOLDER';
+  String get reasonsOtherPlaceholder => 'ZERO_DOSE_REASON_OTHER_PLACEHOLDER';
+  String get reasonEnterOther => 'ZERO_DOSE_ENTER_OTHER_REASON';
+  String get enterReason => 'ZERO_DOSE_ENTER_AT_LEAST_ONE_OTHER_REASON';
 }

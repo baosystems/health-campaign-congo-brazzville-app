@@ -25,8 +25,8 @@ class AdditionalFieldsTypeMapper extends EnumMapper<AdditionalFieldsType> {
   @override
   AdditionalFieldsType decode(dynamic value) {
     switch (value) {
-      case "zeroDoseStatus":
-        return AdditionalFieldsType.zeroDoseStatus;
+      case "doseStatus":
+        return AdditionalFieldsType.doseStatus;
       case "selectedVaccines":
         return AdditionalFieldsType.selectedVaccines;
       case "noSelectedVaccines":
@@ -73,6 +73,10 @@ class AdditionalFieldsTypeMapper extends EnumMapper<AdditionalFieldsType> {
         return AdditionalFieldsType.mobile;
       case "EMPLOYEE":
         return AdditionalFieldsType.employee;
+      case "ineligibleReasons":
+        return AdditionalFieldsType.ineligibleReasons;
+      case "ageBelow3Months":
+        return AdditionalFieldsType.ageBelow3Months;
       default:
         throw MapperException.unknownEnumValue(value);
     }
@@ -81,8 +85,8 @@ class AdditionalFieldsTypeMapper extends EnumMapper<AdditionalFieldsType> {
   @override
   dynamic encode(AdditionalFieldsType self) {
     switch (self) {
-      case AdditionalFieldsType.zeroDoseStatus:
-        return "zeroDoseStatus";
+      case AdditionalFieldsType.doseStatus:
+        return "doseStatus";
       case AdditionalFieldsType.selectedVaccines:
         return "selectedVaccines";
       case AdditionalFieldsType.noSelectedVaccines:
@@ -129,6 +133,10 @@ class AdditionalFieldsTypeMapper extends EnumMapper<AdditionalFieldsType> {
         return "mobile";
       case AdditionalFieldsType.employee:
         return "EMPLOYEE";
+      case AdditionalFieldsType.ineligibleReasons:
+        return "ineligibleReasons";
+      case AdditionalFieldsType.ageBelow3Months:
+        return "ageBelow3Months";
     }
   }
 }

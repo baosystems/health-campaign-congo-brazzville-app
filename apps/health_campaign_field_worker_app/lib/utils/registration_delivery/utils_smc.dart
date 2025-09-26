@@ -153,10 +153,9 @@ bool checkBeneficiaryZeroDose(List<TaskModel>? tasks) {
             element.additionalFields?.fields.firstWhereOrNull(
               (e) =>
                   e.key ==
-                      additional_fields_local
-                          .AdditionalFieldsType.zeroDoseStatus
+                      additional_fields_local.AdditionalFieldsType.doseStatus
                           .toValue() &&
-                  e.value == ZeroDoseStatus.zeroDose.name,
+                  e.value == DoseStatus.zeroDose.name,
             ) !=
             null,
       )
@@ -165,7 +164,7 @@ bool checkBeneficiaryZeroDose(List<TaskModel>? tasks) {
   return successfulTask != null;
 }
 
-bool checkBeneficiaryIncompletementVaccine(List<TaskModel>? tasks) {
+bool checkBeneficiaryUnderVaccinated(List<TaskModel>? tasks) {
   if ((tasks ?? []).isEmpty) {
     return false;
   }
@@ -175,10 +174,9 @@ bool checkBeneficiaryIncompletementVaccine(List<TaskModel>? tasks) {
             element.additionalFields?.fields.firstWhereOrNull(
               (e) =>
                   e.key ==
-                      additional_fields_local
-                          .AdditionalFieldsType.zeroDoseStatus
+                      additional_fields_local.AdditionalFieldsType.doseStatus
                           .toValue() &&
-                  e.value == ZeroDoseStatus.incompletementVaccine.name,
+                  e.value == DoseStatus.underVaccinated.name,
             ) !=
             null,
       )
@@ -197,10 +195,9 @@ bool checkBeneficiaryZeroDoseDelivered(List<TaskModel>? tasks) {
             element.additionalFields?.fields.firstWhereOrNull(
               (e) =>
                   e.key ==
-                      additional_fields_local
-                          .AdditionalFieldsType.zeroDoseStatus
+                      additional_fields_local.AdditionalFieldsType.doseStatus
                           .toValue() &&
-                  e.value == ZeroDoseStatus.done.name,
+                  e.value == DoseStatus.fullyVaccinated.name,
             ) !=
             null,
       )

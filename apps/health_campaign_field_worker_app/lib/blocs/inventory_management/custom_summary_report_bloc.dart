@@ -86,7 +86,7 @@ class SummaryReportBloc extends Bloc<SummaryReportEvent, SummaryReportState> {
 
       if ((element.additionalFields?.fields.firstWhereOrNull((element) =>
                   element.key ==
-                  additional_fields_local.AdditionalFieldsType.zeroDoseStatus
+                  additional_fields_local.AdditionalFieldsType.doseStatus
                       .toValue()) !=
               null) &&
           element.status != Status.delivered.toValue()) {

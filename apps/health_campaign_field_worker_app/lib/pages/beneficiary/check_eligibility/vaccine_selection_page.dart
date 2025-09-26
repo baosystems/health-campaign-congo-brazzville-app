@@ -38,8 +38,8 @@ import '../../../utils/extensions/extensions.dart';
 import '../../../widgets/localized.dart';
 import 'package:digit_data_model/data_model.dart';
 
-import '../../../models/entities/additional_fields_type.dart'
-    as additional_fields_local;
+// import '../../../models/entities/additional_fields_type.dart'
+//     as additional_fields_local;
 import '../../../models/entities/assessment_checklist/status.dart'
     as status_local;
 import '../../../widgets/custom_back_navigation.dart';
@@ -117,76 +117,6 @@ class _VaccineSelectionPageState extends LocalizedState<VaccineSelectionPage> {
         return c;
     }
   }
-/*
-/// HARD-CODED FALLBACKS — DISABLED PER POLICY
-  // static const Map<String, Map<String, String>> _guidanceFallbackByLang = {
-  //   'en': {
-  //     'DELIVER_INTERVENTION_GUIDANCE_TITLE':
-  //         'Physical indicators of previous vaccination',
-  //     'DELIVER_INTERVENTION_GUIDANCE_BCG':
-  //         'BCG (left upper arm): Check for a scar; if absent, ask if an injection was given at birth.',
-  //     'DELIVER_INTERVENTION_GUIDANCE_VPO':
-  //         'OPV (mouth): Ask if the vaccine was given orally.',
-  //     'DELIVER_INTERVENTION_GUIDANCE_PENTA':
-  //         'Penta (thigh): Ask if injections were given in the thigh.',
-  //     'DELIVER_INTERVENTION_GUIDANCE_ROTA':
-  //         'Rota (mouth): Ask if an oral vaccine was given.',
-  //     'DELIVER_INTERVENTION_GUIDANCE_PNEUMO':
-  //         'PCV/Pneumo (thigh): Ask if a pneumonia vaccine injection was given.',
-  //     'DELIVER_INTERVENTION_GUIDANCE_VPI':
-  //         'IPV (thigh): Ask if a polio injection was given.',
-  //     'DELIVER_INTERVENTION_GUIDANCE_RR':
-  //         'MR (measles–rubella, left upper arm): Ask if an injection was given in the left upper arm.',
-  //     'DELIVER_INTERVENTION_GUIDANCE_VAA':
-  //         'Yellow Fever (right upper arm): Ask if an injection was given in the right upper arm.',
-  //     'DELIVER_INTERVENTION_GUIDANCE_MEN':
-  //         'Meningitis (arm): Ask if a meningitis vaccine injection was given.',
-  //     'DELIVER_INTERVENTION_GUIDANCE_VIT':
-  //         'Vitamin A (oral): Ask if the child received vitamin A drops.',
-  //   },
-  //   'fr': {
-  //     'DELIVER_INTERVENTION_GUIDANCE_TITLE':
-  //         'Indicateurs physiques de la vaccination antérieure',
-  //     'DELIVER_INTERVENTION_GUIDANCE_BCG':
-  //         'BCG (bras gauche) : Vérifiez la cicatrice ; si absente, demandez si une injection a été faite à la naissance.',
-  //     'DELIVER_INTERVENTION_GUIDANCE_VPO':
-  //         'VPO (bouche) : Demandez si le vaccin a été administré par voie orale.',
-  //     'DELIVER_INTERVENTION_GUIDANCE_PENTA':
-  //         'Penta (cuisse) : Demandez si des injections ont été administrées dans la cuisse.',
-  //     'DELIVER_INTERVENTION_GUIDANCE_ROTA':
-  //         'Rota (bouche) : Demandez si un vaccin oral a été administré.',
-  //     'DELIVER_INTERVENTION_GUIDANCE_PNEUMO':
-  //         'PCV/Pneumo (cuisse) : Demandez si une injection contre la pneumonie a été administrée.',
-  //     'DELIVER_INTERVENTION_GUIDANCE_VPI':
-  //         'VPI (cuisse) : Demandez si une injection contre la polio a été administrée.',
-  //     'DELIVER_INTERVENTION_GUIDANCE_RR':
-  //         'RR (rougeole–rubéole, bras gauche) : Demandez si une injection a été administrée dans le bras gauche.',
-  //     'DELIVER_INTERVENTION_GUIDANCE_VAA':
-  //         'Fièvre jaune (bras droit) : Demandez si une injection a été administrée dans le bras droit.',
-  //     'DELIVER_INTERVENTION_GUIDANCE_MEN':
-  //         'Méningite (bras) : Demandez si une injection contre la méningite a été administrée.',
-  //     'DELIVER_INTERVENTION_GUIDANCE_VIT':
-  //         'Vitamine A (orale) : Demandez si l’enfant a reçu des gouttes de vitamine A.',
-  //   },
-  // };
-
-  // String _lang(BuildContext context) =>
-  //     Localizations.localeOf(context).languageCode.toLowerCase();
-
-  // String trf(BuildContext context, String key, {String? defaultText}) {
-  //   final mdms = AppLocalizations.of(context).translate(key);
-  //   if (mdms.isNotEmpty && mdms != key) return mdms;
-
-  //   final lang = _lang(context);
-  //   final byLang = _guidanceFallbackByLang[lang]?[key];
-  //   if (byLang != null && byLang.isNotEmpty) return byLang;
-
-  //   final en = _guidanceFallbackByLang['en']?[key];
-  //   if (en != null && en.isNotEmpty) return en;
-
-  //   return defaultText ?? key;
-  // }
-  */
 
   String? _tOrNull(BuildContext context, String key) {
     final s = AppLocalizations.of(context).translate(key);
@@ -343,22 +273,13 @@ class _VaccineSelectionPageState extends LocalizedState<VaccineSelectionPage> {
         if (fields == null) return false;
 
         final hasZeroDoseStatus = fields.any(
-          (e) =>
-              e.key ==
-              additional_fields_local.AdditionalFieldsType.zeroDoseStatus
-                  .toValue(),
+          (e) => e.key == AdditionalFieldsType.doseStatus.toValue(),
         );
         final hasSelectedVaccines = fields.any(
-          (e) =>
-              e.key ==
-              additional_fields_local.AdditionalFieldsType.selectedVaccines
-                  .toValue(),
+          (e) => e.key == AdditionalFieldsType.selectedVaccines.toValue(),
         );
         final hasNoSelectedVaccines = fields.any(
-          (e) =>
-              e.key ==
-              additional_fields_local.AdditionalFieldsType.noSelectedVaccines
-                  .toValue(),
+          (e) => e.key == AdditionalFieldsType.noSelectedVaccines.toValue(),
         );
         return hasZeroDoseStatus &&
             (hasSelectedVaccines || hasNoSelectedVaccines);
@@ -369,18 +290,12 @@ class _VaccineSelectionPageState extends LocalizedState<VaccineSelectionPage> {
       lastVaccinationTask.sort((a, b) {
         final aCycle = a.additionalFields?.fields
             .firstWhereOrNull(
-              (e) =>
-                  e.key ==
-                  additional_fields_local.AdditionalFieldsType.cycleIndex
-                      .toValue(),
+              (e) => e.key == AdditionalFieldsType.cycleIndex.toValue(),
             )
             ?.value;
         final bCycle = b.additionalFields?.fields
             .firstWhereOrNull(
-              (e) =>
-                  e.key ==
-                  additional_fields_local.AdditionalFieldsType.cycleIndex
-                      .toValue(),
+              (e) => e.key == AdditionalFieldsType.cycleIndex.toValue(),
             )
             ?.value;
 
@@ -400,10 +315,7 @@ class _VaccineSelectionPageState extends LocalizedState<VaccineSelectionPage> {
       // ignore: avoid_dynamic_calls
       yesSelectedVaccines = ((lastVaccinationTask.last.additionalFields!.fields
                   .firstWhereOrNull((e) =>
-                      e.key ==
-                      additional_fields_local
-                          .AdditionalFieldsType.selectedVaccines
-                          .toValue())
+                      e.key == AdditionalFieldsType.selectedVaccines.toValue())
                   ?.value as String?) ??
               '')
           .split('.')
@@ -415,9 +327,7 @@ class _VaccineSelectionPageState extends LocalizedState<VaccineSelectionPage> {
       noSelectedVaccines = ((lastVaccinationTask.last.additionalFields!.fields
                   .firstWhereOrNull((e) =>
                       e.key ==
-                      additional_fields_local
-                          .AdditionalFieldsType.noSelectedVaccines
-                          .toValue())
+                      AdditionalFieldsType.noSelectedVaccines.toValue())
                   ?.value as String?) ??
               '')
           .split('.')
@@ -700,16 +610,29 @@ class _VaccineSelectionPageState extends LocalizedState<VaccineSelectionPage> {
     );
   }
 
+  DoseStatus getDoseStatus(
+      List<String> selectedCodes, List<String> noSelectedCodes) {
+    if (selectedCodes.isEmpty && noSelectedCodes.isEmpty) {
+      return DoseStatus.none;
+    } else if ((selectedCodes.isEmpty && noSelectedCodes.isNotEmpty) ||
+        (selectedCodes.isNotEmpty &&
+            noSelectedCodes.isNotEmpty &&
+            noSelectedCodes.contains(Constants.penta1))) {
+      return DoseStatus.zeroDose;
+    } else if (selectedCodes.isNotEmpty &&
+        noSelectedCodes.isNotEmpty &&
+        selectedCodes.contains(Constants.penta1)) {
+      return DoseStatus.underVaccinated;
+    } else if (selectedCodes.isNotEmpty && noSelectedCodes.isEmpty) {
+      return DoseStatus.fullyVaccinated;
+    }
+    return DoseStatus.none;
+  }
+
   @override
   Widget build(BuildContext context) {
-    final dob = context
-        .read<HouseholdOverviewBloc>()
-        .state
-        .selectedIndividual
-        ?.dateOfBirth;
+    final localizations = AppLocalizations.of(context);
     final theme = Theme.of(context);
-    final ageInDays = calculateAgeInDaysFromDob(dob!);
-
     return BlocListener<ServiceBloc, ServiceState>(listener: (context, state) {
       state.maybeWhen(
         orElse: () {},
@@ -736,25 +659,30 @@ class _VaccineSelectionPageState extends LocalizedState<VaccineSelectionPage> {
           vaccineDataList = appInitState.appConfiguration.vaccinationData ?? [];
         }
 
-        final allVaccineCodes = vaccineDataList.map((e) => e.code).toList();
+        final dobStr = context
+            .read<HouseholdOverviewBloc>()
+            .state
+            .selectedIndividual
+            ?.dateOfBirth;
+        final ageInDays = calculateAgeInDaysFromDob(dobStr ?? '');
 
-        // final Map<String, int> vaccineAgeMap = {
-        //   for (final v in vaccineDataList) v.code: v.ageInDays
-        // };
-
+        final allVaccineCodes = [for (final v in vaccineDataList) v.code];
         final Map<String, String> vaccineCodeToName = {
           for (final v in vaccineDataList) v.code: v.name
         };
 
         final List<int> ageList =
-            vaccineDataList.map((e) => e.ageInDays).toSet().toList()..sort();
+            (vaccineDataList.map((e) => e.ageInDays).toSet().toList()..sort());
 
-        int lastIndex = ageList.length - 1;
-        for (int age in ageList) {
-          if (age > ageInDays) {
-            lastIndex = ageList.indexOf(age) - 1;
-            break;
-          }
+        if (ageList.isEmpty) {
+          final pbId = widget.projectBeneficiaryClientReferenceId ??
+              context
+                  .read<HouseholdOverviewBloc>()
+                  .state
+                  .selectedIndividual
+                  ?.clientReferenceId ??
+              '';
+          return const SizedBox.shrink();
         }
 
         final Map<int, List<String>> ageToVaccineCodes = {};
@@ -763,35 +691,60 @@ class _VaccineSelectionPageState extends LocalizedState<VaccineSelectionPage> {
           ageToVaccineCodes[v.ageInDays]!.add(v.code);
         }
 
-        Map<String, String?> currentResponses = {};
-        List<String> currentVaccineCodes = [];
-        for (int i = 0;
-            i < ageToVaccineCodes[ageList[currentIndex]]!.length;
-            i++) {
-          String vaccineCode = ageToVaccineCodes[ageList[currentIndex]]![i];
-          if (isVaccineAllowedToShow(
-              vaccineCode: vaccineCode, allVaccineCodes: allVaccineCodes)) {
-            currentVaccineCodes.add(
-              vaccineCode,
-            );
+// Find last bucket allowed for the child age
+        int lastIndex = ageList.length - 1;
+        for (final age in ageList) {
+          if (age > ageInDays) {
+            lastIndex = ageList.indexOf(age) - 1;
+            break;
           }
         }
+// Clamp lastIndex to valid range
+        if (lastIndex < 0) lastIndex = 0;
 
+// Always clamp currentIndex before indexing
+        final int safeIndex = currentIndex.clamp(0, lastIndex);
+        final int bucketAge = ageList[safeIndex];
+
+// Build current bucket codes (filtering dose dependencies)
+        final List<String> rawCodes = List<String>.from(
+          ageToVaccineCodes[bucketAge] ?? const <String>[],
+        );
+        final List<String> currentVaccineCodes = [
+          for (final code in rawCodes)
+            if (isVaccineAllowedToShow(
+              vaccineCode: code,
+              allVaccineCodes: allVaccineCodes,
+            ))
+              code
+        ];
+
+// If current bucket ends up empty, move forward (or finish if we’re at the end)
         if (currentVaccineCodes.isEmpty) {
-          WidgetsBinding.instance.addPostFrameCallback((_) {
-            setState(() {
-              currentIndex++;
-            });
+          WidgetsBinding.instance.addPostFrameCallback((_) async {
+            if (currentIndex < lastIndex) {
+              setState(() => currentIndex += 1);
+            } else {
+              // No more buckets to show: go final step (Reasons if any "NO", else submit)
+              final pbId = widget.projectBeneficiaryClientReferenceId ??
+                  context
+                      .read<HouseholdOverviewBloc>()
+                      .state
+                      .selectedIndividual
+                      ?.clientReferenceId ??
+                  '';
+            }
           });
           return const SizedBox.shrink();
         }
 
-        for (int i = 0; i < currentVaccineCodes.length; i++) {
-          String vaccineCode = currentVaccineCodes[i];
-          if (selectedCodes.contains(vaccineCode)) {
-            currentResponses[vaccineCode] = _yes;
-          } else if (noSelectedCodes.contains(vaccineCode)) {
-            currentResponses[vaccineCode] = _no;
+// Pre-fill responses (so validators don’t trip)
+        final Map<String, String?> currentResponses = {};
+        for (final code in currentVaccineCodes) {
+          if (selectedCodes.contains(code)) {
+            currentResponses[code] = _yes;
+          } else if (noSelectedCodes.contains(code)) {
+            currentResponses[code] = _no;
           }
         }
 
@@ -927,6 +880,25 @@ class _VaccineSelectionPageState extends LocalizedState<VaccineSelectionPage> {
                                       return;
                                     }
                                     saveResponses(currentResponses);
+
+                                    final pbId = widget
+                                            .projectBeneficiaryClientReferenceId ??
+                                        context
+                                            .read<HouseholdOverviewBloc>()
+                                            .state
+                                            .selectedIndividual
+                                            ?.clientReferenceId;
+
+                                    if (pbId == null || pbId.isEmpty) {
+                                      await DigitToast.show(
+                                        context,
+                                        options: DigitToastOptions(
+                                            'Missing beneficiary ID',
+                                            true,
+                                            Theme.of(context)),
+                                      );
+                                      return;
+                                    }
 
                                     submitTriggered = true;
                                     final itemsAttributes = initialAttributes;
@@ -1200,24 +1172,22 @@ class _VaccineSelectionPageState extends LocalizedState<VaccineSelectionPage> {
                                         final updatedFields = [
                                           ...oldFields,
                                           AdditionalField(
-                                            additional_fields_local
-                                                .AdditionalFieldsType
-                                                .zeroDoseStatus
+                                            AdditionalFieldsType.doseStatus
                                                 .toValue(),
-                                            ZeroDoseStatus.done.name,
+                                            getDoseStatus(selectedCodes,
+                                                    noSelectedCodes)
+                                                .name,
                                           ),
                                           if (selectedCodes.isNotEmpty)
                                             AdditionalField(
-                                              additional_fields_local
-                                                  .AdditionalFieldsType
+                                              AdditionalFieldsType
                                                   .selectedVaccines
                                                   .toValue(),
                                               selectedCodes.join('.'),
                                             ),
                                           if (noSelectedCodes.isNotEmpty)
                                             AdditionalField(
-                                              additional_fields_local
-                                                  .AdditionalFieldsType
+                                              AdditionalFieldsType
                                                   .noSelectedVaccines
                                                   .toValue(),
                                               noSelectedCodes.join('.'),
@@ -1370,50 +1340,52 @@ class _VaccineSelectionPageState extends LocalizedState<VaccineSelectionPage> {
                                               if (widget.hasSideEffects ==
                                                   false) ...[
                                                 AdditionalField(
-                                                  'ineligibleReasons',
+                                                  AdditionalFieldsType
+                                                      .ineligibleReasons
+                                                      .toValue(),
                                                   ineligibilityReasons
                                                       .join(","),
                                                 ),
                                                 AdditionalField(
-                                                  'ageBelow3Months',
+                                                  AdditionalFieldsType
+                                                      .ageBelow3Months
+                                                      .toValue(),
                                                   true.toString(),
                                                 ),
                                               ] else ...[
                                                 AdditionalField(
-                                                    'ineligibleReasons',
+                                                    AdditionalFieldsType
+                                                        .ineligibleReasons
+                                                        .toValue(),
                                                     ["SIDE_EFFECTS"].join(",")),
                                                 AdditionalField(
-                                                    additional_fields_local
-                                                        .AdditionalFieldsType
+                                                    AdditionalFieldsType
                                                         .hasSideEffects
                                                         .toValue(),
                                                     true.toString()),
                                               ],
                                               AdditionalField(
-                                                additional_fields_local
-                                                    .AdditionalFieldsType
+                                                AdditionalFieldsType
                                                     .deliveryType
                                                     .toValue(),
                                                 EligibilityAssessmentStatus
                                                     .smcDone.name,
                                               ),
                                               AdditionalField(
-                                                additional_fields_local
-                                                    .AdditionalFieldsType
-                                                    .zeroDoseStatus
+                                                AdditionalFieldsType.doseStatus
                                                     .toValue(),
-                                                ZeroDoseStatus.done.name,
+                                                getDoseStatus(selectedCodes,
+                                                        noSelectedCodes)
+                                                    .name,
                                               ),
                                               AdditionalField(
-                                                additional_fields_local
-                                                    .AdditionalFieldsType
+                                                AdditionalFieldsType
                                                     .selectedVaccines
                                                     .toValue(),
                                                 selectedCodes.join('.'),
                                               ),
                                               AdditionalField(
-                                                additional_fields_local
-                                                    .AdditionalFieldsType
+                                                AdditionalFieldsType
                                                     .noSelectedVaccines
                                                     .toValue(),
                                                 noSelectedCodes.join('.'),
@@ -1463,20 +1435,48 @@ class _VaccineSelectionPageState extends LocalizedState<VaccineSelectionPage> {
                                         searchBloc.add(
                                           const SearchHouseholdsClearEvent(),
                                         );
-                                        if (widget.isAdministration == true) {
+                                        final pbId = widget
+                                                .projectBeneficiaryClientReferenceId ??
+                                            context
+                                                .read<HouseholdOverviewBloc>()
+                                                .state
+                                                .selectedIndividual
+                                                ?.clientReferenceId ??
+                                            '';
+                                        if (noSelectedCodes.isNotEmpty) {
+                                          final taskToPass = context
+                                                  .read<
+                                                      DeliverInterventionBloc>()
+                                                  .state
+                                                  .oldTask ??
+                                              widget.task;
+
                                           router.push(
-                                            CustomSplashAcknowledgementRoute(
-                                                enableBackToSearch: false,
-                                                eligibilityAssessmentType: widget
-                                                    .eligibilityAssessmentType),
+                                            ReasonsForNonVaccinationRoute(
+                                              projectBeneficiaryClientReferenceId:
+                                                  pbId,
+                                              individual: widget.individual,
+                                              selectedYesCodes: selectedCodes,
+                                              selectedNoCodes: noSelectedCodes,
+                                              task: taskToPass,
+                                            ),
                                           );
                                         } else {
-                                          router.push(
-                                            CustomHouseholdAcknowledgementRoute(
-                                                enableViewHousehold: true,
-                                                eligibilityAssessmentType: widget
-                                                    .eligibilityAssessmentType),
-                                          );
+                                          if (widget.isAdministration == true) {
+                                            router.push(
+                                              CustomSplashAcknowledgementRoute(
+                                                  enableBackToSearch: false,
+                                                  eligibilityAssessmentType: widget
+                                                      .eligibilityAssessmentType),
+                                            );
+                                          } else {
+                                            router.push(
+                                              CustomHouseholdAcknowledgementRoute(
+                                                  enableViewHousehold: true,
+                                                  eligibilityAssessmentType: widget
+                                                      .eligibilityAssessmentType),
+                                            );
+                                          }
                                         }
                                       }
                                     }

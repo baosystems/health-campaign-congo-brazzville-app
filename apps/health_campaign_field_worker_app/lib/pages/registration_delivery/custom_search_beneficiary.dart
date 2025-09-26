@@ -171,11 +171,11 @@ class _CustomSearchBeneficiaryPageState
                                 mainAxisAlignment: MainAxisAlignment.start,
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  locationState.latitude != null
-                                      ? Column(
-                                          children: [
-                                            Row(children: [
-                                              Padding(
+                                  Column(
+                                    children: [
+                                      Row(children: [
+                                        locationState.latitude != null
+                                            ? Padding(
                                                 padding: const EdgeInsets.all(
                                                     spacer2),
                                                 child: DigitSwitch(
@@ -229,90 +229,80 @@ class _CustomSearchBeneficiaryPageState
                                                   },
                                                 ),
                                               )
-                                            ]),
-                                            Row(
-                                              children: [
-                                                Padding(
-                                                  padding: const EdgeInsets.all(
-                                                      spacer2),
-                                                  child: DigitSwitch(
-                                                    label: localizations
-                                                        .translate(i18_local
-                                                            .beneficiaryDetails
-                                                            .searchbybeneficiaryidtextupdate),
-                                                    value:
-                                                        isSearchByBeneficaryIdEnabled,
-                                                    onChanged: (value) {
-                                                      customSearchHouseholdsBloc
-                                                          .add(
-                                                        const SearchHouseholdsClearEvent(),
-                                                      );
-                                                      searchController.clear();
-                                                      context
-                                                          .read<
-                                                              IndividualGlobalSearchSMCBloc>()
-                                                          .add(const searchHouseholdSMCBloc
-                                                              .SearchHouseholdsSMCEvent.clear());
-                                                      setState(() {
-                                                        isSearchByBeneficaryIdEnabled =
-                                                            value;
-                                                        isProximityEnabled =
-                                                            false;
-                                                        isSearchByMobileNumberEnabled =
-                                                            false;
-                                                        searchController
-                                                            .clear();
-                                                        blocWrapper
-                                                            .clearEvent();
-                                                      });
-                                                    },
-                                                  ),
-                                                ),
-                                              ],
+                                            : const Offstage()
+                                      ]),
+                                      Row(
+                                        children: [
+                                          Padding(
+                                            padding:
+                                                const EdgeInsets.all(spacer2),
+                                            child: DigitSwitch(
+                                              label: localizations.translate(
+                                                  i18_local.beneficiaryDetails
+                                                      .searchbybeneficiaryidtextupdate),
+                                              value:
+                                                  isSearchByBeneficaryIdEnabled,
+                                              onChanged: (value) {
+                                                customSearchHouseholdsBloc.add(
+                                                  const SearchHouseholdsClearEvent(),
+                                                );
+                                                searchController.clear();
+                                                context
+                                                    .read<
+                                                        IndividualGlobalSearchSMCBloc>()
+                                                    .add(const searchHouseholdSMCBloc
+                                                        .SearchHouseholdsSMCEvent.clear());
+                                                setState(() {
+                                                  isSearchByBeneficaryIdEnabled =
+                                                      value;
+                                                  isProximityEnabled = false;
+                                                  isSearchByMobileNumberEnabled =
+                                                      false;
+                                                  searchController.clear();
+                                                  blocWrapper.clearEvent();
+                                                });
+                                              },
                                             ),
-                                            Row(
-                                              children: [
-                                                Padding(
-                                                  padding: const EdgeInsets.all(
-                                                      spacer2),
-                                                  child: DigitSwitch(
-                                                    label: localizations
-                                                        .translate(i18_local
-                                                            .beneficiaryDetails
-                                                            .searchByMobileNumber),
-                                                    value:
-                                                        isSearchByMobileNumberEnabled,
-                                                    onChanged: (value) {
-                                                      customSearchHouseholdsBloc
-                                                          .add(
-                                                        const SearchHouseholdsClearEvent(),
-                                                      );
-                                                      searchController.clear();
-                                                      context
-                                                          .read<
-                                                              IndividualGlobalSearchSMCBloc>()
-                                                          .add(const searchHouseholdSMCBloc
-                                                              .SearchHouseholdsSMCEvent.clear());
-                                                      setState(() {
-                                                        isSearchByMobileNumberEnabled =
-                                                            value;
-                                                        isProximityEnabled =
-                                                            false;
-                                                        isSearchByBeneficaryIdEnabled =
-                                                            false;
-                                                        searchController
-                                                            .clear();
-                                                        blocWrapper
-                                                            .clearEvent();
-                                                      });
-                                                    },
-                                                  ),
-                                                ),
-                                              ],
+                                          ),
+                                        ],
+                                      ),
+                                      Row(
+                                        children: [
+                                          Padding(
+                                            padding:
+                                                const EdgeInsets.all(spacer2),
+                                            child: DigitSwitch(
+                                              label: localizations.translate(
+                                                  i18_local.beneficiaryDetails
+                                                      .searchByMobileNumber),
+                                              value:
+                                                  isSearchByMobileNumberEnabled,
+                                              onChanged: (value) {
+                                                customSearchHouseholdsBloc.add(
+                                                  const SearchHouseholdsClearEvent(),
+                                                );
+                                                searchController.clear();
+                                                context
+                                                    .read<
+                                                        IndividualGlobalSearchSMCBloc>()
+                                                    .add(const searchHouseholdSMCBloc
+                                                        .SearchHouseholdsSMCEvent.clear());
+                                                setState(() {
+                                                  isSearchByMobileNumberEnabled =
+                                                      value;
+                                                  isProximityEnabled = false;
+                                                  isSearchByBeneficaryIdEnabled =
+                                                      false;
+                                                  searchController.clear();
+                                                  blocWrapper.clearEvent();
+                                                });
+                                              },
                                             ),
-                                          ],
-                                        )
-                                      : const Offstage(),
+                                          ),
+                                        ],
+                                      ),
+                                    ],
+                                  ),
                                   Padding(
                                     padding: const EdgeInsets.all(spacer2),
                                     child: DigitSearchBar(

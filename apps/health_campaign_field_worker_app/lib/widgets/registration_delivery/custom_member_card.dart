@@ -145,20 +145,18 @@ class CustomMemberCard extends StatelessWidget {
         .toList();
   }
 
-  List<TaskModel>? _getZeroDoseStatusData(BuildContext context) {
+  List<TaskModel>? _getDoseStatusData(BuildContext context) {
     List<TaskModel>? tasks = _getCurrentCycleData(context);
     return tasks
         ?.where((e) =>
             e.additionalFields?.fields.firstWhereOrNull(
               (element) =>
                   element.key ==
-                      additional_fields_local
-                          .AdditionalFieldsType.zeroDoseStatus
+                      additional_fields_local.AdditionalFieldsType.doseStatus
                           .toValue() &&
-                  (element.value == ZeroDoseStatus.zeroDose.name ||
-                      element.value == ZeroDoseStatus.done.name ||
-                      element.value ==
-                          ZeroDoseStatus.incompletementVaccine.name),
+                  (element.value == DoseStatus.zeroDose.name ||
+                      element.value == DoseStatus.fullyVaccinated.name ||
+                      element.value == DoseStatus.underVaccinated.name),
             ) !=
             null)
         .toList();
@@ -181,12 +179,7 @@ class CustomMemberCard extends StatelessWidget {
   Widget statusWidget(BuildContext context) {
     bool isFutureTaskPresent = _checkIfFutureTaskPresent(context);
     List<TaskModel>? smcTasks = _getSMCStatusData(context);
-    // List<TaskModel>? vasTasks = _getVACStatusData();
-    List<TaskModel>? zeroDoseTasks = _getZeroDoseStatusData(context);
-    bool isZeroDose = checkBeneficiaryZeroDose(zeroDoseTasks);
-    bool isIncompletementVaccine =
-        checkBeneficiaryIncompletementVaccine(zeroDoseTasks);
-    bool isZeroDoseDelivered = checkBeneficiaryZeroDoseDelivered(zeroDoseTasks);
+
     bool isBeneficiaryReferredSMC = checkBeneficiaryReferredSMC(smcTasks);
     bool isBeneficiaryInEligibleSMC =
         checkBeneficiaryInEligibleSMC(smcTasks, context.selectedCycle);
@@ -195,6 +188,11 @@ class CustomMemberCard extends StatelessWidget {
     // ---- TEMP hasBeneficiaryAbsent check until the package adds proper enums ----
     final bool hasBeneficiaryAbsent = (currentTasks ?? const [])
         .any((t) => _taskHasStatus(t, kStatusBeneficiaryAbsent));
+
+    List<TaskModel>? zeroDoseTasks = _getDoseStatusData(context);
+    bool isZeroDose = checkBeneficiaryZeroDose(zeroDoseTasks);
+    bool isUnderVaccinated = checkBeneficiaryUnderVaccinated(zeroDoseTasks);
+    bool isFullyVaccinated = checkBeneficiaryZeroDoseDelivered(zeroDoseTasks);
 
     final theme = Theme.of(context);
     if (isHead) {
@@ -247,7 +245,7 @@ class CustomMemberCard extends StatelessWidget {
                         : DigitTheme.instance.colorScheme.onSurfaceVariant,
               ),
             ),
-          if (isZeroDose || isIncompletementVaccine || isZeroDoseDelivered)
+          if (isZeroDose || isUnderVaccinated || isFullyVaccinated)
             Align(
               alignment: Alignment.centerLeft,
               child: DigitIconButton(
@@ -256,11 +254,11 @@ class CustomMemberCard extends StatelessWidget {
                   isZeroDose
                       ? i18_local
                           .householdOverView.householdOverViewZeroDoseIconLabel
-                      : isIncompletementVaccine
+                      : isUnderVaccinated
                           ? i18_local.householdOverView
-                              .householdOverViewIncompletementVaccineLabel
+                              .householdOverViewUnderVaccinatedLabel
                           : i18_local.householdOverView
-                              .householdOverViewZeroDoseDeliveredIconLabel,
+                              .householdOverViewFullyVaccinatedLabel,
                 ),
                 iconSize: 20,
                 iconTextColor: theme.colorScheme.onSurfaceVariant,
@@ -309,7 +307,7 @@ class CustomMemberCard extends StatelessWidget {
           //       iconColor: theme.colorScheme.error,
           //     ),
           //   ),
-          if (isZeroDose || isIncompletementVaccine || isZeroDoseDelivered)
+          if (isZeroDose || isUnderVaccinated || isFullyVaccinated)
             Align(
               alignment: Alignment.centerLeft,
               child: DigitIconButton(
@@ -318,7 +316,7 @@ class CustomMemberCard extends StatelessWidget {
                   isZeroDose
                       ? i18_local
                           .householdOverView.householdOverViewZeroDoseIconLabel
-                      : isIncompletementVaccine
+                      : isUnderVaccinated
                           ? i18_local.householdOverView
                               .householdOverViewIncompletementVaccineLabel
                           : i18_local.householdOverView
@@ -345,7 +343,7 @@ class CustomMemberCard extends StatelessWidget {
               iconColor: theme.colorScheme.error,
             ),
           ),
-          if (isZeroDose || isIncompletementVaccine || isZeroDoseDelivered)
+          if (isZeroDose || isUnderVaccinated || isFullyVaccinated)
             Align(
               alignment: Alignment.centerLeft,
               child: DigitIconButton(
@@ -354,7 +352,7 @@ class CustomMemberCard extends StatelessWidget {
                   isZeroDose
                       ? i18_local
                           .householdOverView.householdOverViewZeroDoseIconLabel
-                      : isIncompletementVaccine
+                      : isUnderVaccinated
                           ? i18_local.householdOverView
                               .householdOverViewIncompletementVaccineLabel
                           : i18_local.householdOverView
@@ -415,7 +413,6 @@ class CustomMemberCard extends StatelessWidget {
     final textTheme = theme.digitTextTheme(context);
     bool isFutureTaskPresent = _checkIfFutureTaskPresent(context);
     List<TaskModel>? smcTasks = _getSMCStatusData(context);
-    List<TaskModel>? zeroDoseTasks = _getZeroDoseStatusData(context);
     final doseStatus = checkStatus(smcTasks, context.selectedCycle);
     bool smcAssessmentPendingStatus = assessmentSMCPending(smcTasks);
     bool isBeneficiaryReferredSMC = checkBeneficiaryReferredSMC(smcTasks);
@@ -434,6 +431,11 @@ class CustomMemberCard extends StatelessWidget {
         ? true
         : redosePending(smcTasks, context.selectedCycle);
 
+    List<TaskModel>? zeroDoseTasks = _getDoseStatusData(context);
+    bool isZeroDose = checkBeneficiaryZeroDose(zeroDoseTasks);
+    bool isUnderVaccinated = checkBeneficiaryUnderVaccinated(zeroDoseTasks);
+    bool isFullyVaccinated = checkBeneficiaryZeroDoseDelivered(zeroDoseTasks);
+
     if (isFutureTaskPresent) {
       return const Offstage();
     }
@@ -443,7 +445,7 @@ class CustomMemberCard extends StatelessWidget {
         !isBeneficiaryReferredSMC &&
         !isBeneficiaryInEligibleSMC &&
         ageInMonths < 3 &&
-        (zeroDoseTasks == null || zeroDoseTasks.isEmpty == true)) {
+        zeroDoseTasks == null) {
       return Column(
         children: [
           DigitElevatedButton(
@@ -479,10 +481,49 @@ class CustomMemberCard extends StatelessWidget {
           ),
         ],
       );
-    }
-    if ((isNotEligibleSMC || isBeneficiaryIneligible) && !doseStatus) {
+    } else if (zeroDoseTasks != null &&
+        zeroDoseTasks.isNotEmpty &&
+        !isFullyVaccinated) {
+      if (isZeroDose || isUnderVaccinated) {
+        return DigitElevatedButton(
+          child: Center(
+            child: Text(
+              localizations.translate(
+                i18_local.householdOverView
+                    .householdOverViewChildVaccinatedActionText,
+              ),
+              style: textTheme.headingM.copyWith(color: Colors.white),
+            ),
+          ),
+          onPressed: () async {
+            // final bloc = context.read<HouseholdOverviewBloc>();
+            // bloc.add(
+            //   HouseholdOverviewEvent.selectedIndividual(
+            //     individualModel: individual,
+            //   ),
+            // );
+            // // if ((smcTasks ?? []).isEmpty) {
+            // context.router.push(
+            //   ZeroDoseCheckRoute(
+            //     eligibilityAssessmentType: EligibilityAssessmentType.smc,
+            //     isAdministration: false,
+            //     isChecklistAssessmentDone: false,
+            //     projectBeneficiaryClientReferenceId:
+            //         projectBeneficiaryClientReferenceId,
+            //     individual: individual,
+            //   ),
+            // );
+            // }
+          },
+        );
+      }
       return const Offstage();
     }
+
+    if ((isNotEligibleSMC || isBeneficiaryIneligible) && !doseStatus)
+      return const Offstage();
+    }
+
     if (isNotEligibleSMC || (!redosePendingStatus)) {
       return const Offstage();
     }

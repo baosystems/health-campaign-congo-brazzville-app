@@ -232,7 +232,7 @@ class ZeroDoseCheckPageState extends LocalizedState<ZeroDoseCheckPage> {
                         selectedServiceDefinition = value.serviceDefinitionList
                             .where(
                                 (element) => element.code.toString().contains(
-                                      '${context.selectedProject.name}.$zeroDoseAssessment.${context.isCommunityDistributor ? RolesType.communityDistributor.toValue() : ''}',
+                                      '${context.selectedProject.name}.$zeroDoseAssessment.${RolesType.communityDistributor.toValue()}',
                                     ))
                             .toList()
                             .firstOrNull;

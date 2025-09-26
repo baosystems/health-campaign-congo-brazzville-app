@@ -572,15 +572,15 @@ class _VaccineSelectionPageState extends LocalizedState<VaccineSelectionPage> {
               '${i18_local.deliverIntervention.vaccinsSelectionLabelForGroup}_${_numberToWords(index).toUpperCase()}',
             ),
             style: theme.textTheme.headlineLarge),
-            Text(
-  AppLocalizations.of(context).translate(
-    i18_local.deliverIntervention.vaccinsSelectionInstruction,
-  ),
-  style: Theme.of(context).textTheme.titleMedium?.copyWith(
-    color: const Color(0xFF4B5563), // same grey you have
-    height: 1.25,
-  ),
-),
+        Text(
+          AppLocalizations.of(context).translate(
+            i18_local.deliverIntervention.vaccinsSelectionInstruction,
+          ),
+          style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                color: const Color(0xFF4B5563), // same grey you have
+                height: 1.25,
+              ),
+        ),
         const SizedBox(height: spacer4),
         Column(
           children: [
@@ -860,7 +860,7 @@ class _VaccineSelectionPageState extends LocalizedState<VaccineSelectionPage> {
                 builder: (context, householdOverviewState) {
                   double? latitude = locationState.latitude;
                   double? longitude = locationState.longitude;
-                  String vaccineSelection = "ZERO_DOSE_ASSESSMENT";
+                  String vaccineSelection = "ZERODOSE_ASSESSMENT";
                   return BlocBuilder<ServiceDefinitionBloc,
                       ServiceDefinitionState>(
                     builder: (context, state) {
@@ -871,7 +871,7 @@ class _VaccineSelectionPageState extends LocalizedState<VaccineSelectionPage> {
                               .serviceDefinitionList
                               .where(
                                   (element) => element.code.toString().contains(
-                                        '${context.selectedProject.name}.$vaccineSelection.${context.isCommunityDistributor ? RolesType.communityDistributor.toValue() : RolesType.healthFacilitySupervisor.toValue()}',
+                                        '${context.selectedProject.name}.$vaccineSelection.${RolesType.communityDistributor.toValue()}',
                                       ))
                               .toList()
                               .firstOrNull;

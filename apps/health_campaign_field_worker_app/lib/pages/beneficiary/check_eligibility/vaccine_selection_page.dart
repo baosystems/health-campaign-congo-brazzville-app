@@ -626,24 +626,6 @@ class _VaccineSelectionPageState extends LocalizedState<VaccineSelectionPage> {
     return DoseStatus.none;
   }
 
-  Future<void> _finalizeFlowOrRoute(String pbId) async {
-    if (noSelectedCodes.isNotEmpty) {
-      final taskToPass =
-          context.read<DeliverInterventionBloc>().state.oldTask ?? widget.task;
-
-      await context.router.push(
-        ReasonsForNonVaccinationRoute(
-          projectBeneficiaryClientReferenceId: pbId,
-          individual: widget.individual,
-          selectedYesCodes: selectedCodes,
-          selectedNoCodes: noSelectedCodes,
-          task: taskToPass,
-        ),
-      );
-      return;
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
     final localizations = AppLocalizations.of(context);
@@ -697,11 +679,6 @@ class _VaccineSelectionPageState extends LocalizedState<VaccineSelectionPage> {
                   .selectedIndividual
                   ?.clientReferenceId ??
               '';
-          if (pbId.isNotEmpty) {
-            WidgetsBinding.instance.addPostFrameCallback((_) {
-              _finalizeFlowOrRoute(pbId);
-            });
-          }
           return const SizedBox.shrink();
         }
 
@@ -753,9 +730,6 @@ class _VaccineSelectionPageState extends LocalizedState<VaccineSelectionPage> {
                       .selectedIndividual
                       ?.clientReferenceId ??
                   '';
-              if (pbId.isNotEmpty) {
-                await _finalizeFlowOrRoute(pbId);
-              }
             }
           });
           return const SizedBox.shrink();
@@ -919,25 +893,6 @@ class _VaccineSelectionPageState extends LocalizedState<VaccineSelectionPage> {
                                             'Missing beneficiary ID',
                                             true,
                                             Theme.of(context)),
-                                      );
-                                      return;
-                                    }
-
-                                    if (noSelectedCodes.isNotEmpty) {
-                                      final taskToPass = context
-                                              .read<DeliverInterventionBloc>()
-                                              .state
-                                              .oldTask ??
-                                          widget.task;
-                                      await context.router.push(
-                                        ReasonsForNonVaccinationRoute(
-                                          projectBeneficiaryClientReferenceId:
-                                              pbId,
-                                          individual: widget.individual,
-                                          selectedYesCodes: selectedCodes,
-                                          selectedNoCodes: noSelectedCodes,
-                                          task: taskToPass,
-                                        ),
                                       );
                                       return;
                                     }
@@ -1477,20 +1432,48 @@ class _VaccineSelectionPageState extends LocalizedState<VaccineSelectionPage> {
                                         searchBloc.add(
                                           const SearchHouseholdsClearEvent(),
                                         );
-                                        if (widget.isAdministration == true) {
+                                        final pbId = widget
+                                                .projectBeneficiaryClientReferenceId ??
+                                            context
+                                                .read<HouseholdOverviewBloc>()
+                                                .state
+                                                .selectedIndividual
+                                                ?.clientReferenceId ??
+                                            '';
+                                        if (noSelectedCodes.isNotEmpty) {
+                                          final taskToPass = context
+                                                  .read<
+                                                      DeliverInterventionBloc>()
+                                                  .state
+                                                  .oldTask ??
+                                              widget.task;
+
                                           router.push(
-                                            CustomSplashAcknowledgementRoute(
-                                                enableBackToSearch: false,
-                                                eligibilityAssessmentType: widget
-                                                    .eligibilityAssessmentType),
+                                            ReasonsForNonVaccinationRoute(
+                                              projectBeneficiaryClientReferenceId:
+                                                  pbId,
+                                              individual: widget.individual,
+                                              selectedYesCodes: selectedCodes,
+                                              selectedNoCodes: noSelectedCodes,
+                                              task: taskToPass,
+                                            ),
                                           );
                                         } else {
-                                          router.push(
-                                            CustomHouseholdAcknowledgementRoute(
-                                                enableViewHousehold: true,
-                                                eligibilityAssessmentType: widget
-                                                    .eligibilityAssessmentType),
-                                          );
+                                          if (widget.isAdministration == true) {
+                                            router.push(
+                                              CustomSplashAcknowledgementRoute(
+                                                  enableBackToSearch: false,
+                                                  eligibilityAssessmentType: widget
+                                                      .eligibilityAssessmentType),
+                                            );
+                                          } else {
+                                            router.push(
+                                              CustomHouseholdAcknowledgementRoute(
+                                                  enableViewHousehold: true,
+                                                  eligibilityAssessmentType: widget
+                                                      .eligibilityAssessmentType),
+                                            );
+                                          }
                                         }
                                       }
                                     }

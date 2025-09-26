@@ -211,8 +211,6 @@ class HouseholdOverView {
 
   String get householdOverViewBeneficiaryAbsentLabel =>
       'HOUSEHOLD_OVER_VIEW_BENEFICIARY_ABSENT_STAUS_LABEL';
-  String get householdOverViewAdverseEffectsRecordedLabel =>
-      'HOUSEHOLD_OVER_VIEW_ADVERSE_EFFECT_RECORDED_LABEL';
 }
 
 class DeliverIntervention {

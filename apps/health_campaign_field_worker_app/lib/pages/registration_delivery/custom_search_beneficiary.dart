@@ -869,68 +869,21 @@ class _CustomSearchBeneficiaryPageState
                       size: DigitButtonSize.large,
                       isDisabled: false,
                       onPressed: () {
-                        int spaq1 = context.spaq1;
-                        int spaq2 = context.spaq2;
-
-                        String descriptionText = localizations.translate(
-                            i18_local
-                                .beneficiaryDetails.insufficientStockMessage);
-
-                        if (spaq1 == 0) {
-                          descriptionText +=
-                              "\n ${localizations.translate(i18_local.beneficiaryDetails.spaq1DoseUnit)}";
-                        }
-                        if (spaq2 == 0) {
-                          descriptionText +=
-                              "\n ${localizations.translate(i18_local.beneficiaryDetails.spaq2DoseUnit)}";
-                        }
-
-                        if ((spaq1 > 0 || spaq2 > 0)) {
-                          FocusManager.instance.primaryFocus?.unfocus();
-                          context.read<DigitScannerBloc>().add(
-                                const DigitScannerEvent.handleScanner(),
-                              );
-                          context.router
-                              .push(CustomBeneficiaryRegistrationWrapperRoute(
-                            initialState: BeneficiaryRegistrationCreateState(
-                              searchQuery: searchHouseholdsState.searchQuery,
-                            ),
-                          ));
-                          searchController.clear();
-                          selectedFilters = [];
-                          customSearchHouseholdsBloc.add(
-                            const SearchHouseholdsClearEvent(),
-                          );
-                        } else {
-                          showCustomPopup(
-                            context: context,
-                            builder: (popupContext) => Popup(
-                              title: localizations.translate(i18_local
-                                  .beneficiaryDetails.insufficientStockHeading),
-                              onOutsideTap: () {
-                                Navigator.of(popupContext).pop(false);
-                              },
-                              description: descriptionText,
-                              type: PopUpType.alert,
-                              actions: [
-                                DigitButton(
-                                  label: localizations.translate(
-                                    i18_local.beneficiaryDetails.goToHome,
-                                  ),
-                                  onPressed: () {
-                                    (context.router.parent() as StackRouter)
-                                        .maybePop();
-                                    context.router.popUntil((route) =>
-                                        route.settings.name == HomeRoute.name);
-                                    context.router.maybePop();
-                                  },
-                                  type: DigitButtonType.primary,
-                                  size: DigitButtonSize.large,
-                                ),
-                              ],
-                            ),
-                          );
-                        }
+                        FocusManager.instance.primaryFocus?.unfocus();
+                        context.read<DigitScannerBloc>().add(
+                              const DigitScannerEvent.handleScanner(),
+                            );
+                        context.router
+                            .push(CustomBeneficiaryRegistrationWrapperRoute(
+                          initialState: BeneficiaryRegistrationCreateState(
+                            searchQuery: searchHouseholdsState.searchQuery,
+                          ),
+                        ));
+                        searchController.clear();
+                        selectedFilters = [];
+                        customSearchHouseholdsBloc.add(
+                          const SearchHouseholdsClearEvent(),
+                        );
                       },
                     );
                   },

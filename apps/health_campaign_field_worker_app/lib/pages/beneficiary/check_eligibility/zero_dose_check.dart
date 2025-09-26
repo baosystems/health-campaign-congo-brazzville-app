@@ -232,7 +232,7 @@ class ZeroDoseCheckPageState extends LocalizedState<ZeroDoseCheckPage> {
                         selectedServiceDefinition = value.serviceDefinitionList
                             .where(
                                 (element) => element.code.toString().contains(
-                                      '${context.selectedProject.name}.$zeroDoseAssessment.${context.isCommunityDistributor ? RolesType.communityDistributor.toValue() : ''}',
+                                      '${context.selectedProject.name}.$zeroDoseAssessment.${RolesType.communityDistributor.toValue()}',
                                     ))
                             .toList()
                             .firstOrNull;
@@ -948,33 +948,6 @@ class ZeroDoseCheckPageState extends LocalizedState<ZeroDoseCheckPage> {
                                             padding: const EdgeInsets.all(8),
                                             child: Column(
                                               children: [
-                                                if (RegistrationDeliverySingleton()
-                                                        .beneficiaryType ==
-                                                    BeneficiaryType.individual)
-                                                  ReactiveWrapperField(
-                                                    formControlName:
-                                                        _doseAdministrationKey,
-                                                    builder: (field) =>
-                                                        LabeledField(
-                                                      label: localizations
-                                                          .translate(i18
-                                                              .deliverIntervention
-                                                              .currentCycle),
-                                                      child: DigitTextFormInput(
-                                                        inputFormatters: [
-                                                          UpperCaseTextFormatter(),
-                                                        ],
-                                                        readOnly: true,
-                                                        keyboardType:
-                                                            TextInputType
-                                                                .number,
-                                                        initialValue: form
-                                                            .control(
-                                                                _doseAdministrationKey)
-                                                            .value,
-                                                      ),
-                                                    ),
-                                                  ),
                                                 ReactiveWrapperField(
                                                   formControlName:
                                                       _dateOfAdministrationKey,
@@ -1253,6 +1226,11 @@ class ZeroDoseCheckPageState extends LocalizedState<ZeroDoseCheckPage> {
     });
   }
 
+  String trKey(String key, {String? fallback}) {
+    final v = localizations.translate(key);
+    return (v.isEmpty || v == key) ? (fallback ?? key) : v;
+  }
+
   Widget _buildChecklist(
     AttributesModel item,
     int index,
@@ -1281,6 +1259,14 @@ class ZeroDoseCheckPageState extends LocalizedState<ZeroDoseCheckPage> {
         }
       }
 
+      final mdmsKey = '${selectedServiceDefinition?.code}.${item.code}';
+
+      final displayLabel = trKey(
+        mdmsKey,
+        fallback:
+            trKey(i18_local.checklist.zeroDoseBookOrEverVaccinatedQuestion),
+      );
+
       return Column(
         children: [
           Align(
@@ -1289,7 +1275,7 @@ class ZeroDoseCheckPageState extends LocalizedState<ZeroDoseCheckPage> {
               padding: const EdgeInsets.all(4.0), // Add padding here
               child: Text(
                 '${localizations.translate(
-                  '${selectedServiceDefinition?.code}.${item.code}',
+                  '$displayLabel ${item.required == true ? '' : ''}',
                 )} ${item.required == true ? '*' : ''}',
                 style: theme.textTheme.headlineSmall,
               ),

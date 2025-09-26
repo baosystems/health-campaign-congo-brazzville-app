@@ -212,6 +212,8 @@ class DeliverIntervention {
 
   String get vaccinsSelectionLabel => 'VACCINS_DETAILS_LABEL';
   String get vaccinsSelectionLabelForGroup => 'VACCINS_DETAILS_LABEL_FOR_GROUP';
+  String get vaccinsSelectionInstruction =>
+      'DELIVER_INTERVENTION_VACCINS_SELECTION_INSTRUCTION';
 
   String get otherReasonLabel =>
       'DELIVER_INTERVENTION_OTHER_REASON_FOR_REDOSE_LABEL';
@@ -262,6 +264,18 @@ class DeliverIntervention {
   String get proceedToVASDescription => 'PROCEED_TO_VAS_DESCRIPTION';
 
   String get zeroDoseCheckLabel => 'DELIVER_INTERVENTION_ZERO_DOSE_CHECK_LABEL';
+
+  String get guidanceTitle => 'DELIVER_INTERVENTION_GUIDANCE_TITLE';
+  String get guidanceBcg => 'DELIVER_INTERVENTION_GUIDANCE_BCG';
+  String get guidanceVpo => 'DELIVER_INTERVENTION_GUIDANCE_VPO';
+  String get guidancePenta => 'DELIVER_INTERVENTION_GUIDANCE_PENTA';
+  String get guidanceRota => 'DELIVER_INTERVENTION_GUIDANCE_ROTA';
+  String get guidancePneumo => 'DELIVER_INTERVENTION_GUIDANCE_PNEUMO';
+  String get guidanceVpi => 'DELIVER_INTERVENTION_GUIDANCE_VPI';
+  String get guidanceRr => 'DELIVER_INTERVENTION_GUIDANCE_RR';
+  String get guidanceVaa => 'DELIVER_INTERVENTION_GUIDANCE_VAA';
+  String get guidanceMen => 'DELIVER_INTERVENTION_GUIDANCE_MEN';
+  String get guidanceVit => 'DELIVER_INTERVENTION_GUIDANCE_VIT';
 }
 
 class Checklist {
@@ -309,6 +323,8 @@ class Checklist {
       'CHECKLIST_BACK_DIALOG_SECONDARY_ACTION';
 
   String get noChecklistFound => 'NO_CHECKLISTS_FOUND';
+
+  String get zeroDoseBookOrEverVaccinatedQuestion => 'CHECKLIST_ZERO_DOSE_Q1';
 }
 
 class ReferBeneficiary {

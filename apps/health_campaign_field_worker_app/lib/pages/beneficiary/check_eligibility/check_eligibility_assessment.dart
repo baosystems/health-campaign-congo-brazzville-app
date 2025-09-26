@@ -214,10 +214,11 @@ class _EligibilityChecklistViewPage
                               List<String?> ineligibilityReasons = [];
                               List<bool> checkIfIneligibleFlow = [];
 
-                              ifReferral = widget.eligibilityAssessmentType ==
+                              ifReferral = isReferral(responses, referralReasons);
+                                            /* widget.eligibilityAssessmentType ==
                                       EligibilityAssessmentType.smc
                                   ? isReferral(responses, referralReasons)
-                                  : isVASReferral(responses, referralReasons);
+                                  : isVASReferral(responses, referralReasons); */
                               ifDeliver = isDelivery(responses);
                               checkIfIneligibleFlow = isIneligible(
                                 responses,
@@ -444,12 +445,13 @@ class _EligibilityChecklistViewPage
                                 ),
                               );
                               if (shouldSubmit ?? false) {
-                                if (context.mounted &&
+                                /* if (context.mounted &&
                                     ((ifDeliver || ifAdministration) ||
                                         ifIneligible ||
-                                        ifReferral)) {
+                                        ifReferral)) { */
+                                if (context.mounted){
                                   final router = context.router;
-                                  if (ifIneligible) {
+                                  /* if (ifIneligible) {
                                     // added the deliversubmitevent here
                                     final clientReferenceId =
                                         IdGen.i.identifier;
@@ -553,7 +555,8 @@ class _EligibilityChecklistViewPage
                                     //       eligibilityAssessmentType:
                                     //           widget.eligibilityAssessmentType),
                                     // );
-                                  } else if (ifReferral) {
+                                  } else  */
+                                  if (ifReferral) {
                                     if (widget.eligibilityAssessmentType ==
                                         EligibilityAssessmentType.smc) {
                                       router
@@ -569,6 +572,14 @@ class _EligibilityChecklistViewPage
                                     router.push(CustomBeneficiaryDetailsRoute(
                                         eligibilityAssessmentType:
                                             widget.eligibilityAssessmentType));
+
+                                    /* router.push(VaccineSelectionRoute(
+                                      isAdministration: isAdministration, 
+                                      eligibilityAssessmentType: eligibilityAssessmentType, 
+                                      isChecklistAssessmentDone: isChecklistAssessmentDone, 
+                                      task: task, 
+                                      sideEffect: sideEffect
+                                    )); */
                                   }
                                 }
 
@@ -1055,23 +1066,49 @@ class _EligibilityChecklistViewPage
     bool ifAdministration,
   ) {
     var isIneligible = false;
-    var q3Key = "KBEA3";
-    var q5Key = "KBEA4";
-    var q2Key = "KBEA2";
-    var q6Key = "KBEA2.YES.KBEA2A.POSITIVE.KBEA2AA";
 
-    Map<String, String> keyVsReason = {
-      q2Key: "FEVER",
-      q3Key: "CHILD_ALLERGIC_TO_DRUGS",
-      q5Key: "TAKEN_SP_OR_CTX",
-      q6Key: "TAKEN_MALARIA_DOSE",
-    };
+    var q1Key = "CEAQ1";
+    var q2Key = "CEAQ2";
+    var q2BKey = "CEAQ2.YES.CEAQ2B";
+    var q3Key = "CEAQ3";
+    var q4Key = "CEAQ4";
+    var q4BKey = "CEAQ4.YES.CEAQ4B";
+    var q5Key = "CEAQ5";
 
-    if (responses.isNotEmpty) {
-      if (responses.containsKey(q3Key) && responses[q3Key]!.isNotEmpty) {
-        isIneligible = responses[q3Key] == yes ? true : false;
+
+   /*  if (responses.isNotEmpty) {
+      // Q1
+      isIneligible = responses.containsKey(q1Key) && responses[q1Key]!.isNotEmpty ;
+
+      // Q2
+      if(responses.containsKey(q2Key) &&  responses[q2Key]!.isNotEmpty){
+        isIneligible = isIneligible || ( responses[q2Key] == yes  );
       }
-      if (!isIneligible &&
+
+      // Q2.2
+      if(responses.containsKey(q2BKey) &&  responses[q2BKey]!.isNotEmpty){
+        isIneligible = isIneligible || ( responses[q2BKey] == yes  );
+      }
+
+      // Q3
+      isIneligible = responses.containsKey(q3Key) && responses[q3Key]!.isNotEmpty ;
+
+      // Q4
+      if(responses.containsKey(q4Key) &&  responses[q4Key]!.isNotEmpty){
+        isIneligible = isIneligible || ( responses[q4Key] == no );
+      }
+
+      // Q4.2
+      if(responses.containsKey(q4BKey) &&  responses[q4BKey]!.isNotEmpty){
+        isIneligible = isIneligible || ( responses[q4BKey] == yes );
+      }
+
+      // Q5
+      if(responses.containsKey(q5Key) &&  responses[q5Key]!.isNotEmpty){
+        isIneligible = isIneligible || ( responses[q5Key] == no );
+      }
+
+      /* if (!isIneligible &&
           (responses.containsKey(q5Key) && responses[q5Key]!.isNotEmpty)) {
         isIneligible = responses[q5Key] == yes ? true : false;
       }
@@ -1092,8 +1129,8 @@ class _EligibilityChecklistViewPage
                 : null;
           }
         }
-      }
-    }
+      } */
+    } */
 
     return [isIneligible, ifAdministration];
   }
@@ -1103,48 +1140,67 @@ class _EligibilityChecklistViewPage
     List<String?> referralReasons,
   ) {
     var isReferral = false;
-    var q1Key = "KBEA1";
-    var q2Key = "KBEA2";
-    var q3Key = "KBEA2.YES.KBEA2A";
-    var q4Key = "KBEA2.YES.KBEA2A.POSITIVE.KBEA2AA";
-    Map<String, String> referralKeysVsCode = {
-      q1Key: "SICK",
-      q2Key: "FEVER",
-      q3Key: "MALARIA_CHECK",
-      q4Key: "MALARIA_DOSE_CHECK"
-    };
-    // TODO Configure the reasons ,verify hardcoded strings
+
+    var q2BKey = "CEAQ2.YES.CEAQ2B";
+    var q4BKey = "CEAQ4.YES.CEAQ4B";
+    var q5Key = "CEAQ5";
+
+    // var q1Key = "KBEA1";
+    // var q2Key = "KBEA2";
+    // var q3Key = "KBEA2.YES.KBEA2A";
+    // var q4Key = "KBEA2.YES.KBEA2A.POSITIVE.KBEA2AA";
+    // Map<String, String> referralKeysVsCode = {
+    //   q1Key: "SICK",
+    //   q2Key: "FEVER",
+    //   q3Key: "MALARIA_CHECK",
+    //   q4Key: "MALARIA_DOSE_CHECK"
+    // };
+    // // TODO Configure the reasons ,verify hardcoded strings
+    // if (responses.isNotEmpty) {
+    //   if (responses.containsKey(q1Key) && responses[q1Key]!.isNotEmpty) {
+    //     isReferral = responses[q1Key] == yes ? true : false;
+    //   }
+    //   if (responses.containsKey(q2Key) &&
+    //       responses[q2Key]!.isNotEmpty &&
+    //       responses[q2Key] == yes) {
+    //     if (!isReferral &&
+    //         (responses.containsKey(q3Key) && responses[q3Key]!.isNotEmpty)) {
+    //       isReferral = (responses[q3Key] == negative ||
+    //               responses[q3Key] == test_unavailable)
+    //           ? true
+    //           : false;
+    //     }
+    //     if (!isReferral &&
+    //         (responses.containsKey(q4Key) && responses[q4Key]!.isNotEmpty)) {
+    //       isReferral = responses[q4Key] == no ? true : false;
+    //     }
+    //   }
+    // }
+    // if (isReferral) {
+    //   for (var entry in referralKeysVsCode.entries) {
+    //     if (responses.containsKey(entry.key) &&
+    //         responses[entry.key]!.isNotEmpty) {
+    //       if ((entry.key == q1Key && responses[q1Key] == yes) ||
+    //           (entry.key == q3Key && responses[q3Key] == negative) ||
+    //           (entry.key == q3Key && responses[q3Key] == test_unavailable) ||
+    //           (entry.key == q4Key && responses[q4Key] == no)) {
+    //         referralReasons.add(entry.value);
+    //       }
+    //     }
+    //   }
+    // }
+
     if (responses.isNotEmpty) {
-      if (responses.containsKey(q1Key) && responses[q1Key]!.isNotEmpty) {
-        isReferral = responses[q1Key] == yes ? true : false;
+      if (responses.containsKey(q2BKey) && responses[q2BKey]!.isNotEmpty) {
+        isReferral = responses[q2BKey] == no ? true : false;
       }
-      if (responses.containsKey(q2Key) &&
-          responses[q2Key]!.isNotEmpty &&
-          responses[q2Key] == yes) {
-        if (!isReferral &&
-            (responses.containsKey(q3Key) && responses[q3Key]!.isNotEmpty)) {
-          isReferral = (responses[q3Key] == negative ||
-                  responses[q3Key] == test_unavailable)
-              ? true
-              : false;
-        }
-        if (!isReferral &&
-            (responses.containsKey(q4Key) && responses[q4Key]!.isNotEmpty)) {
-          isReferral = responses[q4Key] == no ? true : false;
-        }
+
+      if (responses.containsKey(q4BKey) && responses[q4BKey]!.isNotEmpty) {
+        isReferral = responses[q4BKey] == no ? true : false;
       }
-    }
-    if (isReferral) {
-      for (var entry in referralKeysVsCode.entries) {
-        if (responses.containsKey(entry.key) &&
-            responses[entry.key]!.isNotEmpty) {
-          if ((entry.key == q1Key && responses[q1Key] == yes) ||
-              (entry.key == q3Key && responses[q3Key] == negative) ||
-              (entry.key == q3Key && responses[q3Key] == test_unavailable) ||
-              (entry.key == q4Key && responses[q4Key] == no)) {
-            referralReasons.add(entry.value);
-          }
-        }
+
+      if (responses.containsKey(q5Key) && responses[q5Key]!.isNotEmpty) {
+        isReferral = responses[q5Key] == yes ? true : false;
       }
     }
 

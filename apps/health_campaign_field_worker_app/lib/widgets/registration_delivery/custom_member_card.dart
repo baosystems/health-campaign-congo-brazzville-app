@@ -491,6 +491,25 @@ class CustomMemberCard extends StatelessWidget {
       }
       return Column(
         children: [
+          // ELEGIBILITY ASSESSMENT
+          DigitElevatedButton(
+            child: Center(
+              child: Text(
+                localizations.translate(
+                    i18_local.householdOverView.householdOverViewVaccinateChild
+                  ),
+              ),
+            ), 
+            onPressed: () async {
+              context.router.push(
+                EligibilityChecklistViewRoute(
+                  projectBeneficiaryClientReferenceId: projectBeneficiaryClientReferenceId,
+                  individual: individual,
+                  eligibilityAssessmentType: EligibilityAssessmentType.smc
+                  )
+              );
+            }
+          ),
           if (smcAssessmentPendingStatus &&
               !isBeneficiaryReferredSMC &&
               !isBeneficiaryInEligibleSMC)

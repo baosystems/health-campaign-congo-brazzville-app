@@ -198,6 +198,8 @@ class HouseholdOverView {
       'HOUSEHOLD_OVER_VIEW_INCOMPLETEMENT_VACCINE_LABEL';
   String get householdOverViewZeroDoseDeliveredIconLabel =>
       'HOUSEHOLD_OVER_VIEW_ZERO_DOSE_DELIVERED_ICON_LABEL';
+  String get householdOverViewVaccinateChild =>
+      'HOUSEHOLD_OVER_VIEW_VACCINATE_CHILD';
 }
 
 class DeliverIntervention {

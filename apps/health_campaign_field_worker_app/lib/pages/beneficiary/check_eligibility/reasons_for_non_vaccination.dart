@@ -108,7 +108,7 @@ class _ReasonsForNonVaccinationPageState
                     DigitToast.show(
                       context,
                       options: DigitToastOptions(
-                         l.translate(i18_local.zeroDose.enterReason),
+                        l.translate(i18_local.zeroDose.enterReason),
                         true,
                         Theme.of(context),
                       ),

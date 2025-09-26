@@ -118,6 +118,8 @@ class Constants {
   static const String spaq1Name = "SPAQ1_NAME";
   static const String spaq2Name = "SPAQ2_NAME";
 
+  static const String penta1 = "HCM_VACCINE_PENTA_1";
+
   static const Map<String, String> spaqCodeNameMap = {
     Constants.spaq1: Constants.spaq1Name,
     Constants.spaq2: Constants.spaq2Name,
@@ -377,7 +379,7 @@ enum DigitProgressDialogType {
   pendingSync,
 }
 
-enum DoseStatus { zeroDose, underVaccinated, fullyVaccinated }
+enum DoseStatus { none, zeroDose, underVaccinated, fullyVaccinated }
 
 class DownloadBeneficiary {
   String title;

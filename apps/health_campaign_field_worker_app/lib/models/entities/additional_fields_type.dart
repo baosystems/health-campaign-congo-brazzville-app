@@ -5,8 +5,8 @@ part 'additional_fields_type.mapper.dart';
 
 @MappableEnum(caseStyle: CaseStyle.upperCase)
 enum AdditionalFieldsType {
-  @MappableValue("zeroDoseStatus")
-  zeroDoseStatus,
+  @MappableValue("doseStatus")
+  doseStatus,
   @MappableValue("selectedVaccines")
   selectedVaccines,
   @MappableValue("noSelectedVaccines")
@@ -57,7 +57,5 @@ enum AdditionalFieldsType {
   ineligibleReasons,
   @MappableValue("ageBelow3Months")
   ageBelow3Months,
-  @MappableValue("doseStatus")
-  doseStatus,
   ;
 }

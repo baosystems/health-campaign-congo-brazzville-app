@@ -624,16 +624,15 @@ class ZeroDoseCheckPageState extends LocalizedState<ZeroDoseCheckPage> {
                                           ...oldFields,
                                           AdditionalField(
                                             additional_fields_local
-                                                .AdditionalFieldsType
-                                                .zeroDoseStatus
+                                                .AdditionalFieldsType.doseStatus
                                                 .toValue(),
                                             zeroDose
-                                                ? ZeroDoseStatus.zeroDose.name
+                                                ? DoseStatus.zeroDose.name
                                                 : incompletementVaccine
-                                                    ? ZeroDoseStatus
-                                                        .incompletementVaccine
-                                                        .name
-                                                    : ZeroDoseStatus.done.name,
+                                                    ? DoseStatus
+                                                        .underVaccinated.name
+                                                    : DoseStatus
+                                                        .fullyVaccinated.name,
                                           ),
                                         ];
 
@@ -836,17 +835,18 @@ class ZeroDoseCheckPageState extends LocalizedState<ZeroDoseCheckPage> {
                                                       AdditionalField(
                                                         additional_fields_local
                                                             .AdditionalFieldsType
-                                                            .zeroDoseStatus
+                                                            .doseStatus
                                                             .toValue(),
                                                         zeroDose
-                                                            ? ZeroDoseStatus
+                                                            ? DoseStatus
                                                                 .zeroDose.name
                                                             : incompletementVaccine
-                                                                ? ZeroDoseStatus
-                                                                    .incompletementVaccine
+                                                                ? DoseStatus
+                                                                    .underVaccinated
                                                                     .name
-                                                                : ZeroDoseStatus
-                                                                    .done.name,
+                                                                : DoseStatus
+                                                                    .fullyVaccinated
+                                                                    .name,
                                                       ),
                                                       ...getIndividualAdditionalFields(
                                                           widget.individual)

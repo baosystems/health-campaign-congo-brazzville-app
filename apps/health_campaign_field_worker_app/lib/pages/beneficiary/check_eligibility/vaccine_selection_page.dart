@@ -103,8 +103,6 @@ class _VaccineSelectionPageState extends LocalizedState<VaccineSelectionPage> {
   final String _yes = "YES";
   final String _no = "NO";
 
-  DoseStatus doseStatus = DoseStatus.zeroDose;
-
   @override
   void initState() {
     context.read<LocationBloc>().add(const LocationEvent.load());
@@ -145,7 +143,7 @@ class _VaccineSelectionPageState extends LocalizedState<VaccineSelectionPage> {
         if (fields == null) return false;
 
         final hasZeroDoseStatus = fields.any(
-          (e) => e.key == AdditionalFieldsType.zeroDoseStatus.toValue(),
+          (e) => e.key == AdditionalFieldsType.doseStatus.toValue(),
         );
         final hasSelectedVaccines = fields.any(
           (e) => e.key == AdditionalFieldsType.selectedVaccines.toValue(),
@@ -471,6 +469,22 @@ class _VaccineSelectionPageState extends LocalizedState<VaccineSelectionPage> {
         ),
       ],
     );
+  }
+
+  DoseStatus getDoseStatus(
+      List<String> selectedCodes, List<String> noSelectedCodes) {
+    if (selectedCodes.isEmpty && noSelectedCodes.isEmpty) {
+      return DoseStatus.none;
+    } else if (selectedCodes.isEmpty && noSelectedCodes.isNotEmpty) {
+      return DoseStatus.zeroDose;
+    } else if (selectedCodes.isNotEmpty &&
+        noSelectedCodes.isNotEmpty &&
+        selectedCodes.contains(Constants.penta1)) {
+      return DoseStatus.underVaccinated;
+    } else if (selectedCodes.isNotEmpty && noSelectedCodes.isEmpty) {
+      return DoseStatus.fullyVaccinated;
+    }
+    return DoseStatus.none;
   }
 
   @override
@@ -969,9 +983,11 @@ class _VaccineSelectionPageState extends LocalizedState<VaccineSelectionPage> {
                                         final updatedFields = [
                                           ...oldFields,
                                           AdditionalField(
-                                            AdditionalFieldsType.zeroDoseStatus
+                                            AdditionalFieldsType.doseStatus
                                                 .toValue(),
-                                            ZeroDoseStatus.done.name,
+                                            getDoseStatus(selectedCodes,
+                                                    noSelectedCodes)
+                                                .name,
                                           ),
                                           if (selectedCodes.isNotEmpty)
                                             AdditionalField(
@@ -1135,11 +1151,6 @@ class _VaccineSelectionPageState extends LocalizedState<VaccineSelectionPage> {
                                               if (widget.hasSideEffects ==
                                                   false) ...[
                                                 AdditionalField(
-                                                    AdditionalFieldsType
-                                                        .doseStatus
-                                                        .toValue(),
-                                                    doseStatus.name),
-                                                AdditionalField(
                                                   AdditionalFieldsType
                                                       .ineligibleReasons
                                                       .toValue(),
@@ -1172,10 +1183,11 @@ class _VaccineSelectionPageState extends LocalizedState<VaccineSelectionPage> {
                                                     .smcDone.name,
                                               ),
                                               AdditionalField(
-                                                AdditionalFieldsType
-                                                    .zeroDoseStatus
+                                                AdditionalFieldsType.doseStatus
                                                     .toValue(),
-                                                ZeroDoseStatus.done.name,
+                                                getDoseStatus(selectedCodes,
+                                                        noSelectedCodes)
+                                                    .name,
                                               ),
                                               AdditionalField(
                                                 AdditionalFieldsType

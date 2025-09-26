@@ -26,6 +26,8 @@ import '../blocs/localization/app_localization.dart';
 import '../pages/acknowledgement.dart';
 import '../pages/authenticated.dart';
 import '../pages/beneficiary/check_eligibility/check_eligibility_assessment.dart';
+import '../pages/beneficiary/check_eligibility/reasons_for_non_vaccination.dart';
+import '../pages/beneficiary/check_eligibility/complaint_capture.dart';
 import '../pages/beneficiary/check_eligibility/custom_dose_administered.dart';
 import '../pages/beneficiary/check_eligibility/custom_splash_acknowledge.dart';
 import '../pages/beneficiary/check_eligibility/facility_selection_smc.dart';
@@ -477,6 +479,14 @@ class AppRouter extends _$AppRouter {
                   AutoRoute(
                     page: CustomDoseAdministeredRoute.page,
                     path: 'custom-dose-administered',
+                  ),
+                  AutoRoute(
+                    page: ReasonsForNonVaccinationRoute.page,
+                    path: 'zero-dose/reasons',
+                  ),
+                  AutoRoute(
+                    page: ComplaintCaptureRoute.page,
+                    path: 'zero-dose/complaint',
                   ),
                   // RedirectRoute(
                   //   path: 'dose-administered',

@@ -614,7 +614,10 @@ class _VaccineSelectionPageState extends LocalizedState<VaccineSelectionPage> {
       List<String> selectedCodes, List<String> noSelectedCodes) {
     if (selectedCodes.isEmpty && noSelectedCodes.isEmpty) {
       return DoseStatus.none;
-    } else if (selectedCodes.isEmpty && noSelectedCodes.isNotEmpty) {
+    } else if ((selectedCodes.isEmpty && noSelectedCodes.isNotEmpty) ||
+        (selectedCodes.isNotEmpty &&
+            noSelectedCodes.isNotEmpty &&
+            noSelectedCodes.contains(Constants.penta1))) {
       return DoseStatus.zeroDose;
     } else if (selectedCodes.isNotEmpty &&
         noSelectedCodes.isNotEmpty &&

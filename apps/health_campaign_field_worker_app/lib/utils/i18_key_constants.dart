@@ -171,6 +171,9 @@ class HouseholdOverView {
   String get householdOverViewSMCAssessmentActionText =>
       'HOUSEHOLD_OVER_VIEW_SMC_ASSESSMENT_ACTION_TEXT';
 
+  String get householdOverViewChildVaccinatedActionText =>
+      'HOUSEHOLD_OVER_VIEW_CHILD_VACCINATED_ACTION_TEXT';
+
   String get householdOverViewZeroDoseActionText =>
       'HOUSEHOLD_OVER_VIEW_ZERO_DOSE_ACTION_TEXT';
 
@@ -1642,7 +1645,6 @@ class Dashboard {
 
   String get dashboardHeaderLabel => 'DASHBOARD_HEADER';
 }
-
 
 class ZeroDose {
   const ZeroDose();

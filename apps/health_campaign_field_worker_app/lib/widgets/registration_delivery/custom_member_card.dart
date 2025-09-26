@@ -363,7 +363,6 @@ class CustomMemberCard extends StatelessWidget {
     final textTheme = theme.digitTextTheme(context);
     bool isFutureTaskPresent = _checkIfFutureTaskPresent(context);
     List<TaskModel>? smcTasks = _getSMCStatusData(context);
-    List<TaskModel>? zeroDoseTasks = _getDoseStatusData(context);
     final doseStatus = checkStatus(smcTasks, context.selectedCycle);
     bool smcAssessmentPendingStatus = assessmentSMCPending(smcTasks);
     bool isBeneficiaryReferredSMC = checkBeneficiaryReferredSMC(smcTasks);
@@ -382,6 +381,11 @@ class CustomMemberCard extends StatelessWidget {
         ? true
         : redosePending(smcTasks, context.selectedCycle);
 
+    List<TaskModel>? zeroDoseTasks = _getDoseStatusData(context);
+    bool isZeroDose = checkBeneficiaryZeroDose(zeroDoseTasks);
+    bool isUnderVaccinated = checkBeneficiaryUnderVaccinated(zeroDoseTasks);
+    bool isFullyVaccinated = checkBeneficiaryZeroDoseDelivered(zeroDoseTasks);
+
     if (isFutureTaskPresent) {
       return const Offstage();
     }
@@ -392,7 +396,7 @@ class CustomMemberCard extends StatelessWidget {
         !isBeneficiaryInEligibleSMC &&
         !hasBeneficiaryRefused &&
         ageInMonths < 3 &&
-        (zeroDoseTasks == null || zeroDoseTasks.isEmpty == true)) {
+        zeroDoseTasks == null) {
       return Column(
         children: [
           DigitElevatedButton(
@@ -428,7 +432,45 @@ class CustomMemberCard extends StatelessWidget {
           ),
         ],
       );
+    } else if (zeroDoseTasks != null &&
+        zeroDoseTasks.isNotEmpty &&
+        !isFullyVaccinated) {
+      if (isZeroDose || isUnderVaccinated) {
+        return DigitElevatedButton(
+          child: Center(
+            child: Text(
+              localizations.translate(
+                i18_local.householdOverView
+                    .householdOverViewChildVaccinatedActionText,
+              ),
+              style: textTheme.headingM.copyWith(color: Colors.white),
+            ),
+          ),
+          onPressed: () async {
+            // final bloc = context.read<HouseholdOverviewBloc>();
+            // bloc.add(
+            //   HouseholdOverviewEvent.selectedIndividual(
+            //     individualModel: individual,
+            //   ),
+            // );
+            // // if ((smcTasks ?? []).isEmpty) {
+            // context.router.push(
+            //   ZeroDoseCheckRoute(
+            //     eligibilityAssessmentType: EligibilityAssessmentType.smc,
+            //     isAdministration: false,
+            //     isChecklistAssessmentDone: false,
+            //     projectBeneficiaryClientReferenceId:
+            //         projectBeneficiaryClientReferenceId,
+            //     individual: individual,
+            //   ),
+            // );
+            // }
+          },
+        );
+      }
+      return const Offstage();
     }
+
     if ((isNotEligibleSMC || isBeneficiaryIneligible) && !doseStatus)
       return const Offstage();
     if (isNotEligibleSMC || (!redosePendingStatus)) {

@@ -218,7 +218,7 @@ class CustomMemberCard extends StatelessWidget {
         ),
       );
     }
-    if (isBeneficiaryAbsent || isSideEffect) {
+    if (isBeneficiaryRefuse || isBeneficiaryAbsent || isSideEffect) {
       return Align(
         alignment: Alignment.centerLeft,
         child: DigitIconButton(
@@ -233,8 +233,11 @@ class CustomMemberCard extends StatelessWidget {
                     : isSideEffect
                         ? i18_local.householdOverView
                             .householdOverViewBeneficiarySideEffectLabel
-                        : i18_local.householdOverView
-                            .householdOverViewBeneficiaryInEligibleSMCLabel,
+                        : isBeneficiaryAbsent
+                            ? i18_local.householdOverView
+                                .householdOverViewBeneficiaryAbsentLabel
+                            : i18_local.householdOverView
+                                .householdOverViewBeneficiaryInEligibleSMCLabel,
           ),
           iconSize: 20,
           iconTextColor: theme.colorScheme.onSurfaceVariant,
@@ -296,7 +299,10 @@ class CustomMemberCard extends StatelessWidget {
         ageInMonths >= 108 &&
         ageInMonths < 120;
 
-    return ageInMonths >= 120 || isBeneficiaryAbsent || isSideEffect
+    return ageInMonths >= 120 ||
+            isBeneficiaryRefuse ||
+            isBeneficiaryAbsent ||
+            isSideEffect
         ? const Offstage()
         : Column(
             children: [
@@ -418,6 +424,91 @@ class CustomMemberCard extends StatelessWidget {
         actions: [
           DigitButton(
             label: localizations.translate(
+              i18.memberCard.beneficiaryRefusedLabel,
+            ),
+            type: DigitButtonType.secondary,
+            size: DigitButtonSize.large,
+            onPressed: () {
+              Navigator.of(context, rootNavigator: true).pop();
+
+              final clientReferenceId = IdGen.i.identifier;
+
+              List<TaskModel>? currentTasks = _getCurrentCycleData(context);
+              bool isBeneficiaryRefuse =
+                  checkBeneficiaryRefusedSMC(currentTasks);
+
+              final refuseTask = TaskModel(
+                projectBeneficiaryClientReferenceId:
+                    projectBeneficiaryClientReferenceId,
+                clientReferenceId: clientReferenceId,
+                tenantId: RegistrationDeliverySingleton().tenantId,
+                rowVersion: 1,
+                auditDetails: AuditDetails(
+                  createdBy: RegistrationDeliverySingleton().loggedInUserUuid!,
+                  createdTime: context.millisecondsSinceEpoch(),
+                ),
+                projectId: RegistrationDeliverySingleton().projectId,
+                status: Status.beneficiaryRefused.toValue(),
+                clientAuditDetails: ClientAuditDetails(
+                  createdBy: RegistrationDeliverySingleton().loggedInUserUuid!,
+                  createdTime: context.millisecondsSinceEpoch(),
+                  lastModifiedBy:
+                      RegistrationDeliverySingleton().loggedInUserUuid,
+                  lastModifiedTime: context.millisecondsSinceEpoch(),
+                ),
+                additionalFields: TaskAdditionalFields(
+                  version: 1,
+                  fields: [
+                    AdditionalField(
+                      AdditionalFieldsType.cycleIndex.toValue(),
+                      "0${context.selectedCycle?.id}",
+                    ),
+                    AdditionalField(
+                      'taskStatus',
+                      Status.beneficiaryRefused.toValue(),
+                    ),
+                    ...getIndividualAdditionalFields(individual),
+                  ],
+                ),
+                address: individual.address?.first.copyWith(
+                  relatedClientReferenceId: clientReferenceId,
+                  id: null,
+                ),
+              );
+
+              context
+                  .read<DeliverInterventionBloc>()
+                  .add(DeliverInterventionSubmitEvent(
+                    task: refuseTask,
+                    isEditing: false,
+                    boundaryModel: context.boundary,
+                    navigateToSummary: false,
+                    householdMemberWrapper: context
+                        .read<HouseholdOverviewBloc>()
+                        .state
+                        .householdMemberWrapper,
+                  ));
+              final searchBloc = context.read<SearchHouseholdsBloc>();
+              final reloadState = context.read<HouseholdOverviewBloc>();
+              Future.delayed(const Duration(milliseconds: 500), () {
+                reloadState.add(
+                  HouseholdOverviewReloadEvent(
+                    projectId: RegistrationDeliverySingleton().projectId!,
+                    projectBeneficiaryType:
+                        RegistrationDeliverySingleton().beneficiaryType!,
+                  ),
+                );
+              }).then((_) => context.router.push(
+                    CustomSplashAcknowledgementRoute(
+                      eligibilityAssessmentType: EligibilityAssessmentType.smc,
+                      enableBackToSearch: true,
+                      task: refuseTask,
+                    ),
+                  ));
+            },
+          ),
+          DigitButton(
+            label: localizations.translate(
               i18_local.memberCard.beneficiaryAbsentButtonLabel,
             ),
             type: DigitButtonType.secondary,
@@ -438,7 +529,7 @@ class CustomMemberCard extends StatelessWidget {
                   createdTime: context.millisecondsSinceEpoch(),
                 ),
                 projectId: RegistrationDeliverySingleton().projectId,
-                status: Constants.beneficiaryAbsent,
+                status: status_local.Status.beneficiaryAbsent.toValue(),
                 clientAuditDetails: ClientAuditDetails(
                   createdBy: RegistrationDeliverySingleton().loggedInUserUuid!,
                   createdTime: context.millisecondsSinceEpoch(),
@@ -453,7 +544,10 @@ class CustomMemberCard extends StatelessWidget {
                       AdditionalFieldsType.cycleIndex.toValue(),
                       "0${context.selectedCycle?.id}",
                     ),
-                    AdditionalField('taskStatus', Constants.beneficiaryAbsent),
+                    AdditionalField(
+                      AdditionalFieldsType.taskStatus.toValue(),
+                      Constants.beneficiaryAbsent,
+                    ),
                     ...getIndividualAdditionalFields(individual),
                   ],
                 ),
@@ -463,6 +557,19 @@ class CustomMemberCard extends StatelessWidget {
                 ),
               );
 
+              context
+                  .read<DeliverInterventionBloc>()
+                  .add(DeliverInterventionSubmitEvent(
+                    task: absentTask,
+                    isEditing: false,
+                    boundaryModel: context.boundary,
+                    navigateToSummary: false,
+                    householdMemberWrapper: context
+                        .read<HouseholdOverviewBloc>()
+                        .state
+                        .householdMemberWrapper,
+                  ));
+              final searchBloc = context.read<SearchHouseholdsBloc>();
               final reloadState = context.read<HouseholdOverviewBloc>();
               Future.delayed(const Duration(milliseconds: 500), () {
                 reloadState.add(

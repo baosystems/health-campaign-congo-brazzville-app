@@ -308,7 +308,9 @@ bool checkBeneficiaryAbsentSMC(List<TaskModel>? tasks) {
     return false;
   }
   var successfulTask =
-      tasks!.last.status == Constants.beneficiaryAbsent ? tasks!.last : null;
+      tasks!.last.status == status_local.Status.beneficiaryAbsent.toValue()
+          ? tasks!.last
+          : null;
 
   return successfulTask != null;
 }

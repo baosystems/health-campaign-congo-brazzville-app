@@ -83,6 +83,8 @@ class AdditionalFieldsTypeMapper extends EnumMapper<AdditionalFieldsType> {
         return AdditionalFieldsType.dateOfVaccination;
       case "doseAdministeredBy":
         return AdditionalFieldsType.doseAdministeredBy;
+      case "taskStatus":
+        return AdditionalFieldsType.taskStatus;
       default:
         throw MapperException.unknownEnumValue(value);
     }
@@ -149,6 +151,8 @@ class AdditionalFieldsTypeMapper extends EnumMapper<AdditionalFieldsType> {
         return "dateOfVaccination";
       case AdditionalFieldsType.doseAdministeredBy:
         return "doseAdministeredBy";
+      case AdditionalFieldsType.taskStatus:
+        return "taskStatus";
     }
   }
 }

@@ -63,5 +63,7 @@ enum AdditionalFieldsType {
   dateOfVaccination,
   @MappableValue("doseAdministeredBy")
   doseAdministeredBy,
+  @MappableValue("taskStatus")
+  taskStatus,
   ;
 }

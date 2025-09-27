@@ -472,10 +472,13 @@ class CustomMemberCard extends StatelessWidget {
     }
     return BlocBuilder<DeliverInterventionBloc, DeliverInterventionState>(
         builder: (context, deliverState) {
-      List<TaskModel>? pastTasks = tasks;
-      if (tasks?.lastOrNull?.status ==
-          Status.beneficiaryRefused.toValue().toString()) {
-        pastTasks?.removeLast();
+      final List<TaskModel> pastTasks =
+          List<TaskModel>.from(tasks ?? const <TaskModel>[]);
+
+// Drop the last entry if it’s a “beneficiary refused” task.
+      if (pastTasks.isNotEmpty &&
+          pastTasks.last.status == Status.beneficiaryRefused.toValue()) {
+        pastTasks.removeLast();
       }
       final lastDose = pastTasks != null && pastTasks!.isNotEmpty
           ? pastTasks?.last.additionalFields?.fields
@@ -598,7 +601,7 @@ class CustomMemberCard extends StatelessWidget {
                     individualModel: individual,
                   ),
                 );
-                await showDialog(
+                final result = await showDialog<String>(
                   context: context,
                   builder: (ctx) => DigitActionCard(
                     onOutsideTap: () {
@@ -761,32 +764,51 @@ class CustomMemberCard extends StatelessWidget {
                               ));
                         },
                       ),
+                      // DigitButton(
+                      //   label: localizations.translate(
+                      //     i18.memberCard.recordAdverseEventsLabel,
+                      //   ),
+                      //   isDisabled: false,
+                      //   // isDisabled: tasks != null && (tasks ?? []).isNotEmpty
+                      //   //     ? false
+                      //   //     : true,
+                      //   type: DigitButtonType.secondary,
+                      //   size: DigitButtonSize.large,
+                      //   mainAxisSize: MainAxisSize.max,
+                      //   onPressed: () async {
+                      //     Navigator.of(
+                      //       context,
+                      //       rootNavigator: true,
+                      //     ).pop();
+                      //     await context.router.push(
+                      //       CustomSideEffectsRoute(
+                      //         tasks: tasks!,
+                      //       ),
+                      //     );
+                      //   },
+                      // ),
                       DigitButton(
-                        label: localizations.translate(
-                          i18.memberCard.recordAdverseEventsLabel,
-                        ),
+                        label: localizations
+                            .translate(i18.memberCard.recordAdverseEventsLabel),
                         isDisabled: false,
-                        // isDisabled: tasks != null && (tasks ?? []).isNotEmpty
-                        //     ? false
-                        //     : true,
                         type: DigitButtonType.secondary,
                         size: DigitButtonSize.large,
                         mainAxisSize: MainAxisSize.max,
-                        onPressed: () async {
-                          Navigator.of(
-                            context,
-                            rootNavigator: true,
-                          ).pop();
-                          await context.router.push(
-                            CustomSideEffectsRoute(
-                              tasks: tasks!,
-                            ),
-                          );
+                        onPressed: () {
+                          Navigator.of(context, rootNavigator: true).pop('AE');
                         },
                       ),
                     ],
                   ),
                 );
+                if (result == 'AE') {
+                  await context.router.push(
+                    CustomSideEffectsRoute(
+                      // Safe fallback so navigation works even when tasks is null
+                      tasks: tasks ?? const <TaskModel>[],
+                    ),
+                  );
+                }
               },
             ),
           if ((!smcAssessmentPendingStatus) && redosePendingStatus)

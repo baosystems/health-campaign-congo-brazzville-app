@@ -27,11 +27,13 @@ import 'package:registration_delivery/widgets/localized.dart';
 class CustomSideEffectsPage extends LocalizedStatefulWidget {
   final bool isEditing;
   final List<TaskModel> tasks;
+  final String projectBeneficiaryClientReferenceId;
 
   const CustomSideEffectsPage({
     super.key,
     super.appLocalizations,
     required this.tasks,
+    required this.projectBeneficiaryClientReferenceId,
     this.isEditing = false,
   });
 
@@ -155,10 +157,15 @@ class CustomSideEffectsPageState extends LocalizedState<CustomSideEffectsPage> {
                                                           ],
                                                         ),
                                                         taskClientReferenceId:
-                                                            widget.tasks.last
-                                                                .clientReferenceId,
+                                                            (widget.tasks
+                                                                    .isNotEmpty)
+                                                                ? widget
+                                                                    .tasks
+                                                                    .last
+                                                                    .clientReferenceId
+                                                                : null,
                                                         projectBeneficiaryClientReferenceId:
-                                                            widget.tasks.last
+                                                            widget
                                                                 .projectBeneficiaryClientReferenceId,
                                                         projectId:
                                                             RegistrationDeliverySingleton()
@@ -375,7 +382,7 @@ class CustomSideEffectsPageState extends LocalizedState<CustomSideEffectsPage> {
       (value) => context.router.push(
         ZeroDoseCheckRoute(
             projectBeneficiaryClientReferenceId:
-                widget.tasks.last.projectBeneficiaryClientReferenceId,
+                widget.projectBeneficiaryClientReferenceId,
             eligibilityAssessmentType: EligibilityAssessmentType.smc,
             isAdministration: false,
             isChecklistAssessmentDone: false,

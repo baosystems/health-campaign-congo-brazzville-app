@@ -67,7 +67,10 @@ class CustomReferBeneficiarySMCPageState
   static const _dateOfReferralKey = 'dateOfReferral';
   static const _administrativeUnitKey = 'administrativeUnit';
   static const _referredByKey = 'referredBy';
+  static const _referralIDKey = 'referralID';
   static const _referredToKey = 'referredTo';
+  static const _reasonsKey = 'reasons';
+  static const _commentsKey = 'comments';
   final clickedStatus = ValueNotifier<bool>(false);
   static const referralReasons = "referralReasons";
   static const sideEffectFromCurrentCycle = "DRUG_SE_CC";
@@ -431,7 +434,7 @@ class CustomReferBeneficiarySMCPageState
                             ),
                             DigitTextFormField(
                               formControlName: _referredByKey,
-                              readOnly: true,
+                              //readOnly: true,
                               label: localizations.translate(
                                 i18_local.referBeneficiary.referredToLabel,
                               ),
@@ -442,9 +445,13 @@ class CustomReferBeneficiarySMCPageState
                               },
                               isRequired: true,
                             ),
+                            const DigitTextFormField(
+                              formControlName: _referralIDKey,
+                              label: "Referral ID"
+                            ),
                             DigitTextFormField(
                               formControlName: _referredToKey,
-                              readOnly: true,
+                              //readOnly: true,
                               label: localizations.translate(
                                 i18_local.referBeneficiary.referredByLabel,
                               ),
@@ -459,6 +466,38 @@ class CustomReferBeneficiarySMCPageState
                         ],
                       ),
                     ),
+                    DigitCard(
+                      child: Column(
+                        children: [
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Expanded(
+                                child: Text(
+                                  "What is the reason for referral?",
+                                  style: theme.textTheme.displayMedium,
+                                ),
+                              ),
+                            ],
+                          ),
+                          Column(
+                            children: [
+                              
+                              DigitRadioButtonList(
+                                formControlName: _reasonsKey, 
+                                valueMapper: (x) => x , 
+                                options: reasons, 
+                                errorMessage: "Option Error"
+                              ),
+                              const DigitTextFormField(
+                                formControlName: _commentsKey,
+                                label:  "Referral comments"
+                              ),
+                            ],
+                          )
+                        ]
+                      )
+                    )
                   ],
                 ),
               ),
@@ -478,6 +517,9 @@ class CustomReferBeneficiarySMCPageState
         value: context.loggedInUser.userName,
         validators: [Validators.required],
       ),
+      _referralIDKey: FormControl<String>(
+        value: context.loggedInUser.userName,
+      ),
       _referredToKey: FormControl<String>(
         value: healthFacilities.isNotEmpty
             ? localizations.translate('FAC_${healthFacilities.first.id}')
@@ -492,6 +534,8 @@ class CustomReferBeneficiarySMCPageState
           Validators.required,
         ],
       ),
+      _reasonsKey: FormControl<String>(),
+      _commentsKey: FormControl<String>(),
     });
   }
 

@@ -627,7 +627,7 @@ class _VaccineSelectionPageState extends LocalizedState<VaccineSelectionPage> {
     } else if (selectedCodes.isNotEmpty && noSelectedCodes.isEmpty) {
       return DoseStatus.fullyVaccinated;
     }
-    return DoseStatus.none;
+    return DoseStatus.zeroDose;
   }
 
   @override

@@ -110,6 +110,9 @@ class Constants {
   static const String pipeSeparator = '||';
   static const int mobileNumberLength = 8;
 
+  static const String ineligibleForBCG = "INELIGIBLE_FOR_BCG";
+  static const String ineligibleForRota = "INELIGIBLE_FOR_ROTA";
+
   // for stock validation
 
   static const String spaq1 = "SPAQ 1";

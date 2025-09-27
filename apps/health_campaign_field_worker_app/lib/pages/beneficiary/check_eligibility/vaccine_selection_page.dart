@@ -615,6 +615,7 @@ class _VaccineSelectionPageState extends LocalizedState<VaccineSelectionPage> {
     if (selectedCodes.isEmpty && noSelectedCodes.isEmpty) {
       return DoseStatus.none;
     } else if ((selectedCodes.isEmpty && noSelectedCodes.isNotEmpty) ||
+        (selectedCodes.isNotEmpty && noSelectedCodes.isNotEmpty) ||
         (selectedCodes.isNotEmpty &&
             noSelectedCodes.isNotEmpty &&
             noSelectedCodes.contains(Constants.penta1))) {
@@ -1299,8 +1300,12 @@ class _VaccineSelectionPageState extends LocalizedState<VaccineSelectionPage> {
                                         final clientReferenceId =
                                             IdGen.i.identifier;
                                         List<String?> ineligibilityReasons = [];
-                                        ineligibilityReasons.add(
-                                            "CHILD_AGE_LESS_THAN_3_MONTHS");
+                                        // ineligibilityReasons.add(
+                                        //     "CHILD_AGE_LESS_THAN_3_MONTHS");
+                                        ineligibilityReasons
+                                            .add(Constants.ineligibleForBCG);
+                                        ineligibilityReasons
+                                            .add(Constants.ineligibleForRota);
                                         TaskModel task = TaskModel(
                                           projectBeneficiaryClientReferenceId:
                                               widget

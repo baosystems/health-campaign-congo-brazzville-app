@@ -317,15 +317,14 @@ class ZeroDoseCheckPageState extends LocalizedState<ZeroDoseCheckPage> {
                                 bool showVaccineSelectionPage =
                                     shouldShowVaccinePage(responses);
                                 bool zeroDose = isZeroDose(responses);
-                                bool incompletementVaccine =
-                                    isIncompletementVaccine(
+                                bool underVaccinated = isIncompletementVaccine(
                                   responses,
                                 );
 
                                 // TODO: Uncomment this block when the vaccine selection page is complete
 
                                 if (showVaccineSelectionPage ||
-                                    (!zeroDose && !incompletementVaccine)) {
+                                    (!zeroDose && !underVaccinated)) {
                                   final referenceId = IdGen.i.identifier;
                                   List<ServiceAttributesModel> attributes = [];
                                   for (int i = 0; i < controller.length; i++) {
@@ -633,7 +632,7 @@ class ZeroDoseCheckPageState extends LocalizedState<ZeroDoseCheckPage> {
                                                 .toValue(),
                                             zeroDose
                                                 ? DoseStatus.zeroDose.name
-                                                : incompletementVaccine
+                                                : underVaccinated
                                                     ? DoseStatus
                                                         .underVaccinated.name
                                                     : DoseStatus
@@ -800,12 +799,6 @@ class ZeroDoseCheckPageState extends LocalizedState<ZeroDoseCheckPage> {
                                                             .toValue(),
                                                         "0${context.selectedCycle?.id}",
                                                       ),
-                                                      // AdditionalField(
-                                                      //   'taskStatus',
-                                                      //   status_local.Status
-                                                      //       .beneficiaryInEligible
-                                                      //       .toValue(),
-                                                      // ),
                                                       if (widget
                                                               .hasSideEffects ??
                                                           false == false) ...[
@@ -845,7 +838,7 @@ class ZeroDoseCheckPageState extends LocalizedState<ZeroDoseCheckPage> {
                                                         zeroDose
                                                             ? DoseStatus
                                                                 .zeroDose.name
-                                                            : incompletementVaccine
+                                                            : underVaccinated
                                                                 ? DoseStatus
                                                                     .underVaccinated
                                                                     .name

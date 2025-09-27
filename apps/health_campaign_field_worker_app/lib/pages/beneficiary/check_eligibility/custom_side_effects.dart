@@ -370,7 +370,7 @@ class CustomSideEffectsPageState extends LocalizedState<CustomSideEffectsPage> {
                                                           });
                                                         },
                                                         decoration:
-                                                            const InputDecoration(), // keep it simple; styling is already fine
+                                                            const InputDecoration(),
                                                       ),
                                                       Visibility(
                                                         visible: otherTextError,

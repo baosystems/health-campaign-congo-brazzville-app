@@ -152,13 +152,11 @@ class CustomMemberCard extends StatelessWidget {
             e.additionalFields?.fields.firstWhereOrNull(
               (element) =>
                   element.key ==
-                      additional_fields_local
-                          .AdditionalFieldsType.zeroDoseStatus
+                      additional_fields_local.AdditionalFieldsType.doseStatus
                           .toValue() &&
-                  (element.value == ZeroDoseStatus.zeroDose.name ||
-                      element.value == ZeroDoseStatus.done.name ||
-                      element.value ==
-                          ZeroDoseStatus.incompletementVaccine.name),
+                  (element.value == DoseStatus.zeroDose.name ||
+                      element.value == DoseStatus.fullyVaccinated.name ||
+                      element.value == DoseStatus.underVaccinated.name),
             ) !=
             null)
         .toList();
@@ -184,8 +182,6 @@ class CustomMemberCard extends StatelessWidget {
     // List<TaskModel>? vasTasks = _getVACStatusData();
     List<TaskModel>? zeroDoseTasks = _getZeroDoseStatusData(context);
     bool isZeroDose = checkBeneficiaryZeroDose(zeroDoseTasks);
-    bool isIncompletementVaccine =
-        checkBeneficiaryIncompletementVaccine(zeroDoseTasks);
     bool isZeroDoseDelivered = checkBeneficiaryZeroDoseDelivered(zeroDoseTasks);
     bool isBeneficiaryReferredSMC = checkBeneficiaryReferredSMC(smcTasks);
     bool isBeneficiaryInEligibleSMC =
@@ -247,7 +243,7 @@ class CustomMemberCard extends StatelessWidget {
                         : DigitTheme.instance.colorScheme.onSurfaceVariant,
               ),
             ),
-          if (isZeroDose || isIncompletementVaccine || isZeroDoseDelivered)
+          if (isZeroDose || isZeroDoseDelivered)
             Align(
               alignment: Alignment.centerLeft,
               child: DigitIconButton(
@@ -256,11 +252,8 @@ class CustomMemberCard extends StatelessWidget {
                   isZeroDose
                       ? i18_local
                           .householdOverView.householdOverViewZeroDoseIconLabel
-                      : isIncompletementVaccine
-                          ? i18_local.householdOverView
-                              .householdOverViewIncompletementVaccineLabel
-                          : i18_local.householdOverView
-                              .householdOverViewZeroDoseDeliveredIconLabel,
+                      : i18_local.householdOverView
+                          .householdOverViewZeroDoseDeliveredIconLabel,
                 ),
                 iconSize: 20,
                 iconTextColor: theme.colorScheme.onSurfaceVariant,
@@ -309,7 +302,7 @@ class CustomMemberCard extends StatelessWidget {
           //       iconColor: theme.colorScheme.error,
           //     ),
           //   ),
-          if (isZeroDose || isIncompletementVaccine || isZeroDoseDelivered)
+          if (isZeroDose || isZeroDoseDelivered)
             Align(
               alignment: Alignment.centerLeft,
               child: DigitIconButton(
@@ -318,11 +311,8 @@ class CustomMemberCard extends StatelessWidget {
                   isZeroDose
                       ? i18_local
                           .householdOverView.householdOverViewZeroDoseIconLabel
-                      : isIncompletementVaccine
-                          ? i18_local.householdOverView
-                              .householdOverViewIncompletementVaccineLabel
-                          : i18_local.householdOverView
-                              .householdOverViewZeroDoseDeliveredIconLabel,
+                      : i18_local.householdOverView
+                          .householdOverViewZeroDoseDeliveredIconLabel,
                 ),
                 iconSize: 20,
                 iconTextColor: theme.colorScheme.onSurfaceVariant,
@@ -345,7 +335,7 @@ class CustomMemberCard extends StatelessWidget {
               iconColor: theme.colorScheme.error,
             ),
           ),
-          if (isZeroDose || isIncompletementVaccine || isZeroDoseDelivered)
+          if (isZeroDose || isZeroDoseDelivered)
             Align(
               alignment: Alignment.centerLeft,
               child: DigitIconButton(
@@ -354,11 +344,8 @@ class CustomMemberCard extends StatelessWidget {
                   isZeroDose
                       ? i18_local
                           .householdOverView.householdOverViewZeroDoseIconLabel
-                      : isIncompletementVaccine
-                          ? i18_local.householdOverView
-                              .householdOverViewIncompletementVaccineLabel
-                          : i18_local.householdOverView
-                              .householdOverViewZeroDoseDeliveredIconLabel,
+                      : i18_local.householdOverView
+                          .householdOverViewZeroDoseDeliveredIconLabel,
                 ),
                 iconSize: 20,
                 iconTextColor: theme.colorScheme.onSurfaceVariant,
@@ -383,7 +370,7 @@ class CustomMemberCard extends StatelessWidget {
               iconColor: theme.colorScheme.error,
             ),
           ),
-          if (isZeroDose || isIncompletementVaccine || isZeroDoseDelivered)
+          if (isZeroDose || isZeroDoseDelivered)
             Align(
               alignment: Alignment.centerLeft,
               child: DigitIconButton(
@@ -392,11 +379,8 @@ class CustomMemberCard extends StatelessWidget {
                   isZeroDose
                       ? i18_local
                           .householdOverView.householdOverViewZeroDoseIconLabel
-                      : isIncompletementVaccine
-                          ? i18_local.householdOverView
-                              .householdOverViewIncompletementVaccineLabel
-                          : i18_local.householdOverView
-                              .householdOverViewZeroDoseDeliveredIconLabel,
+                      : i18_local.householdOverView
+                          .householdOverViewZeroDoseDeliveredIconLabel,
                 ),
                 iconSize: 20,
                 iconTextColor: theme.colorScheme.onSurfaceVariant,
@@ -781,9 +765,10 @@ class CustomMemberCard extends StatelessWidget {
                         label: localizations.translate(
                           i18.memberCard.recordAdverseEventsLabel,
                         ),
-                        isDisabled: tasks != null && (tasks ?? []).isNotEmpty
-                            ? false
-                            : true,
+                        isDisabled: false,
+                        // isDisabled: tasks != null && (tasks ?? []).isNotEmpty
+                        //     ? false
+                        //     : true,
                         type: DigitButtonType.secondary,
                         size: DigitButtonSize.large,
                         mainAxisSize: MainAxisSize.max,

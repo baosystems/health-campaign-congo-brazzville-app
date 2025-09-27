@@ -175,7 +175,7 @@ class HouseholdOverView {
       'HOUSEHOLD_OVER_VIEW_SMC_ASSESSMENT_ACTION_TEXT';
 
   String get householdOverViewChildVaccineActionText =>
-      'HOUSEHOLD_OVER_VIEW_CHILD_VACCINE_ACTION_TEXT';
+      'HOUSEHOLD_OVER_VIEW_CHILD_VACCINATED_ACTION_TEXT';
 
   String get householdOverViewVaccinationStatusActionText =>
       'HOUSEHOLD_OVER_VIEW_VACCINATION_STATUS_ACTION_TEXT';

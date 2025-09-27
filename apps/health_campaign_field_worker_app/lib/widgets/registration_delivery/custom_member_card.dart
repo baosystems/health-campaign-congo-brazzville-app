@@ -355,28 +355,49 @@ class CustomMemberCard extends StatelessWidget {
                       },
                     );
                   } else if (isZeroDose || isUnderVaccinated) {
-                    return DigitElevatedButton(
-                      child: Center(
-                        child: Text(
-                          localizations.translate(
-                            i18_local.householdOverView
-                                .householdOverViewChildVaccineActionText,
+                    return Column(
+                      children: [
+                        DigitElevatedButton(
+                          child: Center(
+                            child: Text(
+                              localizations.translate(
+                                i18_local.householdOverView
+                                    .householdOverViewVaccinationStatusActionText,
+                              ),
+                              style: textTheme.headingM
+                                  .copyWith(color: Colors.white),
+                            ),
                           ),
-                          style:
-                              textTheme.headingM.copyWith(color: Colors.white),
+                          onPressed: () async {
+                            context.router.push(ViewVaccinationStatusRoute(
+                              task: doseStatusTasks.first,
+                            ));
+                          },
                         ),
-                      ),
-                      onPressed: () async {
-                        context.router.push(EligibilityChecklistViewRoute(
-                          eligibilityAssessmentType:
-                              EligibilityAssessmentType.vaccine,
-                          projectBeneficiaryClientReferenceId:
-                              projectBeneficiaryClientReferenceId,
-                          individual: individual,
-                          doseStatusTask: doseStatusTasks.firstOrNull,
-                          isHPVEligible: isHPVEligible,
-                        ));
-                      },
+                        DigitElevatedButton(
+                          child: Center(
+                            child: Text(
+                              localizations.translate(
+                                i18_local.householdOverView
+                                    .householdOverViewChildVaccineActionText,
+                              ),
+                              style: textTheme.headingM
+                                  .copyWith(color: Colors.white),
+                            ),
+                          ),
+                          onPressed: () async {
+                            context.router.push(EligibilityChecklistViewRoute(
+                              eligibilityAssessmentType:
+                                  EligibilityAssessmentType.vaccine,
+                              projectBeneficiaryClientReferenceId:
+                                  projectBeneficiaryClientReferenceId,
+                              individual: individual,
+                              doseStatusTask: doseStatusTasks.firstOrNull,
+                              isHPVEligible: isHPVEligible,
+                            ));
+                          },
+                        ),
+                      ],
                     );
                   } else {
                     return Offstage();

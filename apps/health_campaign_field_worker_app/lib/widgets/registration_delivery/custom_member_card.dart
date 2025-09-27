@@ -39,6 +39,15 @@ import '../../models/entities/additional_fields_type.dart'
     as additional_fields_local;
 import '../../utils/date_utils.dart' as digits;
 
+// ---- TEMP status codes until the package adds proper enums ----
+const String kStatusBeneficiaryAbsent = 'BENEFICIARY_ABSENT';
+
+bool _taskHasStatus(TaskModel t, String code) {
+  if (t.status == code) return true;
+  final fields = t.additionalFields?.fields ?? const <AdditionalField>[];
+  return fields.any((f) => f.key == 'taskStatus' && f.value == code);
+}
+
 class CustomMemberCard extends StatelessWidget {
   final List<ProductVariantModel> variant;
   final String name;
@@ -137,7 +146,7 @@ class CustomMemberCard extends StatelessWidget {
         .toList();
   }
 
-  List<TaskModel>? _getDoseStatusData(BuildContext context) {
+  List<TaskModel>? _getZeroDoseStatusData(BuildContext context) {
     List<TaskModel>? tasks = _getCurrentCycleData(context);
     return tasks
         ?.where((e) =>
@@ -170,7 +179,10 @@ class CustomMemberCard extends StatelessWidget {
 
   Widget statusWidget(BuildContext context) {
     List<TaskModel>? smcTasks = _getSMCStatusData(context);
-
+    // List<TaskModel>? vasTasks = _getVACStatusData();
+    List<TaskModel>? zeroDoseTasks = _getZeroDoseStatusData(context);
+    bool isZeroDose = checkBeneficiaryZeroDose(zeroDoseTasks);
+    bool isZeroDoseDelivered = checkBeneficiaryZeroDoseDelivered(zeroDoseTasks);
     bool isBeneficiaryReferredSMC = checkBeneficiaryReferredSMC(smcTasks);
     bool isBeneficiaryInEligibleSMC =
         checkBeneficiaryInEligibleSMC(smcTasks, context.selectedCycle);

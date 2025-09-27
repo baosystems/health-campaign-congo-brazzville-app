@@ -27,11 +27,13 @@ import 'package:registration_delivery/widgets/localized.dart';
 class CustomSideEffectsPage extends LocalizedStatefulWidget {
   final bool isEditing;
   final List<TaskModel> tasks;
+  final String? projectBeneficiaryClientReferenceId;
 
   const CustomSideEffectsPage({
     super.key,
     super.appLocalizations,
     required this.tasks,
+    required this.projectBeneficiaryClientReferenceId,
     this.isEditing = false,
   });
 
@@ -44,6 +46,10 @@ class CustomSideEffectsPageState extends LocalizedState<CustomSideEffectsPage> {
   List<String> symptomsTypes = [];
   bool symptomsSelected = true;
   late final List<KeyValue> symptomTypesOptions;
+  bool isOtherSelected = false; // tracks if OTHER is ticked
+  String otherText = ''; // text typed for OTHER
+  bool otherTextError = false; // shows red helper when required
+  final TextEditingController _otherCtrl = TextEditingController();
 
   @override
   void initState() {
@@ -96,153 +102,174 @@ class CustomSideEffectsPageState extends LocalizedState<CustomSideEffectsPage> {
                                         size: DigitButtonSize.large,
                                         mainAxisSize: MainAxisSize.max,
                                         onPressed: () async {
-                                          if (symptomsValues.any((e) => e)) {
-                                            setState(() {
-                                              symptomsSelected = true;
-                                            });
+                                          if (!symptomsValues.any((e) => e)) {
+                                            setState(
+                                                () => symptomsSelected = false);
+                                            return;
+                                          }
+                                          setState(
+                                              () => symptomsSelected = true);
 
-                                            SideEffectModel? sideEffect;
-                                            final shouldSubmit =
-                                                await showDialog<bool>(
-                                              context: context,
-                                              builder: (ctx) => Popup(
-                                                title: localizations.translate(
-                                                  i18.deliverIntervention
-                                                      .dialogTitle,
-                                                ),
-                                                description:
-                                                    localizations.translate(
-                                                  i18.deliverIntervention
-                                                      .dialogContent,
-                                                ),
-                                                actions: [
-                                                  DigitButton(
-                                                    label:
-                                                        localizations.translate(
-                                                      i18.common
-                                                          .coreCommonSubmit,
-                                                    ),
-                                                    onPressed: () {
-                                                      final List<String>
-                                                          symptoms = [];
+                                          final otherIdx =
+                                              symptomsTypes.indexOf(
+                                                  'OTHER_UNDESIRABLE_EFFECTS');
+                                          final otherChosen = otherIdx != -1 &&
+                                              symptomsValues[otherIdx];
+                                          if (otherChosen &&
+                                              otherText.trim().isEmpty) {
+                                            setState(
+                                                () => otherTextError = true);
+                                            return;
+                                          }
 
-                                                      for (int i = 0;
-                                                          i <
-                                                              symptomsValues
-                                                                  .length;
-                                                          i++) {
-                                                        if (symptomsValues[i]) {
-                                                          symptoms.add(
-                                                            symptomsTypes[i],
-                                                          );
-                                                        }
-                                                      }
-
-                                                      final clientReferenceId =
-                                                          IdGen.i.identifier;
-                                                      sideEffect =
-                                                          SideEffectModel(
-                                                        id: null,
-                                                        additionalFields:
-                                                            SideEffectAdditionalFields(
-                                                          version: 1,
-                                                          fields: [
-                                                            AdditionalField(
-                                                                "boundaryCode",
-                                                                RegistrationDeliverySingleton()
-                                                                    .boundary
-                                                                    ?.code),
-                                                          ],
-                                                        ),
-                                                        taskClientReferenceId:
-                                                            widget.tasks.last
-                                                                .clientReferenceId,
-                                                        projectBeneficiaryClientReferenceId:
-                                                            widget.tasks.last
-                                                                .projectBeneficiaryClientReferenceId,
-                                                        projectId:
-                                                            RegistrationDeliverySingleton()
-                                                                .projectId,
-                                                        symptoms: symptoms,
-                                                        clientReferenceId:
-                                                            clientReferenceId,
-                                                        tenantId:
-                                                            RegistrationDeliverySingleton()
-                                                                .tenantId,
-                                                        rowVersion: 1,
-                                                        auditDetails:
-                                                            AuditDetails(
-                                                          createdBy:
-                                                              RegistrationDeliverySingleton()
-                                                                  .loggedInUserUuid!,
-                                                          createdTime: context
-                                                              .millisecondsSinceEpoch(),
-                                                          lastModifiedBy:
-                                                              RegistrationDeliverySingleton()
-                                                                  .loggedInUserUuid,
-                                                          lastModifiedTime: context
-                                                              .millisecondsSinceEpoch(),
-                                                        ),
-                                                        clientAuditDetails:
-                                                            ClientAuditDetails(
-                                                          createdBy:
-                                                              RegistrationDeliverySingleton()
-                                                                  .loggedInUserUuid!,
-                                                          createdTime: context
-                                                              .millisecondsSinceEpoch(),
-                                                          lastModifiedBy:
-                                                              RegistrationDeliverySingleton()
-                                                                  .loggedInUserUuid,
-                                                          lastModifiedTime: context
-                                                              .millisecondsSinceEpoch(),
-                                                        ),
-                                                      );
-                                                      // TODO: Currently, it's been shifted to the zero dose flow
-                                                      // context
-                                                      //     .read<
-                                                      //         SideEffectsBloc>()
-                                                      //     .add(
-                                                      //       SideEffectsSubmitEvent(
-                                                      //         sideEffect!,
-                                                      //         false,
-                                                      //       ),
-                                                      //     );
-                                                      Navigator.of(
-                                                        context,
-                                                        rootNavigator: true,
-                                                      ).pop(true);
-                                                    },
-                                                    type:
-                                                        DigitButtonType.primary,
-                                                    size: DigitButtonSize.large,
+                                          SideEffectModel? sideEffect;
+                                          final shouldSubmit =
+                                              await showDialog<bool>(
+                                            context: context,
+                                            builder: (ctx) => Popup(
+                                              title: localizations.translate(
+                                                i18.deliverIntervention
+                                                    .dialogTitle,
+                                              ),
+                                              description:
+                                                  localizations.translate(
+                                                i18.deliverIntervention
+                                                    .dialogContent,
+                                              ),
+                                              actions: [
+                                                DigitButton(
+                                                  label:
+                                                      localizations.translate(
+                                                    i18.common.coreCommonSubmit,
                                                   ),
-                                                  DigitButton(
-                                                    label:
-                                                        localizations.translate(
-                                                      i18.common
-                                                          .coreCommonCancel,
-                                                    ),
-                                                    onPressed: () =>
-                                                        Navigator.of(
+                                                  onPressed: () {
+                                                    final List<String>
+                                                        symptoms = [];
+
+                                                    for (int i = 0;
+                                                        i <
+                                                            symptomsValues
+                                                                .length;
+                                                        i++) {
+                                                      if (symptomsValues[i]) {
+                                                        symptoms.add(
+                                                          symptomsTypes[i],
+                                                        );
+                                                      }
+                                                    }
+
+                                                    final clientReferenceId =
+                                                        IdGen.i.identifier;
+                                                    sideEffect =
+                                                        SideEffectModel(
+                                                      id: null,
+                                                      additionalFields:
+                                                          SideEffectAdditionalFields(
+                                                        version: 1,
+                                                        fields: [
+                                                          AdditionalField(
+                                                              "boundaryCode",
+                                                              RegistrationDeliverySingleton()
+                                                                  .boundary
+                                                                  ?.code),
+                                                          if (otherChosen &&
+                                                              otherText
+                                                                  .trim()
+                                                                  .isNotEmpty)
+                                                            AdditionalField(
+                                                                "OTHER_TEXT",
+                                                                otherText
+                                                                    .trim()),
+                                                        ],
+                                                      ),
+                                                      taskClientReferenceId: (widget
+                                                              .tasks.isNotEmpty)
+                                                          ? widget.tasks.last
+                                                              .clientReferenceId
+                                                          : null,
+                                                      projectBeneficiaryClientReferenceId:
+                                                          widget
+                                                              .projectBeneficiaryClientReferenceId,
+                                                      projectId:
+                                                          RegistrationDeliverySingleton()
+                                                              .projectId,
+                                                      symptoms: symptoms,
+                                                      clientReferenceId:
+                                                          clientReferenceId,
+                                                      tenantId:
+                                                          RegistrationDeliverySingleton()
+                                                              .tenantId,
+                                                      rowVersion: 1,
+                                                      auditDetails:
+                                                          AuditDetails(
+                                                        createdBy:
+                                                            RegistrationDeliverySingleton()
+                                                                .loggedInUserUuid!,
+                                                        createdTime: context
+                                                            .millisecondsSinceEpoch(),
+                                                        lastModifiedBy:
+                                                            RegistrationDeliverySingleton()
+                                                                .loggedInUserUuid,
+                                                        lastModifiedTime: context
+                                                            .millisecondsSinceEpoch(),
+                                                      ),
+                                                      clientAuditDetails:
+                                                          ClientAuditDetails(
+                                                        createdBy:
+                                                            RegistrationDeliverySingleton()
+                                                                .loggedInUserUuid!,
+                                                        createdTime: context
+                                                            .millisecondsSinceEpoch(),
+                                                        lastModifiedBy:
+                                                            RegistrationDeliverySingleton()
+                                                                .loggedInUserUuid,
+                                                        lastModifiedTime: context
+                                                            .millisecondsSinceEpoch(),
+                                                      ),
+                                                    );
+                                                    // TODO: Currently, it's been shifted to the zero dose flow
+                                                    // context
+                                                    //     .read<
+                                                    //         SideEffectsBloc>()
+                                                    //     .add(
+                                                    //       SideEffectsSubmitEvent(
+                                                    //         sideEffect!,
+                                                    //         false,
+                                                    //       ),
+                                                    //     );
+                                                    Navigator.of(
                                                       context,
                                                       rootNavigator: true,
-                                                    ).pop(false),
-                                                    type: DigitButtonType
-                                                        .secondary,
-                                                    size: DigitButtonSize.large,
-                                                  )
-                                                ],
-                                              ),
-                                            );
+                                                    ).pop(true);
+                                                  },
+                                                  type: DigitButtonType.primary,
+                                                  size: DigitButtonSize.large,
+                                                ),
+                                                DigitButton(
+                                                  label:
+                                                      localizations.translate(
+                                                    i18.common.coreCommonCancel,
+                                                  ),
+                                                  onPressed: () => Navigator.of(
+                                                    context,
+                                                    rootNavigator: true,
+                                                  ).pop(false),
+                                                  type:
+                                                      DigitButtonType.secondary,
+                                                  size: DigitButtonSize.large,
+                                                )
+                                              ],
+                                            ),
+                                          );
 
-                                            if (shouldSubmit ?? false) {
-                                              submitSideEffects(sideEffect!);
-                                            }
-                                          } else {
-                                            setState(() {
-                                              symptomsSelected = false;
-                                            });
+                                          if (shouldSubmit ?? false) {
+                                            submitSideEffects(sideEffect!);
                                           }
+                                          // else {
+                                          //   setState(() {
+                                          //     symptomsSelected = false;
+                                          //   });
+                                          // }
                                         },
                                       ),
                                     ]),
@@ -275,43 +302,102 @@ class CustomSideEffectsPageState extends LocalizedState<CustomSideEffectsPage> {
                                             ) {
                                               return Column(
                                                 children: [
-                                                  Column(
-                                                    children:
-                                                        symptomTypesOptions
-                                                            .mapIndexed(
-                                                              (i, e) => Padding(
-                                                                padding:
-                                                                    const EdgeInsets
-                                                                        .all(
-                                                                        spacer2),
-                                                                child:
-                                                                    DigitCheckbox(
-                                                                  label: localizations
+                                                  Column(children: [
+                                                    ...symptomTypesOptions
+                                                        .mapIndexed(
+                                                          (i, e) => Padding(
+                                                            padding:
+                                                                const EdgeInsets
+                                                                    .all(
+                                                                    spacer2),
+                                                            child:
+                                                                DigitCheckbox(
+                                                              label:
+                                                                  localizations
                                                                       .translate(
-                                                                    e.key,
-                                                                  ),
-                                                                  value:
-                                                                      symptomsValues[
-                                                                          i],
-                                                                  onChanged:
-                                                                      (value) {
-                                                                    stateSetter(
-                                                                      () {
-                                                                        symptomsValues[i] =
-                                                                            !symptomsValues[i];
-                                                                        symptomsSelected =
-                                                                            symptomsValues.any(
-                                                                          (e) =>
-                                                                              e,
-                                                                        );
-                                                                      },
-                                                                    );
-                                                                  },
-                                                                ),
+                                                                e.key,
                                                               ),
-                                                            )
-                                                            .toList(),
-                                                  ),
+                                                              value:
+                                                                  symptomsValues[
+                                                                      i],
+                                                              onChanged:
+                                                                  (value) {
+                                                                stateSetter(
+                                                                  () {
+                                                                    symptomsValues[
+                                                                            i] =
+                                                                        !symptomsValues[
+                                                                            i];
+                                                                    symptomsSelected =
+                                                                        symptomsValues
+                                                                            .any(
+                                                                      (e) => e,
+                                                                    );
+                                                                    final code =
+                                                                        symptomsTypes[
+                                                                            i];
+                                                                    if (code ==
+                                                                        'OTHER_UNDESIRABLE_EFFECTS') {
+                                                                      isOtherSelected =
+                                                                          symptomsValues[
+                                                                              i];
+                                                                      if (!isOtherSelected) {
+                                                                        otherText =
+                                                                            '';
+                                                                        _otherCtrl
+                                                                            .clear();
+                                                                        otherTextError =
+                                                                            false;
+                                                                      }
+                                                                    }
+                                                                  },
+                                                                );
+                                                              },
+                                                            ),
+                                                          ),
+                                                        )
+                                                        .toList(),
+                                                    if (isOtherSelected) ...[
+                                                      const SizedBox(
+                                                          height: spacer2),
+                                                      TextField(
+                                                        controller: _otherCtrl,
+                                                        onChanged: (v) {
+                                                          stateSetter(() {
+                                                            otherText = v;
+                                                            otherTextError =
+                                                                false;
+                                                          });
+                                                        },
+                                                        decoration:
+                                                            const InputDecoration(), // keep it simple; styling is already fine
+                                                      ),
+                                                      Visibility(
+                                                        visible: otherTextError,
+                                                        child: Padding(
+                                                          padding:
+                                                              const EdgeInsets
+                                                                  .only(
+                                                                  top: spacer1),
+                                                          child: Align(
+                                                            alignment: Alignment
+                                                                .centerLeft,
+                                                            child: Text(
+                                                              localizations
+                                                                  .translate(i18
+                                                                      .common
+                                                                      .coreCommonRequiredItems),
+                                                              style: TextStyle(
+                                                                  color: theme
+                                                                      .colorTheme
+                                                                      .alert
+                                                                      .error),
+                                                            ),
+                                                          ),
+                                                        ),
+                                                      ),
+                                                    ],
+                                                  ]),
                                                   Visibility(
                                                     visible: !symptomsSelected,
                                                     child: Padding(
@@ -357,8 +443,41 @@ class CustomSideEffectsPageState extends LocalizedState<CustomSideEffectsPage> {
     );
   }
 
+  @override
+  void dispose() {
+    _otherCtrl.dispose();
+    super.dispose();
+  }
+
   void submitSideEffects(SideEffectModel sideEffect) async {
     final reloadState = context.read<HouseholdOverviewBloc>();
+    final hasProjectBeneficiaryId =
+        (widget.projectBeneficiaryClientReferenceId?.isNotEmpty ?? false);
+
+    if (hasProjectBeneficiaryId) {
+      context.read<SideEffectsBloc>().add(
+            SideEffectsSubmitEvent(sideEffect, false),
+          );
+    } else {
+      await showDialog<void>(
+        context: context,
+        builder: (ctx) => Popup(
+          title: localizations.translate(i18.common.coreCommonError),
+          description: localizations.translate(
+            i18.common.coreCommonRequiredItems,
+          ),
+          actions: [
+            DigitButton(
+              label: localizations.translate(i18.common.coreCommonOk),
+              onPressed: () => Navigator.of(ctx, rootNavigator: true).pop(),
+              type: DigitButtonType.primary,
+              size: DigitButtonSize.large,
+            ),
+          ],
+        ),
+      );
+      return;
+    }
 
     Future.delayed(
       const Duration(milliseconds: 500),
@@ -373,14 +492,16 @@ class CustomSideEffectsPageState extends LocalizedState<CustomSideEffectsPage> {
       },
     ).then(
       (value) => context.router.push(
-        ZeroDoseCheckRoute(
-            projectBeneficiaryClientReferenceId:
-                widget.tasks.last.projectBeneficiaryClientReferenceId,
-            eligibilityAssessmentType: EligibilityAssessmentType.smc,
-            isAdministration: false,
-            isChecklistAssessmentDone: false,
-            hasSideEffects: true,
-            sideEffect: sideEffect),
+        CustomHouseholdAcknowledgementRoute(
+          // projectBeneficiaryClientReferenceId:
+          //     widget.projectBeneficiaryClientReferenceId,
+          eligibilityAssessmentType: EligibilityAssessmentType.smc,
+          enableViewHousehold: true,
+          // isAdministration: false,
+          // isChecklistAssessmentDone: false,
+          // hasSideEffects: true,
+          // sideEffect: sideEffect
+        ),
       ),
     );
   }

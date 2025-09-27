@@ -806,6 +806,8 @@ class CustomMemberCard extends StatelessWidget {
                     CustomSideEffectsRoute(
                       // Safe fallback so navigation works even when tasks is null
                       tasks: tasks ?? const <TaskModel>[],
+                      projectBeneficiaryClientReferenceId:
+                          projectBeneficiaryClientReferenceId ?? '',
                     ),
                   );
                 }

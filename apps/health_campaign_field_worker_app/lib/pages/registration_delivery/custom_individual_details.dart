@@ -793,30 +793,23 @@ class CustomIndividualDetailsPageState
                               i18_local.individualDetails
                                   .yearsAndMonthsErrorTextUpdate,
                             ),
-                            isHeadOfHousehold: widget.isHeadOfHousehold,
-                            initialDate: widget.isHeadOfHousehold
-                                ? before150Years
-                                : firstDate,
-                            requiredErrMsg: localizations.translate(
-                              i18.common.corecommonRequired,
-                            ),
-                            onChangeOfFormControl: (dob) {
-                              final control = form.control(_dobKey);
-                              if (dob == null) {
-                                control.setErrors({'required': true});
-                                return;
-                              }
-                              final age =
-                                  digits.DigitDateUtils.calculateAge(dob);
-                              final ageInMonths = age.years * 12 + age.months;
-                              if (!widget.isHeadOfHousehold &&
-                                  ageInMonths > 59) {
-                                control.setErrors({'ageLimit': true});
-                              } else {
-                                control.removeError('ageLimit');
-                                control.removeError('required');
-                                control.removeError('');
-                              }
+                            // isHeadOfHousehold: widget.isHeadOfHousehold,
+                            initialDate: before150Years,
+                            // requiredErrMsg: localizations.translate(
+                            //   i18.common.corecommonRequired,
+                            // ),
+                            onChangeOfFormControl: (formControl) {
+                              DateTime? value = formControl.value;
+                              if (value == null) return;
+                              digits.DigitDOBAge age =
+                                  digits.DigitDateUtils.calculateAge(value);
+                              // if ((age.years == 0 && age.months == 0) ||
+                              //     age.months > 11 ||
+                              //     (age.years >= 150 && age.months >= 0)) {
+                              //   formControl.setErrors({'': true});
+                              // } else {
+                              //   formControl.removeError('');
+                              // }
                             },
                             cancelText: localizations
                                 .translate(i18.common.coreCommonCancel),

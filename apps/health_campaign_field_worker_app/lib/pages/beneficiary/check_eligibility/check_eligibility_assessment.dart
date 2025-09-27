@@ -1078,7 +1078,6 @@ class _EligibilityChecklistViewPage
     Map<String?, String> responses,
     List<String?> referralReasons,
   ) {
-    var isReferral = false;
     var q2Key = "CEAQ2";
     var q2SubKey = "CEAQ2.YES.CEAQ2B";
     var q4Key = "CEAQ4";
@@ -1091,37 +1090,26 @@ class _EligibilityChecklistViewPage
     if (responses.isNotEmpty) {
       if ((responses.containsKey(q2Key) && responses[q2Key]!.isNotEmpty)) {
         if (responses[q2Key] == yes) {
-          if (responses[q2SubKey] == yes) {
-            isReferral = false;
-          } else {
-            isReferral = true;
+          if (responses[q2SubKey] == no) {
+            return true;
           }
-        } else {
-          isReferral = false;
         }
       }
       if ((responses.containsKey(q4Key) && responses[q4Key]!.isNotEmpty)) {
         if (responses[q4Key] == yes) {
-          if (responses[q4SubKey] == yes) {
-            notApplicableVaccines.clear();
-            isReferral = false;
-          } else {
-            isReferral = true;
+          if (responses[q4SubKey] == no) {
+            return true;
           }
-        } else {
-          isReferral = false;
         }
       }
       if ((responses.containsKey(q5Key) && responses[q5Key]!.isNotEmpty)) {
         if (responses[q5Key] == yes) {
-          isReferral = true;
-        } else {
-          isReferral = false;
+          return true;
         }
       }
     }
 
-    return isReferral;
+    return false;
   }
 
   bool isDelivery(Map<String?, String> responses) {

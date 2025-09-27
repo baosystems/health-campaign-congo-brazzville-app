@@ -520,10 +520,6 @@ class CustomMemberCard extends StatelessWidget {
       return const Offstage();
     }
 
-    if ((isNotEligibleSMC || isBeneficiaryIneligible) && !doseStatus)
-      return const Offstage();
-    }
-
     if (isNotEligibleSMC || (!redosePendingStatus)) {
       return const Offstage();
     }

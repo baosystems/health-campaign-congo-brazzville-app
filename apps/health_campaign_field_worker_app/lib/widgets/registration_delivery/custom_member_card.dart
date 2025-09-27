@@ -175,7 +175,8 @@ class CustomMemberCard extends StatelessWidget {
     bool isBeneficiaryInEligibleSMC =
         checkBeneficiaryInEligibleSMC(smcTasks, context.selectedCycle);
     List<TaskModel>? currentTasks = _getCurrentCycleData(context);
-    bool hasBeneficiaryRefused = checkBeneficiaryRefusedSMC(currentTasks);
+    bool isBeneficiaryRefuse = checkBeneficiaryRefusedSMC(currentTasks);
+    bool isSideEffect = sideEffects != null && sideEffects!.isNotEmpty;
 
     List<TaskModel>? doseTasks = _getDoseStatusData(context);
     bool isZeroDose = checkBeneficiaryZeroDose(doseTasks);
@@ -203,7 +204,7 @@ class CustomMemberCard extends StatelessWidget {
         ),
       );
     }
-    if (ageInMonths > 120) {
+    if (ageInMonths >= 120) {
       return Align(
         alignment: Alignment.centerLeft,
         child: DigitIconButton(
@@ -213,6 +214,30 @@ class CustomMemberCard extends StatelessWidget {
               i18.householdOverView.householdOverViewNotEligibleIconLabel),
           iconTextColor: theme.colorScheme.error,
           iconColor: theme.colorScheme.error,
+        ),
+      );
+    }
+    if (isBeneficiaryReferredSMC || isBeneficiaryRefuse || isSideEffect) {
+      return Align(
+        alignment: Alignment.centerLeft,
+        child: DigitIconButton(
+          icon: Icons.check_circle,
+          iconText: localizations.translate(
+            isBeneficiaryReferredSMC
+                ? i18_local.householdOverView
+                    .householdOverViewBeneficiaryReferredSMCLabel
+                : isBeneficiaryRefuse
+                    ? i18_local.householdOverView
+                        .householdOverViewBeneficiaryRefusedLabel
+                    : isSideEffect
+                        ? i18_local.householdOverView
+                            .householdOverViewBeneficiarySideEffectLabel
+                        : i18_local.householdOverView
+                            .householdOverViewBeneficiaryInEligibleSMCLabel,
+          ),
+          iconSize: 20,
+          iconTextColor: theme.colorScheme.onSurfaceVariant,
+          iconColor: theme.colorScheme.onSurfaceVariant,
         ),
       );
     }
@@ -237,159 +262,7 @@ class CustomMemberCard extends StatelessWidget {
       );
     }
 
-    if ((isSMCDelivered ||
-            isBeneficiaryReferredSMC ||
-            isBeneficiaryInEligibleSMC) &&
-        !hasBeneficiaryRefused) {
-      return Column(
-        children: [
-          if (isSMCDelivered ||
-              isBeneficiaryReferredSMC ||
-              isBeneficiaryInEligibleSMC)
-            Align(
-              alignment: Alignment.centerLeft,
-              child: DigitIconButton(
-                icon: Icons.check_circle,
-                iconText: localizations.translate(
-                  isBeneficiaryInEligibleSMC
-                      ? i18.householdOverView
-                          .householdOverViewNotEligibleIconLabel
-                      : isBeneficiaryReferredSMC
-                          ? i18_local.householdOverView
-                              .householdOverViewBeneficiaryReferredSMCLabel
-                          : i18_local.householdOverView
-                              .householdOverViewSMCDeliveredIconLabel,
-                ),
-                iconSize: 20,
-                iconTextColor:
-                    (isBeneficiaryReferredSMC || isBeneficiaryInEligibleSMC)
-                        ? DigitTheme.instance.colorScheme.error
-                        : DigitTheme.instance.colorScheme.onSurfaceVariant,
-                iconColor:
-                    (isBeneficiaryReferredSMC || isBeneficiaryInEligibleSMC)
-                        ? DigitTheme.instance.colorScheme.error
-                        : DigitTheme.instance.colorScheme.onSurfaceVariant,
-              ),
-            ),
-          if (isZeroDose || isUnderVaccinated || isFullyVaccinated)
-            Align(
-              alignment: Alignment.centerLeft,
-              child: DigitIconButton(
-                icon: Icons.check_circle,
-                iconText: localizations.translate(
-                  isZeroDose
-                      ? i18_local
-                          .householdOverView.householdOverViewZeroDoseIconLabel
-                      : isUnderVaccinated
-                          ? i18_local.householdOverView
-                              .householdOverViewUnderVaccinatedLabel
-                          : i18_local.householdOverView
-                              .householdOverViewFullyVaccinatedLabel,
-                ),
-                iconSize: 20,
-                iconTextColor: theme.colorScheme.onSurfaceVariant,
-                iconColor: theme.colorScheme.onSurfaceVariant,
-              ),
-            ),
-        ],
-      );
-    } else if (isBeneficiaryIneligible) {
-      return Column(
-        children: [
-          if (isHead || isBeneficiaryIneligible)
-            Align(
-              alignment: Alignment.centerLeft,
-              child: DigitIconButton(
-                icon: Icons.info_rounded,
-                iconSize: 20,
-                iconText: localizations.translate(i18
-                    .householdOverView.householdOverViewNotEligibleIconLabel),
-                iconTextColor: theme.colorScheme.error,
-                iconColor: theme.colorScheme.error,
-              ),
-            ),
-          // if (isBeneficiaryReferredSMC || isBeneficiaryReferredVAS)
-          //   Align(
-          //     alignment: Alignment.centerLeft,
-          //     child: DigitIconButton(
-          //       icon: Icons.info_rounded,
-          //       iconSize: 20,
-          //       iconText: localizations.translate(
-          //         isBeneficiaryReferredSMC || isBeneficiaryReferredVAS
-          //             ? isBeneficiaryReferredSMC
-          //                 ? (i18_local.householdOverView
-          //                     .householdOverViewBeneficiaryReferredSMCLabel)
-          //                 : (i18_local.householdOverView
-          //                     .householdOverViewBeneficiaryReferredVACLabel)
-          //             : isBeneficiaryRefused
-          //                 ? Status.beneficiaryRefused.toValue()
-          //                 : Status.notVisited.toValue(),
-          //       ),
-          //       iconTextColor: theme.colorScheme.error,
-          //       iconColor: theme.colorScheme.error,
-          //     ),
-          //   ),
-          if (isZeroDose || isUnderVaccinated || isFullyVaccinated)
-            Align(
-              alignment: Alignment.centerLeft,
-              child: DigitIconButton(
-                icon: Icons.check_circle,
-                iconText: localizations.translate(
-                  isZeroDose
-                      ? i18_local
-                          .householdOverView.householdOverViewZeroDoseIconLabel
-                      : isUnderVaccinated
-                          ? i18_local.householdOverView
-                              .householdOverViewIncompletementVaccineLabel
-                          : i18_local.householdOverView
-                              .householdOverViewZeroDoseDeliveredIconLabel,
-                ),
-                iconSize: 20,
-                iconTextColor: theme.colorScheme.onSurfaceVariant,
-                iconColor: theme.colorScheme.onSurfaceVariant,
-              ),
-            ),
-        ],
-      );
-    } else if (isBeneficiaryRefused || hasBeneficiaryRefused) {
-      return Column(
-        children: [
-          Align(
-            alignment: Alignment.centerLeft,
-            child: DigitIconButton(
-              icon: Icons.info_rounded,
-              iconSize: 20,
-              iconText: localizations.translate(i18_local
-                  .householdOverView.householdOverViewBeneficiaryRefusedLabel),
-              iconTextColor: theme.colorScheme.error,
-              iconColor: theme.colorScheme.error,
-            ),
-          ),
-          if (isZeroDose || isUnderVaccinated || isFullyVaccinated)
-            Align(
-              alignment: Alignment.centerLeft,
-              child: DigitIconButton(
-                icon: Icons.check_circle,
-                iconText: localizations.translate(
-                  isZeroDose
-                      ? i18_local
-                          .householdOverView.householdOverViewZeroDoseIconLabel
-                      : isUnderVaccinated
-                          ? i18_local.householdOverView
-                              .householdOverViewUnderVaccinatedLabel
-                          : i18_local.householdOverView
-                              .householdOverViewFullyVaccinatedLabel,
-                ),
-                iconSize: 20,
-                iconTextColor: theme.colorScheme.onSurfaceVariant,
-                iconColor: theme.colorScheme.onSurfaceVariant,
-              ),
-            ),
-        ],
-      );
-    } else {
-      return Container();
-    }
+    return const Offstage();
   }
 
   Widget actionButton(BuildContext context) {
@@ -402,12 +275,29 @@ class CustomMemberCard extends StatelessWidget {
         : digits.DigitDateUtils.calculateAge(DateTime.now());
     final ageInMonths = age.years * 12 + age.months;
 
+    List<TaskModel>? smcTasks = _getSMCStatusData(context);
+
+    bool isBeneficiaryReferredSMC = checkBeneficiaryReferredSMC(smcTasks);
+    bool isBeneficiaryInEligibleSMC =
+        checkBeneficiaryInEligibleSMC(smcTasks, context.selectedCycle);
+
+    List<TaskModel>? currentTasks = _getCurrentCycleData(context);
+    bool isBeneficiaryRefuse = checkBeneficiaryRefusedSMC(currentTasks);
+    bool isSideEffect = sideEffects != null && sideEffects!.isNotEmpty;
+
     List<TaskModel>? doseStatusTasks = _getDoseStatusData(context);
     bool isZeroDose = checkBeneficiaryZeroDose(doseStatusTasks);
     bool isUnderVaccinated = checkBeneficiaryUnderVaccinated(doseStatusTasks);
     bool isFullyVaccinated = checkBeneficiaryZeroDoseDelivered(doseStatusTasks);
 
-    return ageInMonths > 120
+    bool isHPVEligible = individual.gender == Gender.female &&
+        ageInMonths >= 108 &&
+        ageInMonths < 120;
+
+    return ageInMonths >= 120 ||
+            isBeneficiaryReferredSMC ||
+            isBeneficiaryRefuse ||
+            isSideEffect
         ? const Offstage()
         : Column(
             children: [
@@ -484,6 +374,7 @@ class CustomMemberCard extends StatelessWidget {
                               projectBeneficiaryClientReferenceId,
                           individual: individual,
                           doseStatusTask: doseStatusTasks.firstOrNull,
+                          isHPVEligible: isHPVEligible,
                         ));
                       },
                     );

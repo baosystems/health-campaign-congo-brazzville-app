@@ -50,12 +50,14 @@ import '../../../utils/i18_key_constants.dart' as i18_local;
 
 @RoutePage()
 class VaccineDeliveryPage extends LocalizedStatefulWidget {
+  final bool isHPVEligible;
   final TaskModel? doseStatusTask;
   final String? projectBeneficiaryClientReferenceId;
   final IndividualModel? individual;
 
   const VaccineDeliveryPage({
     super.key,
+    required this.isHPVEligible,
     required this.doseStatusTask,
     required this.projectBeneficiaryClientReferenceId,
     required this.individual,
@@ -286,6 +288,14 @@ class _VaccineDeliveryPageState extends LocalizedState<VaccineDeliveryPage> {
                                 i++)
                               VaccineDetailsCard(
                                 vaccineName: noSelectedVaccineList[i],
+                                onVaccineDetailsChanged: (vaccineDetails) {
+                                  vaccineDeliveryDetails[vaccineDetails
+                                      .vaccineName] = vaccineDetails;
+                                },
+                              ),
+                            if (widget.isHPVEligible)
+                              VaccineDetailsCard(
+                                vaccineName: "HCM_VACCINE_HPV",
                                 onVaccineDetailsChanged: (vaccineDetails) {
                                   vaccineDeliveryDetails[vaccineDetails
                                       .vaccineName] = vaccineDetails;
@@ -621,7 +631,7 @@ class _VaccineDetailsCardState extends LocalizedState<VaccineDetailsCard> {
   FormGroup _form() {
     return fb.group({
       _selectVaccineKey: FormControl<String>(
-        value: widget.vaccineName,
+        value: localizations.translate(widget.vaccineName),
         validators: [
           Validators.required,
         ],

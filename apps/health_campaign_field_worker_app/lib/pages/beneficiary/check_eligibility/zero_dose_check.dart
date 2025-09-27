@@ -155,26 +155,31 @@ class ZeroDoseCheckPageState extends LocalizedState<ZeroDoseCheckPage> {
                 ?.additionalDetails
                 ?.additionalProjectType;
 
-    final productVariants = !widget.isChecklistAssessmentDone
-        ? projectTypeModel?.resources
-            ?.map((r) =>
-                DeliveryProductVariant(productVariantId: r.productVariantId))
-            .toList()
-        : projectTypeModel?.cycles?.isNotEmpty == true
-            ? (fetchProductVariant(
-                    projectTypeModel
-                        ?.cycles?[deliveryInterventionState.cycle - 1]
-                        .deliveries?[deliveryInterventionState.dose - 1],
-                    context
-                        .read<HouseholdOverviewBloc>()
-                        .state
-                        .selectedIndividual,
-                    householdMemberWrapper.household)
-                ?.productVariants)
-            : projectTypeModel?.resources
-                ?.map((r) => DeliveryProductVariant(
-                    productVariantId: r.productVariantId))
-                .toList();
+    // final productVariants = !widget.isChecklistAssessmentDone
+    //     ? projectTypeModel?.resources
+    //         ?.map((r) =>
+    //             DeliveryProductVariant(productVariantId: r.productVariantId))
+    //         .toList()
+    //     : projectTypeModel?.cycles?.isNotEmpty == true
+    //         ? (fetchProductVariant(
+    //                 projectTypeModel
+    //                     ?.cycles?[deliveryInterventionState.cycle - 1]
+    //                     .deliveries?[deliveryInterventionState.dose - 1],
+    //                 context
+    //                     .read<HouseholdOverviewBloc>()
+    //                     .state
+    //                     .selectedIndividual,
+    //                 householdMemberWrapper.household)
+    //             ?.productVariants)
+    //         : projectTypeModel?.resources
+    //             ?.map((r) => DeliveryProductVariant(
+    //                 productVariantId: r.productVariantId))
+    //             .toList();
+
+    final productVariants = projectTypeModel?.resources
+        ?.map(
+            (r) => DeliveryProductVariant(productVariantId: r.productVariantId))
+        .toList();
 
     if ((productVariants ?? []).isEmpty && context.mounted) {
       SchedulerBinding.instance.addPostFrameCallback((_) {

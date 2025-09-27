@@ -198,6 +198,9 @@ class HouseholdOverView {
   String get householdOverViewBeneficiaryReferredSMCLabel =>
       'HOUSEHOLD_OVER_VIEW_BENEFICIARY_REFERRED_SMC_LABEL';
 
+  String get householdOverViewBeneficiarySideEffectLabel =>
+      'HOUSEHOLD_OVER_VIEW_BENEFICIARY_SIDE_EFFECT_LABEL';
+
   String get householdOverViewBeneficiaryInEligibleSMCLabel =>
       'HOUSEHOLD_OVER_VIEW_BENEFICIARY_INELIGIBLE_SMC_LABEL';
   String get householdOverViewBeneficiaryInEligibleVASLabel =>

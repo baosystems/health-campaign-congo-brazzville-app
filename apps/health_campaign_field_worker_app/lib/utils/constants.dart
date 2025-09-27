@@ -113,6 +113,8 @@ class Constants {
   static const String ineligibleForBCG = "INELIGIBLE_FOR_BCG";
   static const String ineligibleForRota = "INELIGIBLE_FOR_ROTA";
 
+  static const String beneficiaryAbsent = "BENEFICIARY_ABSENT";
+
   // for stock validation
 
   static const String spaq1 = "SPAQ 1";

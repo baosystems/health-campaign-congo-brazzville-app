@@ -303,6 +303,16 @@ bool checkBeneficiaryRefusedSMC(List<TaskModel>? tasks) {
   return successfulTask != null;
 }
 
+bool checkBeneficiaryAbsentSMC(List<TaskModel>? tasks) {
+  if ((tasks ?? []).isEmpty) {
+    return false;
+  }
+  var successfulTask =
+      tasks!.last.status == Constants.beneficiaryAbsent ? tasks!.last : null;
+
+  return successfulTask != null;
+}
+
 bool checkEligibilityForAgeAndSideEffectAll(
   DigitDOBAgeConvertor age,
   ProjectTypeModel? projectType,

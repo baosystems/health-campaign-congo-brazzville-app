@@ -175,6 +175,7 @@ class CustomMemberCard extends StatelessWidget {
     bool isBeneficiaryInEligibleSMC =
         checkBeneficiaryInEligibleSMC(smcTasks, context.selectedCycle);
     List<TaskModel>? currentTasks = _getCurrentCycleData(context);
+    bool isBeneficiaryAbsent = checkBeneficiaryAbsentSMC(currentTasks);
     bool isBeneficiaryRefuse = checkBeneficiaryRefusedSMC(currentTasks);
     bool isSideEffect = sideEffects != null && sideEffects!.isNotEmpty;
 
@@ -217,7 +218,7 @@ class CustomMemberCard extends StatelessWidget {
         ),
       );
     }
-    if (isBeneficiaryReferredSMC || isBeneficiaryRefuse || isSideEffect) {
+    if (isBeneficiaryAbsent || isSideEffect) {
       return Align(
         alignment: Alignment.centerLeft,
         child: DigitIconButton(
@@ -283,6 +284,7 @@ class CustomMemberCard extends StatelessWidget {
 
     List<TaskModel>? currentTasks = _getCurrentCycleData(context);
     bool isBeneficiaryRefuse = checkBeneficiaryRefusedSMC(currentTasks);
+    bool isBeneficiaryAbsent = checkBeneficiaryAbsentSMC(currentTasks);
     bool isSideEffect = sideEffects != null && sideEffects!.isNotEmpty;
 
     List<TaskModel>? doseStatusTasks = _getDoseStatusData(context);
@@ -294,10 +296,7 @@ class CustomMemberCard extends StatelessWidget {
         ageInMonths >= 108 &&
         ageInMonths < 120;
 
-    return ageInMonths >= 120 ||
-            isBeneficiaryReferredSMC ||
-            isBeneficiaryRefuse ||
-            isSideEffect
+    return ageInMonths >= 120 || isBeneficiaryAbsent || isSideEffect
         ? const Offstage()
         : Column(
             children: [
@@ -419,14 +418,16 @@ class CustomMemberCard extends StatelessWidget {
         actions: [
           DigitButton(
             label: localizations.translate(
-              i18.memberCard.beneficiaryRefusedLabel,
+              i18_local.memberCard.beneficiaryAbsentButtonLabel,
             ),
             type: DigitButtonType.secondary,
             size: DigitButtonSize.large,
             onPressed: () {
               Navigator.of(context, rootNavigator: true).pop();
+
               final clientReferenceId = IdGen.i.identifier;
-              TaskModel refusalTask = TaskModel(
+
+              final absentTask = TaskModel(
                 projectBeneficiaryClientReferenceId:
                     projectBeneficiaryClientReferenceId,
                 clientReferenceId: clientReferenceId,
@@ -437,7 +438,7 @@ class CustomMemberCard extends StatelessWidget {
                   createdTime: context.millisecondsSinceEpoch(),
                 ),
                 projectId: RegistrationDeliverySingleton().projectId,
-                status: Status.beneficiaryRefused.toValue(),
+                status: Constants.beneficiaryAbsent,
                 clientAuditDetails: ClientAuditDetails(
                   createdBy: RegistrationDeliverySingleton().loggedInUserUuid!,
                   createdTime: context.millisecondsSinceEpoch(),
@@ -452,75 +453,56 @@ class CustomMemberCard extends StatelessWidget {
                       AdditionalFieldsType.cycleIndex.toValue(),
                       "0${context.selectedCycle?.id}",
                     ),
-                    AdditionalField(
-                      'taskStatus',
-                      Status.beneficiaryRefused.toValue(),
-                    ),
-                    ...getIndividualAdditionalFields(individual)
+                    AdditionalField('taskStatus', Constants.beneficiaryAbsent),
+                    ...getIndividualAdditionalFields(individual),
                   ],
                 ),
-                address: individual!.address?.first.copyWith(
+                address: individual.address?.first.copyWith(
                   relatedClientReferenceId: clientReferenceId,
                   id: null,
                 ),
               );
 
-              // TODO: Currently it's been shifted to the zero dose flow
-
-              // context.read<DeliverInterventionBloc>().add(
-              //       DeliverInterventionSubmitEvent(
-              //         task: refusalTask,
-              //         isEditing: false,
-              //         boundaryModel:
-              //             RegistrationDeliverySingleton().boundary!,
-              //       ),
-              //     );
-
               final reloadState = context.read<HouseholdOverviewBloc>();
-              Future.delayed(
-                const Duration(milliseconds: 500),
-                () {
-                  reloadState.add(
-                    HouseholdOverviewReloadEvent(
-                      projectId: RegistrationDeliverySingleton().projectId!,
-                      projectBeneficiaryType:
-                          RegistrationDeliverySingleton().beneficiaryType!,
-                    ),
-                  );
-                },
-              ).then(
-                (value) => context.router.push(
-                  CustomSplashAcknowledgementRoute(
-                    eligibilityAssessmentType: EligibilityAssessmentType.smc,
-                    enableRouteToZeroDose: true,
-                    task: refusalTask,
+              Future.delayed(const Duration(milliseconds: 500), () {
+                reloadState.add(
+                  HouseholdOverviewReloadEvent(
+                    projectId: RegistrationDeliverySingleton().projectId!,
+                    projectBeneficiaryType:
+                        RegistrationDeliverySingleton().beneficiaryType!,
                   ),
-                ),
-              );
+                );
+              }).then((_) => context.router.push(
+                    CustomSplashAcknowledgementRoute(
+                      eligibilityAssessmentType: EligibilityAssessmentType.smc,
+                      enableBackToSearch: true,
+                      task: absentTask,
+                    ),
+                  ));
             },
           ),
-          DigitButton(
-            label: localizations.translate(
-              i18.memberCard.referBeneficiaryLabel,
-            ),
-            type: DigitButtonType.secondary,
-            size: DigitButtonSize.large,
-            onPressed: () async {
-              Navigator.of(
-                context,
-                rootNavigator: true,
-              ).pop();
-              List<String> referralReasons = ["BENEFICIARY_REFERRED"];
-              await context.router.push(
-                CustomReferBeneficiarySMCRoute(
-                  projectBeneficiaryClientRefId:
-                      projectBeneficiaryClientReferenceId ?? '',
-                  individual: individual,
-                  referralReasons: referralReasons,
-                ),
-              );
-            },
-          ),
+          // DigitButton(
+          //   label: localizations.translate(
+          //     i18.memberCard.referBeneficiaryLabel,
+          //   ),
+          //   type: DigitButtonType.secondary,
+          //   size: DigitButtonSize.large,
+          //   onPressed: () async {
+          //     Navigator.of(
+          //       context,
+          //       rootNavigator: true,
+          //     ).pop();
+          //     List<String> referralReasons = ["BENEFICIARY_REFERRED"];
+          //     await context.router.push(
+          //       CustomReferBeneficiarySMCRoute(
+          //         projectBeneficiaryClientRefId:
+          //             projectBeneficiaryClientReferenceId ?? '',
+          //         individual: individual,
+          //         referralReasons: referralReasons,
+          //       ),
+          //     );
+          //   },
+          // ),
           DigitButton(
             label: localizations.translate(
               i18.memberCard.recordAdverseEventsLabel,

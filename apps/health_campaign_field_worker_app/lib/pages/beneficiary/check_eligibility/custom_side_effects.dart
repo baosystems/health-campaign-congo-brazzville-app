@@ -20,7 +20,7 @@ import '../../../router/app_router.dart';
 import '../../../utils/app_enums.dart';
 import 'package:registration_delivery/utils/constants.dart';
 import 'package:registration_delivery/utils/i18_key_constants.dart' as i18;
-import '../../utils/i18_key_constants.dart' as i18_local;
+import '../../../utils/i18_key_constants.dart' as i18_local;
 import 'package:registration_delivery/widgets/back_navigation_help_header.dart';
 import 'package:registration_delivery/widgets/localized.dart';
 

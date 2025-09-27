@@ -552,6 +552,8 @@ abstract class _$AppRouter extends RootStackRouter {
           key: args.key,
           appLocalizations: args.appLocalizations,
           tasks: args.tasks,
+          projectBeneficiaryClientReferenceId:
+              args.projectBeneficiaryClientReferenceId,
           isEditing: args.isEditing,
         ),
       );
@@ -2891,6 +2893,7 @@ class CustomSideEffectsRoute extends PageRouteInfo<CustomSideEffectsRouteArgs> {
     Key? key,
     RegistrationDeliveryLocalization? appLocalizations,
     required List<TaskModel> tasks,
+    required String projectBeneficiaryClientReferenceId,
     bool isEditing = false,
     List<PageRouteInfo>? children,
   }) : super(
@@ -2899,6 +2902,8 @@ class CustomSideEffectsRoute extends PageRouteInfo<CustomSideEffectsRouteArgs> {
             key: key,
             appLocalizations: appLocalizations,
             tasks: tasks,
+            projectBeneficiaryClientReferenceId:
+                projectBeneficiaryClientReferenceId,
             isEditing: isEditing,
           ),
           initialChildren: children,
@@ -2915,6 +2920,7 @@ class CustomSideEffectsRouteArgs {
     this.key,
     this.appLocalizations,
     required this.tasks,
+    required this.projectBeneficiaryClientReferenceId,
     this.isEditing = false,
   });
 
@@ -2924,11 +2930,13 @@ class CustomSideEffectsRouteArgs {
 
   final List<TaskModel> tasks;
 
+  final String projectBeneficiaryClientReferenceId;
+
   final bool isEditing;
 
   @override
   String toString() {
-    return 'CustomSideEffectsRouteArgs{key: $key, appLocalizations: $appLocalizations, tasks: $tasks, isEditing: $isEditing}';
+    return 'CustomSideEffectsRouteArgs{key: $key, appLocalizations: $appLocalizations, tasks: $tasks, projectBeneficiaryClientReferenceId: $projectBeneficiaryClientReferenceId, isEditing: $isEditing}';
   }
 }
 

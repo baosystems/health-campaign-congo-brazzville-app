@@ -423,7 +423,8 @@ class ZeroDoseCheckPageState extends LocalizedState<ZeroDoseCheckPage> {
                                       );
                                   final projectBeneficiaryClientReferenceId =
                                       widget.projectBeneficiaryClientReferenceId ??
-                                          relatedClientRefId;
+                                          relatedClientRefId ??
+                                          '';
                                   final currentCycle =
                                       RegistrationDeliverySingleton()
                                           .projectType

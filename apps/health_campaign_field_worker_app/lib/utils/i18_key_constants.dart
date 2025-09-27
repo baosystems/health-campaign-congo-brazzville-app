@@ -105,6 +105,8 @@ class Common {
 
   String get coreCommonViewDownloadedData => 'CORE_COMMON_VIEW_DOWNLOADED_DATA';
 
+  String get coreCommonError => 'CORE_COMMON_SIDE_EFFECT_REQUIRED';
+
   String get coreCommonlanguage => 'CORE_COMMON_LANGUAGE';
 
   String get coreCommonSyncProgress => 'CORE_COMMON_SYNC_PROGRESS';

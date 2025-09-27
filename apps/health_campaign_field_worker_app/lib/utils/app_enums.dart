@@ -1,3 +1,9 @@
-enum EligibilityAssessmentType { smc, vas }
+enum EligibilityAssessmentType { smc, vas, vaccine }
 
-enum EligibilityAssessmentStatus { smcPending, vasPending, smcDone, vasDone }
+enum EligibilityAssessmentStatus {
+  smcPending,
+  vasPending,
+  smcDone,
+  vasDone,
+  vaccineDone
+}

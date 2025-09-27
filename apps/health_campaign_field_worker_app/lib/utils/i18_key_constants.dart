@@ -50,6 +50,9 @@ const zeroDose = ZeroDose();
 class Common {
   const Common();
 
+  String get coreCommonDialogTitle => 'CORE_COMMON_DIALOG_TITLE';
+  String get coreCommonDialogContent => 'CORE_COMMON_DIALOG_CONTENT';
+
   String get coreCommonContinue => 'CORE_COMMON_CONTINUE';
   String get coreCommonWarning => 'CORE_COMMON_WARNING';
   String get noProjectSelected => 'NO_PROJECT_SELECTED';
@@ -211,6 +214,22 @@ class HouseholdOverView {
 
 class DeliverIntervention {
   const DeliverIntervention();
+
+  String get recordVaccinationDetails =>
+      'DELIVER_INTERVENTION_RECORD_VACCINATION_DETAILS';
+
+  String get vaccineDetails => 'DELIVER_INTERVENTION_VACCINE_DETAILS_LABEL';
+
+  String get currentMonth => 'DELIVER_INTERVENTION_CURRENT_MONTH';
+  String get dateOfVaccination => 'DELIVER_INTERVENTION_DATE_OF_VACCINATION';
+  String get doseAdministeredBy =>
+      'DELIVER_INTERVENTION_DOSE_ADMINISTERED_BY_LABEL';
+  String get deliveryComment => 'DELIVER_INTERVENTION_DELIVERY_COMMENT';
+
+  String get selectVaccine => 'DELIVER_INTERVENTION_SELECT_VACCINE';
+  String get enterBatchNumber => 'DELIVER_INTERVENTION_ENTER_BATCH_NUMBER';
+  String get numberOfDose =>
+      'DELIVER_INTERVENTION_NUMBER_OF_DOSE_ADMINISTERED_LABEL';
 
   String get enterReasonForonlyAlphabetsValidation =>
       'ALPHABETS_ONLY_VALIDATION';
@@ -1510,6 +1529,8 @@ class IndividualDetails {
 
 class BeneficiaryDetails {
   const BeneficiaryDetails();
+
+  String get currentMont => 'CURRENT_MONTH';
 
   String get validationForExcessStockDispatch =>
       "ERROR_VALIDATION_FOR_EXCESS_STOCK_DISPATCH";

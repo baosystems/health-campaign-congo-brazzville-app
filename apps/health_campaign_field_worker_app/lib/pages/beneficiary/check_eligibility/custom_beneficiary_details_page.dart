@@ -110,11 +110,12 @@ class CustomBeneficiaryDetailsPageState
 
           // Extracting task data related to the selected project beneficiary
 
-          final taskData = state.householdMemberWrapper.tasks
-              ?.where((element) =>
-                  element.projectBeneficiaryClientReferenceId ==
-                      projectBeneficiary?.first?.clientReferenceId &&
-                  checkDeliveryType(element))
+          final taskData = (state.householdMemberWrapper.tasks?.where(
+                      (element) =>
+                          element.projectBeneficiaryClientReferenceId ==
+                              projectBeneficiary?.first?.clientReferenceId &&
+                          checkDeliveryType(element)) ??
+                  [])
               .toList();
           final bloc = context.read<DeliverInterventionBloc>();
           List<TaskModel>? pastTasks = taskData;

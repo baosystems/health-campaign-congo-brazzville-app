@@ -2,23 +2,15 @@ import 'dart:math';
 
 import 'package:digit_components/digit_components.dart';
 import 'package:digit_components/utils/date_utils.dart';
-import 'package:digit_components/widgets/digit_sync_dialog.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:group_radio_button/group_radio_button.dart';
 import 'package:health_campaign_field_worker_app/widgets/custom_back_navigation.dart';
 import 'package:registration_delivery/blocs/household_overview/household_overview.dart';
-import 'package:intl/intl.dart';
-import 'package:registration_delivery/models/entities/status.dart';
 import 'package:survey_form/survey_form.dart';
-import 'package:registration_delivery/blocs/delivery_intervention/deliver_intervention.dart';
-import 'package:registration_delivery/blocs/search_households/search_households.dart';
 import 'package:digit_data_model/data_model.dart';
-// import 'package:registration_delivery/models/entities/status.dart';
 import 'package:registration_delivery/models/entities/task.dart';
-import 'package:registration_delivery/router/registration_delivery_router.gm.dart';
-// import '../../../blocs/service/service.dart' as service;
 import '../../../models/entities/additional_fields_type.dart';
 import '../../../models/entities/roles_type.dart';
 import '../../../router/app_router.dart';
@@ -26,19 +18,17 @@ import '../../../utils/app_enums.dart';
 import '../../../utils/environment_config.dart';
 import '../../../utils/i18_key_constants.dart' as i18_local;
 import '../../../utils/utils.dart';
-import '../../../widgets/header/back_navigation_help_header.dart';
 import '../../../widgets/localized.dart';
 import '../../../models/entities/assessment_checklist/status.dart'
     as status_local;
 import 'package:digit_ui_components/services/location_bloc.dart' as location;
-import '../../../models/entities/additional_fields_type.dart'
-    as additional_fields_local;
 
 @RoutePage()
 class EligibilityChecklistViewPage extends LocalizedStatefulWidget {
   final String? referralClientRefId;
   final IndividualModel? individual;
   final String? projectBeneficiaryClientReferenceId;
+  final TaskModel? doseStatusTask;
   final EligibilityAssessmentType eligibilityAssessmentType;
 
   const EligibilityChecklistViewPage({
@@ -46,6 +36,7 @@ class EligibilityChecklistViewPage extends LocalizedStatefulWidget {
     this.referralClientRefId,
     this.individual,
     this.projectBeneficiaryClientReferenceId,
+    required this.doseStatusTask,
     required this.eligibilityAssessmentType,
     super.appLocalizations,
   });
@@ -86,6 +77,29 @@ class _EligibilityChecklistViewPage
     super.initState();
   }
 
+  String getDeliveryType() {
+    switch (widget.eligibilityAssessmentType) {
+      case EligibilityAssessmentType.smc:
+        return EligibilityAssessmentStatus.smcDone.name;
+      case EligibilityAssessmentType.vas:
+        return EligibilityAssessmentStatus.vasDone.name;
+      case EligibilityAssessmentType.vaccine:
+        return EligibilityAssessmentStatus.vaccineDone.name;
+    }
+  }
+
+  bool isReferral(
+      Map<String?, String> responses, List<String> referralReasons) {
+    switch (widget.eligibilityAssessmentType) {
+      case EligibilityAssessmentType.smc:
+        return isSMCReferral(responses, referralReasons);
+      case EligibilityAssessmentType.vas:
+        return isVASReferral(responses, referralReasons);
+      case EligibilityAssessmentType.vaccine:
+        return isVaccineReferral(responses, referralReasons);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
@@ -114,10 +128,7 @@ class _EligibilityChecklistViewPage
             builder: (context, householdOverviewState) {
               double? latitude = locationState.latitude;
               double? longitude = locationState.longitude;
-              String eligibilityAssessment = widget.eligibilityAssessmentType ==
-                      EligibilityAssessmentType.smc
-                  ? "ELIGIBLITY_ASSESSMENT"
-                  : "ELIGIBLITY_ASSESSMENT_2";
+              String eligibilityAssessment = "ELIGIBLITY_ASSESSMENT";
               return BlocBuilder<ServiceDefinitionBloc, ServiceDefinitionState>(
                 builder: (context, state) {
                   state.mapOrNull(
@@ -125,7 +136,7 @@ class _EligibilityChecklistViewPage
                       // todo: verify the checklist name
                       selectedServiceDefinition = value.serviceDefinitionList
                           .where((element) => element.code.toString().contains(
-                                '${context.selectedProject.name}.$eligibilityAssessment.${context.isCommunityDistributor ? RolesType.communityDistributor.toValue() : RolesType.healthFacilitySupervisor.toValue()}',
+                                '${context.selectedProject.name}.$eligibilityAssessment.${RolesType.healthFacilitySupervisor.toValue()}',
                               ))
                           .toList()
                           .firstOrNull;
@@ -214,10 +225,8 @@ class _EligibilityChecklistViewPage
                               List<String?> ineligibilityReasons = [];
                               List<bool> checkIfIneligibleFlow = [];
 
-                              ifReferral = widget.eligibilityAssessmentType ==
-                                      EligibilityAssessmentType.smc
-                                  ? isReferral(responses, referralReasons)
-                                  : isVASReferral(responses, referralReasons);
+                              ifReferral =
+                                  isReferral(responses, referralReasons);
                               ifDeliver = isDelivery(responses);
                               checkIfIneligibleFlow = isIneligible(
                                 responses,
@@ -248,19 +257,10 @@ class _EligibilityChecklistViewPage
                               final shouldSubmit = await DigitDialog.show(
                                 context,
                                 options: DigitDialogOptions(
-                                  titleText: (widget
-                                                  .eligibilityAssessmentType ==
-                                              EligibilityAssessmentType.smc ||
-                                          ifIneligible ||
-                                          ifReferral)
-                                      ? localizations.translate(
-                                          i18_local.checklist
-                                              .submitButtonDialogLabelText,
-                                        )
-                                      : localizations.translate(
-                                          i18_local.deliverIntervention
-                                              .proceedToVASLabel,
-                                        ),
+                                  titleText: localizations.translate(
+                                    i18_local
+                                        .checklist.submitButtonDialogLabelText,
+                                  ),
                                   content: widget.eligibilityAssessmentType ==
                                           EligibilityAssessmentType.smc
                                       ? Text(localizations
@@ -480,33 +480,21 @@ class _EligibilityChecklistViewPage
                                       additionalFields: TaskAdditionalFields(
                                         version: 1,
                                         fields: [
-                                          // AdditionalField(
-                                          //   'taskStatus',
-                                          //   status_local.Status
-                                          //       .beneficiaryInEligible
-                                          //       .toValue(),
-                                          // ),
                                           AdditionalField(
                                             AdditionalFieldsType.cycleIndex
                                                 .toValue(),
                                             "0${context.selectedCycle?.id}",
                                           ),
                                           AdditionalField(
-                                            'ineligibleReasons',
+                                            AdditionalFieldsType
+                                                .ineligibleReasons
+                                                .toValue(),
                                             ineligibilityReasons.join(","),
                                           ),
                                           AdditionalField(
-                                            additional_fields_local
-                                                .AdditionalFieldsType
-                                                .deliveryType
+                                            AdditionalFieldsType.deliveryType
                                                 .toValue(),
-                                            (widget.eligibilityAssessmentType ==
-                                                    EligibilityAssessmentType
-                                                        .smc)
-                                                ? EligibilityAssessmentStatus
-                                                    .smcDone.name
-                                                : EligibilityAssessmentStatus
-                                                    .vasDone.name,
+                                            getDeliveryType(),
                                           ),
                                           ...getIndividualAdditionalFields(
                                             widget.individual,
@@ -565,6 +553,15 @@ class _EligibilityChecklistViewPage
                                         referralReasons: referralReasons,
                                       ));
                                     }
+                                  } else if (widget.eligibilityAssessmentType ==
+                                      EligibilityAssessmentType.vaccine) {
+                                    router.push(CustomReferBeneficiarySMCRoute(
+                                      projectBeneficiaryClientRefId:
+                                          projectBeneficiaryClientReferenceId ??
+                                              "",
+                                      individual: widget.individual!,
+                                      referralReasons: referralReasons,
+                                    ));
                                   } else {
                                     router.push(CustomBeneficiaryDetailsRoute(
                                         eligibilityAssessmentType:
@@ -573,6 +570,12 @@ class _EligibilityChecklistViewPage
                                 }
 
                                 final router = context.router;
+                                router.push(VaccineDeliveryRoute(
+                                  doseStatusTask: widget.doseStatusTask,
+                                  projectBeneficiaryClientReferenceId: widget
+                                      .projectBeneficiaryClientReferenceId,
+                                  individual: widget.individual!,
+                                ));
                                 submitTriggered = true;
 
                                 context.read<ServiceBloc>().add(
@@ -1098,10 +1101,8 @@ class _EligibilityChecklistViewPage
     return [isIneligible, ifAdministration];
   }
 
-  bool isReferral(
-    Map<String?, String> responses,
-    List<String?> referralReasons,
-  ) {
+  bool isSMCReferral(
+      Map<String?, String> responses, List<String> referralReasons) {
     var isReferral = false;
     var q1Key = "KBEA1";
     var q2Key = "KBEA2";
@@ -1152,9 +1153,7 @@ class _EligibilityChecklistViewPage
   }
 
   bool isVASReferral(
-    Map<String?, String> responses,
-    List<String?> referralReasons,
-  ) {
+      Map<String?, String> responses, List<String> referralReasons) {
     var isReferral = false;
     var q1Key = "KBEA5";
     var q2Key = "KBEA6";
@@ -1182,6 +1181,52 @@ class _EligibilityChecklistViewPage
         if (responses.containsKey(entry.key) &&
             responses[entry.key]!.isNotEmpty) {
           if (responses[entry.key] == yes) {
+            referralReasons.add(entry.value);
+          }
+        }
+      }
+    }
+
+    return isReferral;
+  }
+
+  bool isVaccineReferral(
+      Map<String?, String> responses, List<String> referralReasons) {
+    var isReferral = false;
+    var q1Key = "CEAQ1";
+    var q2Key = "CEAQ2";
+    var q3Key = "CEAQ3";
+    var q4Key = "CEAQ4";
+    var q5Key = "CEAQ5";
+    Map<String, String> referralKeysVsCode = {};
+    // TODO Configure the reasons ,verify hardcoded strings
+
+    if (responses.isNotEmpty) {
+      if (responses.containsKey(q1Key) && responses[q1Key]!.isNotEmpty) {
+        isReferral = responses[q1Key] == no ? true : false;
+      }
+      if (!isReferral &&
+          (responses.containsKey(q2Key) && responses[q2Key]!.isNotEmpty)) {
+        isReferral = responses[q2Key] == yes ? true : false;
+      }
+      if (!isReferral &&
+          (responses.containsKey(q3Key) && responses[q3Key]!.isNotEmpty)) {
+        isReferral = responses[q3Key] == no ? true : false;
+      }
+      if (!isReferral &&
+          (responses.containsKey(q4Key) && responses[q4Key]!.isNotEmpty)) {
+        isReferral = responses[q4Key] == no ? true : false;
+      }
+      if (!isReferral &&
+          (responses.containsKey(q5Key) && responses[q5Key]!.isNotEmpty)) {
+        isReferral = responses[q5Key] == no ? true : false;
+      }
+    }
+    if (isReferral) {
+      for (var entry in referralKeysVsCode.entries) {
+        if (responses.containsKey(entry.key) &&
+            responses[entry.key]!.isNotEmpty) {
+          if (responses[entry.key] == no) {
             referralReasons.add(entry.value);
           }
         }

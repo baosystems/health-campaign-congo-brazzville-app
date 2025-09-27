@@ -19,6 +19,7 @@ import 'package:inventory_management/blocs/app_localization.dart';
 import 'package:inventory_management/router/inventory_router.dart';
 import 'package:inventory_management/router/inventory_router.gm.dart';
 import 'package:inventory_management/blocs/record_stock.dart' as _i15;
+import '../pages/beneficiary/vaccine_delivery.dart';
 import '../pages/registration_delivery/custom_complaints_inbox_search.dart';
 
 import '../blocs/inventory_management/custom_inventory_report.dart';
@@ -431,6 +432,10 @@ class AppRouter extends _$AppRouter {
                   //   path: 'beneficiary-details',
                   //   redirectTo: 'custom-beneficiary-details',
                   // ),
+                  AutoRoute(
+                    page: VaccineDeliveryRoute.page,
+                    path: 'vaccine-delivery',
+                  ),
                   AutoRoute(
                     page: CustomDeliverInterventionRoute.page,
                     path: 'custom-deliver-intervention',

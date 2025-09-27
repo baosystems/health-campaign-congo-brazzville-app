@@ -719,6 +719,7 @@ abstract class _$AppRouter extends RootStackRouter {
           individual: args.individual,
           projectBeneficiaryClientReferenceId:
               args.projectBeneficiaryClientReferenceId,
+          doseStatusTask: args.doseStatusTask,
           eligibilityAssessmentType: args.eligibilityAssessmentType,
           appLocalizations: args.appLocalizations,
         ),
@@ -836,6 +837,19 @@ abstract class _$AppRouter extends RootStackRouter {
         child: UserQRDetailsPage(
           key: args.key,
           appLocalizations: args.appLocalizations,
+        ),
+      );
+    },
+    VaccineDeliveryRoute.name: (routeData) {
+      final args = routeData.argsAs<VaccineDeliveryRouteArgs>();
+      return AutoRoutePage<dynamic>(
+        routeData: routeData,
+        child: VaccineDeliveryPage(
+          key: args.key,
+          doseStatusTask: args.doseStatusTask,
+          projectBeneficiaryClientReferenceId:
+              args.projectBeneficiaryClientReferenceId,
+          individual: args.individual,
         ),
       );
     },
@@ -3480,6 +3494,7 @@ class EligibilityChecklistViewRoute
     String? referralClientRefId,
     IndividualModel? individual,
     String? projectBeneficiaryClientReferenceId,
+    required TaskModel? doseStatusTask,
     required EligibilityAssessmentType eligibilityAssessmentType,
     AppLocalizations? appLocalizations,
     List<PageRouteInfo>? children,
@@ -3491,6 +3506,7 @@ class EligibilityChecklistViewRoute
             individual: individual,
             projectBeneficiaryClientReferenceId:
                 projectBeneficiaryClientReferenceId,
+            doseStatusTask: doseStatusTask,
             eligibilityAssessmentType: eligibilityAssessmentType,
             appLocalizations: appLocalizations,
           ),
@@ -3509,6 +3525,7 @@ class EligibilityChecklistViewRouteArgs {
     this.referralClientRefId,
     this.individual,
     this.projectBeneficiaryClientReferenceId,
+    required this.doseStatusTask,
     required this.eligibilityAssessmentType,
     this.appLocalizations,
   });
@@ -3521,13 +3538,15 @@ class EligibilityChecklistViewRouteArgs {
 
   final String? projectBeneficiaryClientReferenceId;
 
+  final TaskModel? doseStatusTask;
+
   final EligibilityAssessmentType eligibilityAssessmentType;
 
   final AppLocalizations? appLocalizations;
 
   @override
   String toString() {
-    return 'EligibilityChecklistViewRouteArgs{key: $key, referralClientRefId: $referralClientRefId, individual: $individual, projectBeneficiaryClientReferenceId: $projectBeneficiaryClientReferenceId, eligibilityAssessmentType: $eligibilityAssessmentType, appLocalizations: $appLocalizations}';
+    return 'EligibilityChecklistViewRouteArgs{key: $key, referralClientRefId: $referralClientRefId, individual: $individual, projectBeneficiaryClientReferenceId: $projectBeneficiaryClientReferenceId, doseStatusTask: $doseStatusTask, eligibilityAssessmentType: $eligibilityAssessmentType, appLocalizations: $appLocalizations}';
   }
 }
 
@@ -3929,6 +3948,55 @@ class UserQRDetailsRouteArgs {
   @override
   String toString() {
     return 'UserQRDetailsRouteArgs{key: $key, appLocalizations: $appLocalizations}';
+  }
+}
+
+/// generated route for
+/// [VaccineDeliveryPage]
+class VaccineDeliveryRoute extends PageRouteInfo<VaccineDeliveryRouteArgs> {
+  VaccineDeliveryRoute({
+    Key? key,
+    required TaskModel? doseStatusTask,
+    required String? projectBeneficiaryClientReferenceId,
+    required IndividualModel? individual,
+    List<PageRouteInfo>? children,
+  }) : super(
+          VaccineDeliveryRoute.name,
+          args: VaccineDeliveryRouteArgs(
+            key: key,
+            doseStatusTask: doseStatusTask,
+            projectBeneficiaryClientReferenceId:
+                projectBeneficiaryClientReferenceId,
+            individual: individual,
+          ),
+          initialChildren: children,
+        );
+
+  static const String name = 'VaccineDeliveryRoute';
+
+  static const PageInfo<VaccineDeliveryRouteArgs> page =
+      PageInfo<VaccineDeliveryRouteArgs>(name);
+}
+
+class VaccineDeliveryRouteArgs {
+  const VaccineDeliveryRouteArgs({
+    this.key,
+    required this.doseStatusTask,
+    required this.projectBeneficiaryClientReferenceId,
+    required this.individual,
+  });
+
+  final Key? key;
+
+  final TaskModel? doseStatusTask;
+
+  final String? projectBeneficiaryClientReferenceId;
+
+  final IndividualModel? individual;
+
+  @override
+  String toString() {
+    return 'VaccineDeliveryRouteArgs{key: $key, doseStatusTask: $doseStatusTask, projectBeneficiaryClientReferenceId: $projectBeneficiaryClientReferenceId, individual: $individual}';
   }
 }
 

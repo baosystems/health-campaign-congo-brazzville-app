@@ -873,6 +873,19 @@ abstract class _$AppRouter extends RootStackRouter {
         ),
       );
     },
+    ViewVaccinationStatusRoute.name: (routeData) {
+      final args = routeData.argsAs<ViewVaccinationStatusRouteArgs>();
+      return AutoRoutePage<dynamic>(
+        routeData: routeData,
+        child: ViewVaccinationStatusPage(
+          key: args.key,
+          appLocalizations: args.appLocalizations,
+          projectBeneficiaryClientReferenceId:
+              args.projectBeneficiaryClientReferenceId,
+          task: args.task,
+        ),
+      );
+    },
     ZeroDoseCheckRoute.name: (routeData) {
       final args = routeData.argsAs<ZeroDoseCheckRouteArgs>();
       return AutoRoutePage<dynamic>(
@@ -4081,6 +4094,56 @@ class VaccineSelectionRouteArgs {
   @override
   String toString() {
     return 'VaccineSelectionRouteArgs{key: $key, appLocalizations: $appLocalizations, isAdministration: $isAdministration, eligibilityAssessmentType: $eligibilityAssessmentType, isChecklistAssessmentDone: $isChecklistAssessmentDone, projectBeneficiaryClientReferenceId: $projectBeneficiaryClientReferenceId, individual: $individual, task: $task, hasSideEffects: $hasSideEffects, sideEffect: $sideEffect, isZeroDoseAlreadyDone: $isZeroDoseAlreadyDone}';
+  }
+}
+
+/// generated route for
+/// [ViewVaccinationStatusPage]
+class ViewVaccinationStatusRoute
+    extends PageRouteInfo<ViewVaccinationStatusRouteArgs> {
+  ViewVaccinationStatusRoute({
+    Key? key,
+    AppLocalizations? appLocalizations,
+    String? projectBeneficiaryClientReferenceId,
+    required TaskModel task,
+    List<PageRouteInfo>? children,
+  }) : super(
+          ViewVaccinationStatusRoute.name,
+          args: ViewVaccinationStatusRouteArgs(
+            key: key,
+            appLocalizations: appLocalizations,
+            projectBeneficiaryClientReferenceId:
+                projectBeneficiaryClientReferenceId,
+            task: task,
+          ),
+          initialChildren: children,
+        );
+
+  static const String name = 'ViewVaccinationStatusRoute';
+
+  static const PageInfo<ViewVaccinationStatusRouteArgs> page =
+      PageInfo<ViewVaccinationStatusRouteArgs>(name);
+}
+
+class ViewVaccinationStatusRouteArgs {
+  const ViewVaccinationStatusRouteArgs({
+    this.key,
+    this.appLocalizations,
+    this.projectBeneficiaryClientReferenceId,
+    required this.task,
+  });
+
+  final Key? key;
+
+  final AppLocalizations? appLocalizations;
+
+  final String? projectBeneficiaryClientReferenceId;
+
+  final TaskModel task;
+
+  @override
+  String toString() {
+    return 'ViewVaccinationStatusRouteArgs{key: $key, appLocalizations: $appLocalizations, projectBeneficiaryClientReferenceId: $projectBeneficiaryClientReferenceId, task: $task}';
   }
 }
 

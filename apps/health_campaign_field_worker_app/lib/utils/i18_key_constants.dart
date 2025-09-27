@@ -177,6 +177,9 @@ class HouseholdOverView {
   String get householdOverViewChildVaccineActionText =>
       'HOUSEHOLD_OVER_VIEW_CHILD_VACCINE_ACTION_TEXT';
 
+  String get householdOverViewVaccinationStatusActionText =>
+      'HOUSEHOLD_OVER_VIEW_VACCINATION_STATUS_ACTION_TEXT';
+
   String get householdOverViewZeroDoseActionText =>
       'HOUSEHOLD_OVER_VIEW_ZERO_DOSE_ACTION_TEXT';
 

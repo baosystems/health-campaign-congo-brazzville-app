@@ -51,6 +51,7 @@ import '../../../utils/i18_key_constants.dart' as i18_local;
 @RoutePage()
 class VaccineDeliveryPage extends LocalizedStatefulWidget {
   final bool isHPVEligible;
+  final Set notApplicableVaccines;
   final TaskModel? doseStatusTask;
   final String? projectBeneficiaryClientReferenceId;
   final IndividualModel? individual;
@@ -58,6 +59,7 @@ class VaccineDeliveryPage extends LocalizedStatefulWidget {
   const VaccineDeliveryPage({
     super.key,
     required this.isHPVEligible,
+    required this.notApplicableVaccines,
     required this.doseStatusTask,
     required this.projectBeneficiaryClientReferenceId,
     required this.individual,
@@ -105,12 +107,15 @@ class _VaccineDeliveryPageState extends LocalizedState<VaccineDeliveryPage> {
             ?.value ??
         "";
     List<String> selectedVaccineList = selectedVaccines.split(".");
-    final noSelectedVaccines = widget.doseStatusTask?.additionalFields?.fields
+    String noSelectedVaccines = widget.doseStatusTask?.additionalFields?.fields
             .firstWhereOrNull((e) =>
                 e.key == AdditionalFieldsType.noSelectedVaccines.toValue())
             ?.value ??
         "";
     List<String> noSelectedVaccineList = noSelectedVaccines.split(".");
+    final filterNoSelectedVaccinesList = noSelectedVaccineList
+        .whereNot((e) => widget.notApplicableVaccines.contains(e))
+        .toList();
     return BlocBuilder<LocationBloc, LocationState>(
       builder: (context, locationState) {
         return ReactiveFormBuilder(
@@ -284,10 +289,10 @@ class _VaccineDeliveryPageState extends LocalizedState<VaccineDeliveryPage> {
                         Column(
                           children: [
                             for (int i = 0;
-                                i < noSelectedVaccineList.length;
+                                i < filterNoSelectedVaccinesList.length;
                                 i++)
                               VaccineDetailsCard(
-                                vaccineName: noSelectedVaccineList[i],
+                                vaccineName: filterNoSelectedVaccinesList[i],
                                 onVaccineDetailsChanged: (vaccineDetails) {
                                   vaccineDeliveryDetails[vaccineDetails
                                       .vaccineName] = vaccineDetails;

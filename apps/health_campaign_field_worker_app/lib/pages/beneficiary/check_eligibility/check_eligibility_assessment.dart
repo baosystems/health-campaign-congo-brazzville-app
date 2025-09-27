@@ -1,5 +1,6 @@
 import 'dart:math';
 
+import 'package:collection/collection.dart';
 import 'package:digit_components/digit_components.dart';
 import 'package:digit_components/utils/date_utils.dart';
 import 'package:flutter/material.dart';
@@ -7,7 +8,9 @@ import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:group_radio_button/group_radio_button.dart';
 import 'package:health_campaign_field_worker_app/widgets/custom_back_navigation.dart';
+import 'package:registration_delivery/blocs/delivery_intervention/deliver_intervention.dart';
 import 'package:registration_delivery/blocs/household_overview/household_overview.dart';
+import 'package:registration_delivery/blocs/search_households/search_households.dart';
 import 'package:survey_form/survey_form.dart';
 import 'package:digit_data_model/data_model.dart';
 import 'package:registration_delivery/models/entities/task.dart';
@@ -66,6 +69,8 @@ class _EligibilityChecklistViewPage
   final String negative = "NEGATIVE";
   final String test_unavailable = "TEST_UNAVAILABLE";
   bool triggerLocalization = false;
+
+  Set notApplicableVaccines = {};
 
   @override
   void initState() {
@@ -264,31 +269,11 @@ class _EligibilityChecklistViewPage
                                 context,
                                 options: DigitDialogOptions(
                                   titleText: localizations.translate(
-                                    i18_local
-                                        .checklist.submitButtonDialogLabelText,
+                                    i18_local.common.coreCommonDialogTitle,
                                   ),
-                                  content: widget.eligibilityAssessmentType ==
-                                          EligibilityAssessmentType.smc
-                                      ? Text(localizations
-                                          .translate(
-                                            i18_local.checklist
-                                                .checklistDialogDynamicDescription,
-                                          )
-                                          .replaceFirst('{}', descriptionText))
-                                      : (ifReferral || ifIneligible)
-                                          ? getHighlightedText(localizations
-                                              .translate(
-                                                i18_local.checklist
-                                                    .checklistDialogDynamicDescription,
-                                              )
-                                              .replaceFirst(
-                                                  '{}', descriptionText))
-                                          : getHighlightedText(
-                                              localizations.translate(
-                                                i18_local.deliverIntervention
-                                                    .proceedToVASDescription,
-                                              ),
-                                            ),
+                                  content: Text(localizations.translate(
+                                    i18_local.common.coreCommonDialogContent,
+                                  )),
                                   primaryAction: DigitDialogActions(
                                     label: widget.eligibilityAssessmentType ==
                                             EligibilityAssessmentType.smc
@@ -456,7 +441,6 @@ class _EligibilityChecklistViewPage
                                         ifReferral)) {
                                   final router = context.router;
                                   if (ifIneligible) {
-                                    // added the deliversubmitevent here
                                     final clientReferenceId =
                                         IdGen.i.identifier;
                                     final task = TaskModel(
@@ -515,38 +499,28 @@ class _EligibilityChecklistViewPage
                                       ),
                                     );
 
-                                    // TODO: Currently, it's been shifted to the zero dose flow
-                                    // context.read<DeliverInterventionBloc>().add(
-                                    //       DeliverInterventionSubmitEvent(
-                                    //           task: task,
-                                    //           isEditing: false,
-                                    //           boundaryModel: context.boundary,
-                                    //           navigateToSummary: false,
-                                    //           householdMemberWrapper:
-                                    //               householdOverviewState
-                                    //                   .householdMemberWrapper),
-                                    //     );
-                                    // final searchBloc =
-                                    //     context.read<SearchHouseholdsBloc>();
-                                    // searchBloc.add(
-                                    //   const SearchHouseholdsClearEvent(),
-                                    // );
+                                    context.read<DeliverInterventionBloc>().add(
+                                          DeliverInterventionSubmitEvent(
+                                              task: task,
+                                              isEditing: false,
+                                              boundaryModel: context.boundary,
+                                              navigateToSummary: false,
+                                              householdMemberWrapper:
+                                                  householdOverviewState
+                                                      .householdMemberWrapper),
+                                        );
+                                    final searchBloc =
+                                        context.read<SearchHouseholdsBloc>();
+                                    searchBloc.add(
+                                      const SearchHouseholdsClearEvent(),
+                                    );
 
-                                    router.push(ZeroDoseCheckRoute(
-                                      eligibilityAssessmentType:
-                                          widget.eligibilityAssessmentType,
-                                      isAdministration: false,
-                                      task: task,
-                                      projectBeneficiaryClientReferenceId: task
-                                              .projectBeneficiaryClientReferenceId ??
-                                          projectBeneficiaryClientReferenceId,
-                                    ));
-                                    // router.push(
-                                    //   CustomHouseholdAcknowledgementRoute(
-                                    //       enableViewHousehold: true,
-                                    //       eligibilityAssessmentType:
-                                    //           widget.eligibilityAssessmentType),
-                                    // );
+                                    router.push(
+                                      CustomHouseholdAcknowledgementRoute(
+                                          enableViewHousehold: true,
+                                          eligibilityAssessmentType:
+                                              widget.eligibilityAssessmentType),
+                                    );
                                   } else if (ifReferral) {
                                     if (widget.eligibilityAssessmentType ==
                                         EligibilityAssessmentType.vaccine) {
@@ -567,6 +541,8 @@ class _EligibilityChecklistViewPage
                                           .projectBeneficiaryClientReferenceId,
                                       individual: widget.individual!,
                                       isHPVEligible: widget.isHPVEligible,
+                                      notApplicableVaccines:
+                                          notApplicableVaccines,
                                     ));
                                   }
                                 }
@@ -1103,36 +1079,45 @@ class _EligibilityChecklistViewPage
     List<String?> referralReasons,
   ) {
     var isReferral = false;
-    var q1Key = "CEAQ1";
     var q2Key = "CEAQ2";
-    var q3Key = "CEAQ3";
+    var q2SubKey = "CEAQ2.YES.CEAQ2B";
     var q4Key = "CEAQ4";
+    var q4SubKey = "CEAQ4.YES.CEAQ4B";
     var q5Key = "CEAQ5";
-    Map<String, String> referralKeysVsCode = {};
+
     List<String> referralKeys = ["SICK", "FEVER", "DRUG_SIDE_EFFECT"];
     referralReasons.addAll(referralKeys);
-    // TODO Configure the reasons ,verify hardcoded strings
 
     if (responses.isNotEmpty) {
-      if (responses.containsKey(q1Key) && responses[q1Key]!.isNotEmpty) {
-        isReferral = responses[q1Key] == no ? true : false;
-        if (isReferral == false) return false;
-      }
       if ((responses.containsKey(q2Key) && responses[q2Key]!.isNotEmpty)) {
-        isReferral = responses[q2Key] == yes ? true : false;
-        if (isReferral == false) return false;
-      }
-      if ((responses.containsKey(q3Key) && responses[q3Key]!.isNotEmpty)) {
-        isReferral = responses[q3Key] == no ? true : false;
-        if (isReferral == false) return false;
+        if (responses[q2Key] == yes) {
+          if (responses[q2SubKey] == yes) {
+            isReferral = false;
+          } else {
+            isReferral = true;
+          }
+        } else {
+          isReferral = false;
+        }
       }
       if ((responses.containsKey(q4Key) && responses[q4Key]!.isNotEmpty)) {
-        isReferral = responses[q4Key] == no ? true : false;
-        if (isReferral == false) return false;
+        if (responses[q4Key] == yes) {
+          if (responses[q4SubKey] == yes) {
+            notApplicableVaccines.clear();
+            isReferral = false;
+          } else {
+            isReferral = true;
+          }
+        } else {
+          isReferral = false;
+        }
       }
       if ((responses.containsKey(q5Key) && responses[q5Key]!.isNotEmpty)) {
-        isReferral = responses[q5Key] == no ? true : false;
-        if (isReferral == false) return false;
+        if (responses[q5Key] == yes) {
+          isReferral = true;
+        } else {
+          isReferral = false;
+        }
       }
     }
 
@@ -1140,20 +1125,50 @@ class _EligibilityChecklistViewPage
   }
 
   bool isDelivery(Map<String?, String> responses) {
-    var isDeliver = true;
-    var q1Key = "KBEA7";
+    var q1Key = "CEAQ1";
+    var q2Key = "CEAQ2";
+    var q2SubKey = "CEAQ2.YES.CEAQ2B";
+    var q3Key = "CEAQ3";
+    var q4Key = "CEAQ4";
+    var q4SubKey = "CEAQ4.YES.CEAQ4B";
+    var q5Key = "CEAQ5";
 
-    for (var entry in responses.entries) {
-      if (entry.key == q1Key) {
-        continue;
+    if (responses.isNotEmpty) {
+      if (responses.containsKey(q1Key) && responses[q1Key]!.isNotEmpty) {
+        if (responses[q1Key] == yes) {
+          notApplicableVaccines.add(Constants.bcgVaccine);
+        }
       }
-      if (entry.value == yes) {
-        isDeliver = false;
-        break;
+      if ((responses.containsKey(q2Key) && responses[q2Key]!.isNotEmpty)) {
+        if (responses[q2Key] == yes) {
+          if (responses[q2SubKey] == no) {
+            notApplicableVaccines.clear();
+            return false;
+          }
+        }
+      }
+      if ((responses.containsKey(q3Key) && responses[q3Key]!.isNotEmpty)) {
+        if (responses[q3Key] == yes ? true : false) {
+          notApplicableVaccines.add(Constants.vaaVaccine);
+        }
+      }
+      if ((responses.containsKey(q4Key) && responses[q4Key]!.isNotEmpty)) {
+        if (responses[q4Key] == yes) {
+          if (responses[q4SubKey] == no) {
+            notApplicableVaccines.clear();
+            return false;
+          }
+        }
+      }
+      if ((responses.containsKey(q5Key) && responses[q5Key]!.isNotEmpty)) {
+        if (responses[q5Key] == yes) {
+          notApplicableVaccines.clear();
+          return false;
+        }
       }
     }
 
-    return isDeliver;
+    return true;
   }
 
   // Function to build nested checklists for child attributes

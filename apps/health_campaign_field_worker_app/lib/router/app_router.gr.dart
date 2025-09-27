@@ -848,6 +848,7 @@ abstract class _$AppRouter extends RootStackRouter {
         child: VaccineDeliveryPage(
           key: args.key,
           isHPVEligible: args.isHPVEligible,
+          notApplicableVaccines: args.notApplicableVaccines,
           doseStatusTask: args.doseStatusTask,
           projectBeneficiaryClientReferenceId:
               args.projectBeneficiaryClientReferenceId,
@@ -3977,6 +3978,7 @@ class VaccineDeliveryRoute extends PageRouteInfo<VaccineDeliveryRouteArgs> {
   VaccineDeliveryRoute({
     Key? key,
     required bool isHPVEligible,
+    required Set<dynamic> notApplicableVaccines,
     required TaskModel? doseStatusTask,
     required String? projectBeneficiaryClientReferenceId,
     required IndividualModel? individual,
@@ -3986,6 +3988,7 @@ class VaccineDeliveryRoute extends PageRouteInfo<VaccineDeliveryRouteArgs> {
           args: VaccineDeliveryRouteArgs(
             key: key,
             isHPVEligible: isHPVEligible,
+            notApplicableVaccines: notApplicableVaccines,
             doseStatusTask: doseStatusTask,
             projectBeneficiaryClientReferenceId:
                 projectBeneficiaryClientReferenceId,
@@ -4004,6 +4007,7 @@ class VaccineDeliveryRouteArgs {
   const VaccineDeliveryRouteArgs({
     this.key,
     required this.isHPVEligible,
+    required this.notApplicableVaccines,
     required this.doseStatusTask,
     required this.projectBeneficiaryClientReferenceId,
     required this.individual,
@@ -4013,6 +4017,8 @@ class VaccineDeliveryRouteArgs {
 
   final bool isHPVEligible;
 
+  final Set<dynamic> notApplicableVaccines;
+
   final TaskModel? doseStatusTask;
 
   final String? projectBeneficiaryClientReferenceId;
@@ -4021,7 +4027,7 @@ class VaccineDeliveryRouteArgs {
 
   @override
   String toString() {
-    return 'VaccineDeliveryRouteArgs{key: $key, isHPVEligible: $isHPVEligible, doseStatusTask: $doseStatusTask, projectBeneficiaryClientReferenceId: $projectBeneficiaryClientReferenceId, individual: $individual}';
+    return 'VaccineDeliveryRouteArgs{key: $key, isHPVEligible: $isHPVEligible, notApplicableVaccines: $notApplicableVaccines, doseStatusTask: $doseStatusTask, projectBeneficiaryClientReferenceId: $projectBeneficiaryClientReferenceId, individual: $individual}';
   }
 }
 

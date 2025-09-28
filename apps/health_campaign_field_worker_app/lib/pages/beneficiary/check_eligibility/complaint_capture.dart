@@ -21,7 +21,7 @@ import 'package:registration_delivery/utils/utils.dart';
 import '../../../models/entities/additional_fields_type.dart'
     as additional_fields_local;
 import '../../../utils/app_enums.dart'
-    show EligibilityAssessmentType, EligibilityAssessmentStatus, ZeroDoseStatus;
+    show EligibilityAssessmentType, EligibilityAssessmentStatus;
 import 'package:health_campaign_field_worker_app/router/app_router.dart'
     show CustomHouseholdAcknowledgementRoute;
 import 'package:registration_delivery/router/registration_delivery_router.gm.dart'
@@ -199,6 +199,12 @@ class _ComplaintCapturePageState extends State<ComplaintCapturePage> {
                           for (final f in merged) {
                             debugPrint('AF ${f.key}=${f.value}');
                           }
+
+                          String _dotJoinUpper(List<String> xs) => xs
+                              .map((e) => e.trim().toUpperCase())
+                              .where((e) => e.isNotEmpty)
+                              .join('.');
+
                           void upsert(String key, String value) {
                             final i = merged.indexWhere((f) => f.key == key);
                             if (i >= 0) {
@@ -222,7 +228,7 @@ class _ComplaintCapturePageState extends State<ComplaintCapturePage> {
                               additional_fields_local
                                   .AdditionalFieldsType.selectedVaccines
                                   .toValue(),
-                              widget.selectedYesCodes.join('.'),
+                              _dotJoinUpper(widget.selectedYesCodes),
                             );
                           }
                           if (widget.selectedNoCodes.isNotEmpty) {
@@ -230,10 +236,11 @@ class _ComplaintCapturePageState extends State<ComplaintCapturePage> {
                               additional_fields_local
                                   .AdditionalFieldsType.noSelectedVaccines
                                   .toValue(),
-                              widget.selectedNoCodes.join('.'),
+                              _dotJoinUpper(widget.selectedNoCodes),
                             );
                           }
-                          upsert('nonVaccinationReason', widget.reasonCode);
+                          upsert('nonVaccinationReason',
+                              widget.reasonCode.trim().toUpperCase());
                           if ((widget.reasonOther ?? '').trim().isNotEmpty) {
                             upsert('nonVaccinationReasonOther',
                                 widget.reasonOther!.trim());
@@ -309,9 +316,8 @@ class _ComplaintCapturePageState extends State<ComplaintCapturePage> {
             ),
             children: [
               DigitCard(
-                margin: const EdgeInsets.all(16),
-                padding:
-                    const EdgeInsets.symmetric(vertical: 16, horizontal: 16),
+                margin: const EdgeInsets.fromLTRB(16, 12, 16, 16),
+                padding: const EdgeInsets.all(16),
                 children: [
                   Text(
                     l.translate(i18_local.zeroDose.complaintTitle),
@@ -319,24 +325,18 @@ class _ComplaintCapturePageState extends State<ComplaintCapturePage> {
                         ?.copyWith(fontWeight: FontWeight.w700),
                   ),
                   const SizedBox(height: 12),
-                  Text.rich(
-                    TextSpan(
-                      text: l.translate(i18_local.zeroDose.complaintLabel),
-                      children: [
-                        TextSpan(
-                          text: ' *',
-                          style: TextStyle(color: theme.colorScheme.error),
-                        ),
-                      ],
-                    ),
+                  Text(
+                    l.translate(i18_local.zeroDose.complaintLabel),
                     style: theme.textTheme.titleMedium,
                   ),
                   const SizedBox(height: 8),
                   TextFormField(
                     controller: _complaintCtrl,
+                    minLines: 3,
                     maxLines: 5,
                     textInputAction: TextInputAction.newline,
                     decoration: InputDecoration(
+                      isDense: true,
                       hintText: l.translate(
                           i18_local.zeroDose.complaintBoxPlaceholder),
                       border: const OutlineInputBorder(),
@@ -345,7 +345,7 @@ class _ComplaintCapturePageState extends State<ComplaintCapturePage> {
                             color: theme.colorScheme.primary, width: 2),
                       ),
                       contentPadding: const EdgeInsets.symmetric(
-                          vertical: 12, horizontal: 12),
+                          vertical: 10, horizontal: 12),
                     ),
                   ),
                   const SizedBox(height: 8),

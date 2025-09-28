@@ -174,7 +174,10 @@ class _ReasonsForNonVaccinationPageState
                       individual: widget.individual,
                       selectedYesCodes: widget.selectedYesCodes,
                       selectedNoCodes: widget.selectedNoCodes,
-                      reasonCode: _selectedReasons.map((r) => r.name).join(','),
+                      reasonCode: reasonsOrder
+                          .where((r) => _selectedReasons.contains(r))
+                          .map((r) => r.name.toUpperCase())
+                          .join('.'),
                       reasonOther:
                           _selectedReasons.contains(NonVaccinationReason.other)
                               ? _otherCtrl.text.trim()
@@ -189,111 +192,115 @@ class _ReasonsForNonVaccinationPageState
           ),
         ),
         children: [
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  l.translate(i18_local.zeroDose.reasonsTitle),
-                  style: theme.textTheme.headlineLarge
-                      ?.copyWith(fontWeight: FontWeight.w700),
-                ),
-                const SizedBox(height: 12),
-                Text(
-                  l.translate(i18_local.zeroDose.reasonsSubtitle),
-                  style: theme.textTheme.titleMedium,
-                ),
-                const SizedBox(height: 12),
-
-                // Reasons (with vertical spacing)
-                ...reasonsOrder.map((r) {
-                  final labelKey = {
-                    NonVaccinationReason.stockOut:
-                        i18_local.zeroDose.reasonStockOut,
-                    NonVaccinationReason.facilityFar:
-                        i18_local.zeroDose.reasonFacilityFar,
-                    NonVaccinationReason.forgotAppointment:
-                        i18_local.zeroDose.reasonForgotAppointment,
-                    NonVaccinationReason.caregiverBusy:
-                        i18_local.zeroDose.reasonCaregiverBusy,
-                    NonVaccinationReason.priorAefi:
-                        i18_local.zeroDose.reasonPriorAefi,
-                    NonVaccinationReason.noTransportMoney:
-                        i18_local.zeroDose.reasonNoTransportMoney,
-                    NonVaccinationReason.badStaffAttitude:
-                        i18_local.zeroDose.reasonBadStaffAttitude,
-                    NonVaccinationReason.facilityClosed:
-                        i18_local.zeroDose.reasonFacilityClosed,
-                    NonVaccinationReason.notImportantToCaregiver:
-                        i18_local.zeroDose.reasonNotImportantToCaregiver,
-                    NonVaccinationReason.rumorsMisinformation:
-                        i18_local.zeroDose.reasonRumorsMisinformation,
-                    NonVaccinationReason.hardToAccessArea:
-                        i18_local.zeroDose.reasonHardToAccessArea,
-                    NonVaccinationReason.refugeeOrIdp:
-                        i18_local.zeroDose.reasonRefugeeOrIdp,
-                    NonVaccinationReason.indigenousStigma:
-                        i18_local.zeroDose.reasonIndigenousStigma,
-                    NonVaccinationReason.other: i18_local.zeroDose.reasonOther,
-                  }[r]!;
-
-                  return Padding(
-                    padding: const EdgeInsets.only(bottom: 12),
-                    child: DigitCheckboxTile(
-                      value: _selectedReasons.contains(r),
-                      label: l.translate(labelKey),
-                      onChanged: (checked) {
-                        setState(() {
-                          if (checked == true) {
-                            _selectedReasons.add(r);
-                          } else {
-                            _selectedReasons.remove(r);
-                          }
-                        });
-                      },
-                    ),
-                  );
-                }).toList(),
-
-                // "Other" details
-                if (_selectedReasons.contains(NonVaccinationReason.other)) ...[
-                  const SizedBox(height: 8),
-                  Text.rich(
-                    TextSpan(
-                      text: l.translate(i18_local.zeroDose.reasonsOtherLabel),
-                      children: [
-                        TextSpan(
-                          text: ' *',
-                          style: TextStyle(color: theme.colorScheme.error),
-                        ),
-                      ],
-                    ),
+          DigitCard(
+            margin:
+                const EdgeInsets.fromLTRB(spacer3, spacer4, spacer3, spacer4),
+            padding:
+                const EdgeInsets.fromLTRB(spacer4, spacer4, spacer4, spacer8),
+            children: [
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    l.translate(i18_local.zeroDose.reasonsTitle),
+                    style: theme.textTheme.headlineLarge
+                        ?.copyWith(fontWeight: FontWeight.w700),
+                  ),
+                  const SizedBox(height: 12),
+                  Text(
+                    l.translate(i18_local.zeroDose.reasonsSubtitle),
                     style: theme.textTheme.titleMedium,
                   ),
-                  const SizedBox(height: 8),
-                  TextFormField(
-                    controller: _otherCtrl,
-                    minLines: 4,
-                    maxLines: 8,
-                    decoration: InputDecoration(
-                      hintText: l.translate(
-                          i18_local.zeroDose.reasonsOtherPlaceholder),
-                      border: const OutlineInputBorder(),
-                      focusedBorder: OutlineInputBorder(
-                        borderSide: BorderSide(
-                            color: theme.colorScheme.primary, width: 2),
-                      ),
-                      contentPadding: const EdgeInsets.symmetric(
-                          vertical: 12, horizontal: 12),
-                    ),
-                  ),
-                ],
+                  const SizedBox(height: 12),
 
-                // Extra bottom space so the fixed footer doesn't overlap
-                const SizedBox(height: 80),
-              ],
-            ),
+                  // Reasons (with vertical spacing)
+                  ...reasonsOrder.map((r) {
+                    final labelKey = {
+                      NonVaccinationReason.stockOut:
+                          i18_local.zeroDose.reasonStockOut,
+                      NonVaccinationReason.facilityFar:
+                          i18_local.zeroDose.reasonFacilityFar,
+                      NonVaccinationReason.forgotAppointment:
+                          i18_local.zeroDose.reasonForgotAppointment,
+                      NonVaccinationReason.caregiverBusy:
+                          i18_local.zeroDose.reasonCaregiverBusy,
+                      NonVaccinationReason.priorAefi:
+                          i18_local.zeroDose.reasonPriorAefi,
+                      NonVaccinationReason.noTransportMoney:
+                          i18_local.zeroDose.reasonNoTransportMoney,
+                      NonVaccinationReason.badStaffAttitude:
+                          i18_local.zeroDose.reasonBadStaffAttitude,
+                      NonVaccinationReason.facilityClosed:
+                          i18_local.zeroDose.reasonFacilityClosed,
+                      NonVaccinationReason.notImportantToCaregiver:
+                          i18_local.zeroDose.reasonNotImportantToCaregiver,
+                      NonVaccinationReason.rumorsMisinformation:
+                          i18_local.zeroDose.reasonRumorsMisinformation,
+                      NonVaccinationReason.hardToAccessArea:
+                          i18_local.zeroDose.reasonHardToAccessArea,
+                      NonVaccinationReason.refugeeOrIdp:
+                          i18_local.zeroDose.reasonRefugeeOrIdp,
+                      NonVaccinationReason.indigenousStigma:
+                          i18_local.zeroDose.reasonIndigenousStigma,
+                      NonVaccinationReason.other:
+                          i18_local.zeroDose.reasonOther,
+                    }[r]!;
+
+                    return Padding(
+                      padding: const EdgeInsets.only(bottom: 12),
+                      child: DigitCheckbox(
+                        value: _selectedReasons.contains(r),
+                        label: l.translate(labelKey),
+                        onChanged: (checked) {
+                          setState(() {
+                            if (checked == true) {
+                              _selectedReasons.add(r);
+                            } else {
+                              _selectedReasons.remove(r);
+                            }
+                          });
+                        },
+                      ),
+                    );
+                  }).toList(),
+
+                  // "Other" details
+                  if (_selectedReasons
+                      .contains(NonVaccinationReason.other)) ...[
+                    const SizedBox(height: 8),
+                    Text.rich(
+                      TextSpan(
+                        text: l.translate(i18_local.zeroDose.reasonsOtherLabel),
+                        children: [
+                          TextSpan(
+                            text: ' *',
+                            style: TextStyle(color: theme.colorScheme.error),
+                          ),
+                        ],
+                      ),
+                      style: theme.textTheme.titleMedium,
+                    ),
+                    const SizedBox(height: 8),
+                    TextFormField(
+                      controller: _otherCtrl,
+                      minLines: 1,
+                      maxLines: 3,
+                      decoration: InputDecoration(
+                        hintText: l.translate(
+                            i18_local.zeroDose.reasonsOtherPlaceholder),
+                        border: const OutlineInputBorder(),
+                        focusedBorder: OutlineInputBorder(
+                          borderSide: BorderSide(
+                              color: theme.colorScheme.primary, width: 2),
+                        ),
+                        contentPadding: const EdgeInsets.symmetric(
+                            vertical: 12, horizontal: 12),
+                      ),
+                    ),
+                  ],
+                ],
+              )
+            ],
           ),
         ],
       ),

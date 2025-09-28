@@ -1137,6 +1137,7 @@ class _EligibilityChecklistViewPage
       }
       if ((responses.containsKey(q3Key) && responses[q3Key]!.isNotEmpty)) {
         if (responses[q3Key] == yes ? true : false) {
+          notApplicableVaccines.add(Constants.bcgVaccine);
           notApplicableVaccines.add(Constants.vaaVaccine);
         }
       }

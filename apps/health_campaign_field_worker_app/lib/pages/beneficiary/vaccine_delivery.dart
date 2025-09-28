@@ -1,5 +1,6 @@
 import 'package:collection/collection.dart';
 import 'package:digit_components/utils/date_utils.dart';
+import 'package:digit_components/widgets/atoms/digit_toaster.dart';
 
 import 'package:digit_components/widgets/digit_elevated_button.dart';
 import 'package:digit_components/widgets/scrollable_content.dart';
@@ -33,7 +34,9 @@ import 'package:registration_delivery/models/entities/task.dart';
 import 'package:registration_delivery/models/entities/task_resource.dart';
 import 'package:registration_delivery/utils/utils.dart';
 
+import '../../blocs/app_initialization/app_initialization.dart';
 import '../../blocs/delivery_intervention/vaccine_delivery.dart';
+import '../../data/local_store/no_sql/schema/app_configuration.dart';
 import '../../models/entities/additional_fields_type.dart';
 import '../../models/entities/assessment_checklist/status.dart';
 import '../../models/entities/identifier_types.dart';
@@ -75,9 +78,9 @@ class _VaccineDeliveryPageState extends LocalizedState<VaccineDeliveryPage> {
   static const _doseAdministeredByKey = 'doseAdministeredBy';
   static const _deliveryCommentKey = 'deliveryComment';
 
-  List<String> commentsOptions = ["Vaccine out of stock"];
-
   Map<String, VaccineDeliveryDetails> vaccineDeliveryDetails = {};
+  Set<String> selectedVaccineSet = {};
+  Set<String> noSelectedVaccineSet = {};
 
   FormGroup _form() {
     DateTime now = DateTime.now();
@@ -99,6 +102,31 @@ class _VaccineDeliveryPageState extends LocalizedState<VaccineDeliveryPage> {
   }
 
   @override
+  initState() {
+    int ageInMonth = 0;
+    try {
+      String ageInMonthString = widget.doseStatusTask?.additionalFields?.fields
+          .firstWhereOrNull((e) => e.key == AdditionalFieldsType.age.toValue())
+          ?.value;
+      ageInMonth = int.parse(ageInMonthString);
+    } catch (e) {
+      try {
+        ageInMonth = widget.doseStatusTask?.additionalFields?.fields
+            .firstWhereOrNull(
+                (e) => e.key == AdditionalFieldsType.age.toValue())
+            ?.value;
+      } catch (e) {}
+    }
+    if (ageInMonth > 6) {
+      widget.notApplicableVaccines.add(Constants.rotaVaccine);
+    } else if (ageInMonth > 12) {
+      widget.notApplicableVaccines.add(Constants.bcgVaccine);
+    }
+    setState(() {});
+    super.initState();
+  }
+
+  @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final selectedVaccines = widget.doseStatusTask?.additionalFields?.fields
@@ -106,14 +134,14 @@ class _VaccineDeliveryPageState extends LocalizedState<VaccineDeliveryPage> {
                 (e) => e.key == AdditionalFieldsType.selectedVaccines.toValue())
             ?.value ??
         "";
-    List<String> selectedVaccineList = selectedVaccines.split(".");
+    selectedVaccineSet = selectedVaccines.split(".").toSet();
     String noSelectedVaccines = widget.doseStatusTask?.additionalFields?.fields
             .firstWhereOrNull((e) =>
                 e.key == AdditionalFieldsType.noSelectedVaccines.toValue())
             ?.value ??
         "";
-    List<String> noSelectedVaccineList = noSelectedVaccines.split(".");
-    final filterNoSelectedVaccinesList = noSelectedVaccineList
+    noSelectedVaccineSet = noSelectedVaccines.split(".").toSet();
+    final filterNoSelectedVaccinesList = noSelectedVaccineSet
         .whereNot((e) => widget.notApplicableVaccines.contains(e))
         .toList();
     return BlocBuilder<LocationBloc, LocationState>(
@@ -137,6 +165,15 @@ class _VaccineDeliveryPageState extends LocalizedState<VaccineDeliveryPage> {
                         onPressed: () async {
                           if (form.invalid) {
                             form.markAllAsTouched();
+                            await DigitToast.show(
+                              context,
+                              options: DigitToastOptions(
+                                localizations.translate(i18_local
+                                    .deliverIntervention.selectDeliveryComment),
+                                true,
+                                theme,
+                              ),
+                            );
                             return;
                           }
                           final submit = await showCustomPopup(
@@ -296,6 +333,17 @@ class _VaccineDeliveryPageState extends LocalizedState<VaccineDeliveryPage> {
                                 onVaccineDetailsChanged: (vaccineDetails) {
                                   vaccineDeliveryDetails[vaccineDetails
                                       .vaccineName] = vaccineDetails;
+                                  if (vaccineDetails.numberOfDose > 0) {
+                                    noSelectedVaccineSet
+                                        .remove(vaccineDetails.vaccineName);
+                                    selectedVaccineSet
+                                        .add(vaccineDetails.vaccineName);
+                                  } else {
+                                    selectedVaccineSet
+                                        .remove(vaccineDetails.vaccineName);
+                                    noSelectedVaccineSet
+                                        .add(vaccineDetails.vaccineName);
+                                  }
                                 },
                               ),
                             if (widget.isHPVEligible)
@@ -314,34 +362,46 @@ class _VaccineDeliveryPageState extends LocalizedState<VaccineDeliveryPage> {
                       margin: const EdgeInsets.all(kPadding),
                       padding: const EdgeInsets.all(kPadding),
                       children: [
-                        ReactiveWrapperField(
-                          formControlName: _deliveryCommentKey,
-                          builder: (field) {
-                            return LabeledField(
-                              label: localizations.translate(
-                                i18_local.deliverIntervention.deliveryComment,
-                              ),
-                              isRequired: true,
-                              child: DigitDropdown(
-                                emptyItemText: localizations.translate(
-                                  i18_local.common.noMatchFound,
-                                ),
-                                items: commentsOptions.map((e) {
-                                  return DropdownItem(
-                                    code: e,
-                                    name: localizations.translate(e),
-                                  );
-                                }).toList(),
-                                selectedOption: null,
-                                onSelect: (value) {
-                                  field.control.value = value.name;
-                                  form.control(_deliveryCommentKey).value =
-                                      value.code;
-                                  form
-                                      .control(_deliveryCommentKey)
-                                      .updateValue(value.code);
-                                },
-                              ),
+                        BlocBuilder<AppInitializationBloc,
+                            AppInitializationState>(
+                          builder: (context, state) {
+                            if (state is! AppInitialized) {
+                              return const Offstage();
+                            }
+                            final deliveryCommentOptions =
+                                state.appConfiguration.deliveryCommentOptions ??
+                                    <DeliveryCommentOptions>[];
+                            return ReactiveWrapperField(
+                              formControlName: _deliveryCommentKey,
+                              builder: (field) {
+                                return LabeledField(
+                                  label: localizations.translate(
+                                    i18_local
+                                        .deliverIntervention.deliveryComment,
+                                  ),
+                                  isRequired: true,
+                                  child: DigitDropdown(
+                                    emptyItemText: localizations.translate(
+                                      i18_local.common.noMatchFound,
+                                    ),
+                                    items: deliveryCommentOptions.map((e) {
+                                      return DropdownItem(
+                                        code: e.code,
+                                        name: localizations.translate(e.code),
+                                      );
+                                    }).toList(),
+                                    selectedOption: null,
+                                    onSelect: (value) {
+                                      field.control.value = value.name;
+                                      form.control(_deliveryCommentKey).value =
+                                          value.code;
+                                      form
+                                          .control(_deliveryCommentKey)
+                                          .updateValue(value.code);
+                                    },
+                                  ),
+                                );
+                              },
                             );
                           },
                         ),
@@ -351,6 +411,25 @@ class _VaccineDeliveryPageState extends LocalizedState<VaccineDeliveryPage> {
             });
       },
     );
+  }
+
+  DoseStatus getDoseStatus(
+      List<String> selectedCodes, List<String> noSelectedCodes) {
+    if (selectedCodes.isEmpty && noSelectedCodes.isEmpty) {
+      return DoseStatus.none;
+    } else if ((selectedCodes.isEmpty && noSelectedCodes.isNotEmpty) ||
+        (selectedCodes.isNotEmpty &&
+            noSelectedCodes.isNotEmpty &&
+            noSelectedCodes.contains(Constants.penta1))) {
+      return DoseStatus.zeroDose;
+    } else if (selectedCodes.isNotEmpty &&
+        noSelectedCodes.isNotEmpty &&
+        selectedCodes.contains(Constants.penta1)) {
+      return DoseStatus.underVaccinated;
+    } else if (selectedCodes.isNotEmpty && noSelectedCodes.isEmpty) {
+      return DoseStatus.fullyVaccinated;
+    }
+    return DoseStatus.zeroDose;
   }
 
   TaskModel _getTaskModel(
@@ -398,7 +477,9 @@ class _VaccineDeliveryPageState extends LocalizedState<VaccineDeliveryPage> {
 
     final oldAdditionalFields = task.additionalFields;
     List<AdditionalField> filteredAdditionalFields = oldAdditionalFields?.fields
-            .where((e) => e.key != AdditionalFieldsType.doseStatus.toValue())
+            .where((e) => (e.key != AdditionalFieldsType.doseStatus.toValue() ||
+                e.key != AdditionalFieldsType.selectedVaccines.toValue() ||
+                e.key != AdditionalFieldsType.noSelectedVaccines.toValue()))
             .toList() ??
         [];
 
@@ -436,7 +517,17 @@ class _VaccineDeliveryPageState extends LocalizedState<VaccineDeliveryPage> {
           ...filteredAdditionalFields,
           AdditionalField(
             AdditionalFieldsType.doseStatus.toValue(),
-            DoseStatus.fullyVaccinated.name,
+            getDoseStatus(
+                    selectedVaccineSet.toList(), noSelectedVaccineSet.toList())
+                .name,
+          ),
+          AdditionalField(
+            AdditionalFieldsType.selectedVaccines.toValue(),
+            selectedVaccineSet.join("."),
+          ),
+          AdditionalField(
+            AdditionalFieldsType.noSelectedVaccines.toValue(),
+            noSelectedVaccineSet.join("."),
           ),
           AdditionalField(
             AdditionalFieldsType.cycleIndex.toValue(),

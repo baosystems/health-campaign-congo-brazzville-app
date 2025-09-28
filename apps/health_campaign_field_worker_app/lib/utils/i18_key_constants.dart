@@ -227,6 +227,9 @@ class HouseholdOverView {
 class DeliverIntervention {
   const DeliverIntervention();
 
+  String get selectDeliveryComment =>
+      'DELIVER_INTERVENTION_SELECT_DELIVERY_COMMENT';
+
   String get recordVaccinationDetails =>
       'DELIVER_INTERVENTION_RECORD_VACCINATION_DETAILS';
 

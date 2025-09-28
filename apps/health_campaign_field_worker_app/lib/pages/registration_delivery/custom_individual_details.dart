@@ -793,13 +793,11 @@ class CustomIndividualDetailsPageState
                               i18_local.individualDetails
                                   .yearsAndMonthsErrorTextUpdate,
                             ),
-                            isHeadOfHousehold: widget.isHeadOfHousehold,
-                            initialDate: widget.isHeadOfHousehold
-                                ? before150Years
-                                : firstDate,
-                            requiredErrMsg: localizations.translate(
-                              i18.common.corecommonRequired,
-                            ),
+                            // isHeadOfHousehold: widget.isHeadOfHousehold,
+                            initialDate: before150Years,
+                            // requiredErrMsg: localizations.translate(
+                            //   i18.common.corecommonRequired,
+                            // ),
                             onChangeOfFormControl: (dob) {
                               final control = form.control(_dobKey);
                               if (dob == null) {
@@ -809,14 +807,14 @@ class CustomIndividualDetailsPageState
                               final age =
                                   digits.DigitDateUtils.calculateAge(dob);
                               final ageInMonths = age.years * 12 + age.months;
-                              if (!widget.isHeadOfHousehold &&
-                                  ageInMonths > 59) {
-                                control.setErrors({'ageLimit': true});
-                              } else {
-                                control.removeError('ageLimit');
-                                control.removeError('required');
-                                control.removeError('');
-                              }
+                              // if (!widget.isHeadOfHousehold &&
+                              //     ageInMonths > 59) {
+                              //   control.setErrors({'ageLimit': true});
+                              // } else {
+                              //   control.removeError('ageLimit');
+                              //   control.removeError('required');
+                              //   control.removeError('');
+                              // }
                             },
                             cancelText: localizations
                                 .translate(i18.common.coreCommonCancel),

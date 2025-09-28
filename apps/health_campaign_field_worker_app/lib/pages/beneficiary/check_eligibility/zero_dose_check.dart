@@ -155,26 +155,31 @@ class ZeroDoseCheckPageState extends LocalizedState<ZeroDoseCheckPage> {
                 ?.additionalDetails
                 ?.additionalProjectType;
 
-    final productVariants = !widget.isChecklistAssessmentDone
-        ? projectTypeModel?.resources
-            ?.map((r) =>
-                DeliveryProductVariant(productVariantId: r.productVariantId))
-            .toList()
-        : projectTypeModel?.cycles?.isNotEmpty == true
-            ? (fetchProductVariant(
-                    projectTypeModel
-                        ?.cycles?[deliveryInterventionState.cycle - 1]
-                        .deliveries?[deliveryInterventionState.dose - 1],
-                    context
-                        .read<HouseholdOverviewBloc>()
-                        .state
-                        .selectedIndividual,
-                    householdMemberWrapper.household)
-                ?.productVariants)
-            : projectTypeModel?.resources
-                ?.map((r) => DeliveryProductVariant(
-                    productVariantId: r.productVariantId))
-                .toList();
+    // final productVariants = !widget.isChecklistAssessmentDone
+    //     ? projectTypeModel?.resources
+    //         ?.map((r) =>
+    //             DeliveryProductVariant(productVariantId: r.productVariantId))
+    //         .toList()
+    //     : projectTypeModel?.cycles?.isNotEmpty == true
+    //         ? (fetchProductVariant(
+    //                 projectTypeModel
+    //                     ?.cycles?[deliveryInterventionState.cycle - 1]
+    //                     .deliveries?[deliveryInterventionState.dose - 1],
+    //                 context
+    //                     .read<HouseholdOverviewBloc>()
+    //                     .state
+    //                     .selectedIndividual,
+    //                 householdMemberWrapper.household)
+    //             ?.productVariants)
+    //         : projectTypeModel?.resources
+    //             ?.map((r) => DeliveryProductVariant(
+    //                 productVariantId: r.productVariantId))
+    //             .toList();
+
+    final productVariants = projectTypeModel?.resources
+        ?.map(
+            (r) => DeliveryProductVariant(productVariantId: r.productVariantId))
+        .toList();
 
     if ((productVariants ?? []).isEmpty && context.mounted) {
       SchedulerBinding.instance.addPostFrameCallback((_) {
@@ -312,15 +317,14 @@ class ZeroDoseCheckPageState extends LocalizedState<ZeroDoseCheckPage> {
                                 bool showVaccineSelectionPage =
                                     shouldShowVaccinePage(responses);
                                 bool zeroDose = isZeroDose(responses);
-                                bool incompletementVaccine =
-                                    isIncompletementVaccine(
+                                bool underVaccinated = isIncompletementVaccine(
                                   responses,
                                 );
 
                                 // TODO: Uncomment this block when the vaccine selection page is complete
 
                                 if (showVaccineSelectionPage ||
-                                    (!zeroDose && !incompletementVaccine)) {
+                                    (!zeroDose && !underVaccinated)) {
                                   final referenceId = IdGen.i.identifier;
                                   List<ServiceAttributesModel> attributes = [];
                                   for (int i = 0; i < controller.length; i++) {
@@ -629,7 +633,7 @@ class ZeroDoseCheckPageState extends LocalizedState<ZeroDoseCheckPage> {
                                                 .toValue(),
                                             zeroDose
                                                 ? DoseStatus.zeroDose.name
-                                                : incompletementVaccine
+                                                : underVaccinated
                                                     ? DoseStatus
                                                         .underVaccinated.name
                                                     : DoseStatus
@@ -796,12 +800,6 @@ class ZeroDoseCheckPageState extends LocalizedState<ZeroDoseCheckPage> {
                                                             .toValue(),
                                                         "0${context.selectedCycle?.id}",
                                                       ),
-                                                      // AdditionalField(
-                                                      //   'taskStatus',
-                                                      //   status_local.Status
-                                                      //       .beneficiaryInEligible
-                                                      //       .toValue(),
-                                                      // ),
                                                       if (widget
                                                               .hasSideEffects ??
                                                           false == false) ...[
@@ -841,7 +839,7 @@ class ZeroDoseCheckPageState extends LocalizedState<ZeroDoseCheckPage> {
                                                         zeroDose
                                                             ? DoseStatus
                                                                 .zeroDose.name
-                                                            : incompletementVaccine
+                                                            : underVaccinated
                                                                 ? DoseStatus
                                                                     .underVaccinated
                                                                     .name

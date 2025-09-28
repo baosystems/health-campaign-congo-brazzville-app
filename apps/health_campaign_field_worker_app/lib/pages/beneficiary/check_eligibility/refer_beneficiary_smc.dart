@@ -5,7 +5,9 @@ import 'package:digit_components/widgets/atoms/digit_toaster.dart';
 import 'package:digit_ui_components/enum/app_enums.dart';
 import 'package:digit_ui_components/theme/spacers.dart';
 import 'package:digit_ui_components/widgets/atoms/digit_button.dart';
+import 'package:digit_ui_components/widgets/atoms/input_wrapper.dart';
 import 'package:digit_ui_components/widgets/atoms/pop_up_card.dart';
+import 'package:digit_ui_components/widgets/atoms/reactive_fields.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 // import 'package:health_campaign_field_worker_app/pages/pages-SMC/beneficiary/custom_facility_selection_smc.dart';
@@ -67,7 +69,10 @@ class CustomReferBeneficiarySMCPageState
   static const _dateOfReferralKey = 'dateOfReferral';
   static const _administrativeUnitKey = 'administrativeUnit';
   static const _referredByKey = 'referredBy';
+  static const _referralIDKey = 'referralID';
   static const _referredToKey = 'referredTo';
+  static const _reasonsKey = 'reasons';
+  static const _commentsKey = 'comments';
   final clickedStatus = ValueNotifier<bool>(false);
   static const referralReasons = "referralReasons";
   static const sideEffectFromCurrentCycle = "DRUG_SE_CC";
@@ -431,7 +436,7 @@ class CustomReferBeneficiarySMCPageState
                             ),
                             DigitTextFormField(
                               formControlName: _referredByKey,
-                              readOnly: true,
+                              //readOnly: true,
                               label: localizations.translate(
                                 i18_local.referBeneficiary.referredToLabel,
                               ),
@@ -442,23 +447,115 @@ class CustomReferBeneficiarySMCPageState
                               },
                               isRequired: true,
                             ),
-                            DigitTextFormField(
-                              formControlName: _referredToKey,
-                              readOnly: true,
-                              label: localizations.translate(
-                                i18_local.referBeneficiary.referredByLabel,
-                              ),
-                              validationMessages: {
-                                'required': (_) => localizations.translate(
-                                      i18_local.common.corecommonRequired,
-                                    ),
+                            const DigitTextFormField(
+                                formControlName: _referralIDKey,
+                                label: "Referral ID"),
+                            // DigitTextFormField(
+                            //   formControlName: _referredToKey,
+                            //   //readOnly: true,
+                            //   label: localizations.translate(
+                            //     i18_local.referBeneficiary.referredByLabel,
+                            //   ),
+                            //   validationMessages: {
+                            //     'required': (_) => localizations.translate(
+                            //           i18_local.common.corecommonRequired,
+                            //         ),
+                            //   },
+                            //   isRequired: true,
+                            // ),
+                            BlocBuilder<FacilityBloc, FacilityState>(
+                              builder: (context, state) {
+                                return state.maybeWhen(
+                                    orElse: () => const Offstage(),
+                                    loading: () => const Center(
+                                          child: CircularProgressIndicator(),
+                                        ),
+                                    fetched: (facilities, allFacilities) {
+                                      TextEditingController controller1 =
+                                          TextEditingController();
+                                      return InkWell(
+                                        onTap: () async {
+                                          final facility = await context.router
+                                              .push(
+                                                  CustomInventoryFacilitySelectionRoute(
+                                            facilities: allFacilities
+                                                .where((element) =>
+                                                    element.usage ==
+                                                    "Health facility")
+                                                .toList(),
+                                          )) as FacilityModel?;
+
+                                          if (facility == null) return;
+                                          form.control(_referredToKey).value =
+                                              localizations.translate(
+                                            'FAC_${facility.id}',
+                                          );
+                                        },
+                                        child: IgnorePointer(
+                                          child: ReactiveWrapperField(
+                                              formControlName: _referredToKey,
+                                              validationMessages: {
+                                                'required': (object) =>
+                                                    localizations.translate(
+                                                      '${i18.individualDetails.nameLabelText}_IS_REQUIRED',
+                                                    ),
+                                              },
+                                              showErrors: (control) =>
+                                                  control.invalid &&
+                                                  control.touched,
+                                              builder: (field) {
+                                                return InputField(
+                                                  type: InputType.search,
+                                                  isRequired: true,
+                                                  initialValue: field.value,
+                                                  label:
+                                                      localizations.translate(
+                                                    i18_local.referBeneficiary
+                                                        .referredByLabel,
+                                                  ),
+                                                  onChange: (value) {
+                                                    field.control
+                                                        .markAsTouched();
+                                                  },
+                                                  controller: controller1,
+                                                  errorMessage: field.errorText,
+                                                );
+                                              }),
+                                        ),
+                                      );
+                                    });
                               },
-                              isRequired: true,
                             ),
                           ]),
                         ],
                       ),
                     ),
+                    DigitCard(
+                        child: Column(children: [
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Expanded(
+                            child: Text(
+                              "What is the reason for referral?",
+                              style: theme.textTheme.displayMedium,
+                            ),
+                          ),
+                        ],
+                      ),
+                      Column(
+                        children: [
+                          DigitRadioButtonList(
+                              formControlName: _reasonsKey,
+                              valueMapper: (x) => x,
+                              options: reasons,
+                              errorMessage: "Option Error"),
+                          const DigitTextFormField(
+                              formControlName: _commentsKey,
+                              label: "Referral comments"),
+                        ],
+                      )
+                    ]))
                   ],
                 ),
               ),
@@ -478,6 +575,9 @@ class CustomReferBeneficiarySMCPageState
         value: context.loggedInUser.userName,
         validators: [Validators.required],
       ),
+      _referralIDKey: FormControl<String>(
+        value: context.loggedInUser.userName,
+      ),
       _referredToKey: FormControl<String>(
         value: healthFacilities.isNotEmpty
             ? localizations.translate('FAC_${healthFacilities.first.id}')
@@ -492,6 +592,8 @@ class CustomReferBeneficiarySMCPageState
           Validators.required,
         ],
       ),
+      _reasonsKey: FormControl<String>(),
+      _commentsKey: FormControl<String>(),
     });
   }
 

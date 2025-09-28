@@ -57,5 +57,13 @@ enum AdditionalFieldsType {
   ineligibleReasons,
   @MappableValue("ageBelow3Months")
   ageBelow3Months,
+  @MappableValue("currentMonth")
+  currentMonth,
+  @MappableValue("dateOfVaccination")
+  dateOfVaccination,
+  @MappableValue("doseAdministeredBy")
+  doseAdministeredBy,
+  @MappableValue("taskStatus")
+  taskStatus,
   ;
 }

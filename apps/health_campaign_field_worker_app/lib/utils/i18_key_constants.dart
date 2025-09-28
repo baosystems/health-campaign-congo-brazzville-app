@@ -51,6 +51,9 @@ const zeroDose = ZeroDose();
 class Common {
   const Common();
 
+  String get coreCommonDialogTitle => 'CORE_COMMON_DIALOG_TITLE';
+  String get coreCommonDialogContent => 'CORE_COMMON_DIALOG_CONTENT';
+
   String get coreCommonContinue => 'CORE_COMMON_CONTINUE';
   String get coreCommonWarning => 'CORE_COMMON_WARNING';
   String get noProjectSelected => 'NO_PROJECT_SELECTED';
@@ -174,8 +177,11 @@ class HouseholdOverView {
   String get householdOverViewSMCAssessmentActionText =>
       'HOUSEHOLD_OVER_VIEW_SMC_ASSESSMENT_ACTION_TEXT';
 
-  String get householdOverViewChildVaccinatedActionText =>
+  String get householdOverViewChildVaccineActionText =>
       'HOUSEHOLD_OVER_VIEW_CHILD_VACCINATED_ACTION_TEXT';
+
+  String get householdOverViewVaccinationStatusActionText =>
+      'HOUSEHOLD_OVER_VIEW_VACCINATION_STATUS_ACTION_TEXT';
 
   String get householdOverViewZeroDoseActionText =>
       'HOUSEHOLD_OVER_VIEW_ZERO_DOSE_ACTION_TEXT';
@@ -194,6 +200,9 @@ class HouseholdOverView {
 
   String get householdOverViewBeneficiaryReferredSMCLabel =>
       'HOUSEHOLD_OVER_VIEW_BENEFICIARY_REFERRED_SMC_LABEL';
+
+  String get householdOverViewBeneficiarySideEffectLabel =>
+      'HOUSEHOLD_OVER_VIEW_BENEFICIARY_SIDE_EFFECT_LABEL';
 
   String get householdOverViewBeneficiaryInEligibleSMCLabel =>
       'HOUSEHOLD_OVER_VIEW_BENEFICIARY_INELIGIBLE_SMC_LABEL';
@@ -217,6 +226,25 @@ class HouseholdOverView {
 
 class DeliverIntervention {
   const DeliverIntervention();
+
+  String get selectDeliveryComment =>
+      'DELIVER_INTERVENTION_SELECT_DELIVERY_COMMENT';
+
+  String get recordVaccinationDetails =>
+      'DELIVER_INTERVENTION_RECORD_VACCINATION_DETAILS';
+
+  String get vaccineDetails => 'DELIVER_INTERVENTION_VACCINE_DETAILS_LABEL';
+
+  String get currentMonth => 'DELIVER_INTERVENTION_CURRENT_MONTH';
+  String get dateOfVaccination => 'DELIVER_INTERVENTION_DATE_OF_VACCINATION';
+  String get doseAdministeredBy =>
+      'DELIVER_INTERVENTION_DOSE_ADMINISTERED_BY_LABEL';
+  String get deliveryComment => 'DELIVER_INTERVENTION_DELIVERY_COMMENT';
+
+  String get selectVaccine => 'DELIVER_INTERVENTION_SELECT_VACCINE';
+  String get enterBatchNumber => 'DELIVER_INTERVENTION_ENTER_BATCH_NUMBER';
+  String get numberOfDose =>
+      'DELIVER_INTERVENTION_NUMBER_OF_DOSE_ADMINISTERED_LABEL';
 
   String get enterReasonForonlyAlphabetsValidation =>
       'ALPHABETS_ONLY_VALIDATION';
@@ -1517,6 +1545,8 @@ class IndividualDetails {
 class BeneficiaryDetails {
   const BeneficiaryDetails();
 
+  String get currentMont => 'CURRENT_MONTH';
+
   String get validationForExcessStockDispatch =>
       "ERROR_VALIDATION_FOR_EXCESS_STOCK_DISPATCH";
   String get searchbybeneficiaryidtextupdate =>
@@ -1657,6 +1687,9 @@ class MemberCard {
 
   String get beneficiaryAbsentButtonLabel =>
       'MEMBERCARD_BENEFICIARY_ABSENT_BUTTON_LABEL';
+
+  String get householdOverViewBeneficiaryAbsentLabel =>
+      'HOUSEHOLD_OVER_VIEW_BENEFICIARY_ABSENT_STAUS_LABEL';
 }
 
 class ZeroDose {

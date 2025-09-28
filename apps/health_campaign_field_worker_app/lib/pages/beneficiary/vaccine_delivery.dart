@@ -118,7 +118,8 @@ class _VaccineDeliveryPageState extends LocalizedState<VaccineDeliveryPage> {
       } catch (e) {}
     }
     if (ageInMonth > 6) {
-      widget.notApplicableVaccines.add(Constants.rotaVaccine);
+      widget.notApplicableVaccines.add(Constants.rota1Vaccine);
+      widget.notApplicableVaccines.add(Constants.rota2Vaccine);
     } else if (ageInMonth > 12) {
       widget.notApplicableVaccines.add(Constants.bcgVaccine);
     }
@@ -348,7 +349,7 @@ class _VaccineDeliveryPageState extends LocalizedState<VaccineDeliveryPage> {
                               ),
                             if (widget.isHPVEligible)
                               VaccineDetailsCard(
-                                vaccineName: "HCM_VACCINE_HPV",
+                                vaccineName: Constants.hpvVaccine,
                                 onVaccineDetailsChanged: (vaccineDetails) {
                                   vaccineDeliveryDetails[vaccineDetails
                                       .vaccineName] = vaccineDetails;

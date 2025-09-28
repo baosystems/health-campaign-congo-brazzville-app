@@ -115,9 +115,12 @@ class Constants {
 
   static const String beneficiaryAbsent = "BENEFICIARY_ABSENT";
 
-  static const String rotaVaccine = "HCM_VACCINE_ROTA";
+  static const String rota1Vaccine = "HCM_VACCINE_ROTA_1";
+  static const String rota2Vaccine = "HCM_VACCINE_ROTA_2";
   static const String bcgVaccine = "HCM_VACCINE_BCG";
   static const String vaaVaccine = "HCM_VACCINE_BVAA";
+  static const String hpvVaccine = "HCM_VACCINE_HPV";
+  static const String penta1 = "HCM_VACCINE_PENTA_1";
 
   // for stock validation
 
@@ -126,8 +129,6 @@ class Constants {
 
   static const String spaq1Name = "SPAQ1_NAME";
   static const String spaq2Name = "SPAQ2_NAME";
-
-  static const String penta1 = "HCM_VACCINE_PENTA_1";
 
   static const Map<String, String> spaqCodeNameMap = {
     Constants.spaq1: Constants.spaq1Name,

@@ -68,5 +68,6 @@ enum AdditionalFieldsType {
   @MappableValue("individualClientReferenceId")
   individualClientReferenceId,
   @MappableValue("uniqueBeneficiaryId")
-  uniqueBeneficiaryId;
+  uniqueBeneficiaryId,
+  ;
 }

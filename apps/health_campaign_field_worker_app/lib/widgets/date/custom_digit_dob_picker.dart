@@ -295,6 +295,7 @@ import '../../utils/i18_key_constants.dart' as i18_local;
 class CustomDigitDobPicker extends LocalizedStatefulWidget {
   final String datePickerFormControl;
   final bool readOnly;
+  final bool isHeadOfHousehold; // <-- Add this
   final ControlValueAccessor? valueAccessor;
   final String datePickerLabel;
   final String ageFieldLabel;
@@ -317,6 +318,7 @@ class CustomDigitDobPicker extends LocalizedStatefulWidget {
     super.appLocalizations,
     required this.datePickerFormControl,
     this.readOnly = false,
+    this.isHeadOfHousehold = false, // <-- Add this
     this.valueAccessor,
     required this.datePickerLabel,
     required this.ageFieldLabel,
@@ -385,15 +387,16 @@ class _DigitDobPickerState extends LocalizedState<CustomDigitDobPicker> {
   }
 
   DateTime _getDateFromAge() {
-    int years = int.tryParse(yearController.text) ?? 0;
+    int years =
+        widget.isHeadOfHousehold ? int.tryParse(yearController.text) ?? 0 : 0;
     int months = int.tryParse(monthController.text) ?? 0;
     DateTime now = DateTime.now();
     // If months > 11, convert to years+months
-    // if (!widget.isHeadOfHousehold && months > 11) {
-    //   years += months ~/ 12;
-    //   months = months % 12;
-    // }
-    if (months > 11) {
+    if (!widget.isHeadOfHousehold && months > 11) {
+      years += months ~/ 12;
+      months = months % 12;
+    }
+    if (widget.isHeadOfHousehold && months > 11) {
       Toast.showToast(context,
           type: ToastType.error,
           message: localizations
@@ -489,7 +492,8 @@ class _DigitDobPickerState extends LocalizedState<CustomDigitDobPicker> {
                             _updateFormControl(selectedDate);
                           },
                           keyboardType: TextInputType.number,
-                          readOnly: false,
+                          readOnly:
+                              widget.readOnly || !widget.isHeadOfHousehold,
                         ),
                       ),
                     ),

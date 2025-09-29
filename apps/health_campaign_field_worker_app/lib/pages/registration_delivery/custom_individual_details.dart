@@ -793,7 +793,7 @@ class CustomIndividualDetailsPageState
                               i18_local.individualDetails
                                   .yearsAndMonthsErrorTextUpdate,
                             ),
-                            // isHeadOfHousehold: widget.isHeadOfHousehold,
+                            isHeadOfHousehold: widget.isHeadOfHousehold,
                             initialDate: before150Years,
                             // requiredErrMsg: localizations.translate(
                             //   i18.common.corecommonRequired,

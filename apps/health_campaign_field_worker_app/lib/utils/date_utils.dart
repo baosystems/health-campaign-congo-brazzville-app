@@ -120,6 +120,18 @@ class DigitDateUtils {
     }
   }
 
+  static DateTime subtractMonths(DateTime date, int monthsToSubtract) {
+    return DateTime(
+        date.year,
+        date.month - monthsToSubtract,
+        date.day,
+        date.hour,
+        date.minute,
+        date.second,
+        date.millisecond,
+        date.microsecond);
+  }
+
   // Function to get a formatted date string from the provided timestamp in milliseconds.
   static String getDateFromTimestamp(int timestamp, {String? dateFormat}) {
     DateTime date = DateTime.fromMillisecondsSinceEpoch(timestamp);

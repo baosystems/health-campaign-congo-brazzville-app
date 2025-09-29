@@ -1,5 +1,6 @@
 import 'package:collection/collection.dart';
 import 'package:digit_components/utils/date_utils.dart';
+import 'package:digit_components/widgets/atoms/digit_reactive_search_dropdown.dart';
 import 'package:digit_components/widgets/atoms/digit_toaster.dart';
 
 import 'package:digit_components/widgets/digit_elevated_button.dart';
@@ -381,25 +382,26 @@ class _VaccineDeliveryPageState extends LocalizedState<VaccineDeliveryPage> {
                                         .deliverIntervention.deliveryComment,
                                   ),
                                   isRequired: true,
-                                  child: DigitDropdown(
-                                    emptyItemText: localizations.translate(
+                                  child: DigitReactiveSearchDropdown<String>(
+                                    label: localizations.translate(
                                       i18_local.common.noMatchFound,
                                     ),
-                                    items: deliveryCommentOptions.map((e) {
-                                      return DropdownItem(
-                                        code: e.code,
-                                        name: localizations.translate(e.code),
-                                      );
+                                    form: form,
+                                    enabled: true,
+                                    isRequired: false,
+                                    menuItems: deliveryCommentOptions.map((e) {
+                                      return e.code;
                                     }).toList(),
-                                    selectedOption: null,
-                                    onSelect: (value) {
-                                      field.control.value = value.name;
-                                      form.control(_deliveryCommentKey).value =
-                                          value.code;
-                                      form
-                                          .control(_deliveryCommentKey)
-                                          .updateValue(value.code);
-                                    },
+                                    formControlName: _deliveryCommentKey,
+                                    valueMapper: (value) =>
+                                        localizations.translate(
+                                      value,
+                                    ),
+                                    emptyText: localizations.translate(
+                                        i18_local.common.noMatchFound),
+                                    validationMessage: localizations.translate(
+                                      i18_local.common.corecommonRequired,
+                                    ),
                                   ),
                                 );
                               },

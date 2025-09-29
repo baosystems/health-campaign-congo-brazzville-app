@@ -230,8 +230,7 @@ class CustomMemberCard extends StatelessWidget {
           icon: Icons.check_circle,
           iconText: localizations.translate(
             isBeneficiaryReferred
-                ? i18_local.householdOverView
-                    .householdOverViewBeneficiaryReferredSMCLabel
+                ? i18.householdOverView.householdOverViewNotEligibleIconLabel
                 : isBeneficiaryRefuse
                     ? i18_local.householdOverView
                         .householdOverViewBeneficiaryRefusedLabel
@@ -245,8 +244,8 @@ class CustomMemberCard extends StatelessWidget {
                                 .householdOverViewBeneficiaryInEligibleSMCLabel,
           ),
           iconSize: 20,
-          iconTextColor: theme.colorScheme.onSurfaceVariant,
-          iconColor: theme.colorScheme.onSurfaceVariant,
+          iconTextColor: theme.colorScheme.error,
+          iconColor: theme.colorScheme.error,
         ),
       );
     }

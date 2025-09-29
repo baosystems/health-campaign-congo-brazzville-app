@@ -284,6 +284,7 @@
 import 'package:digit_ui_components/digit_components.dart';
 import 'package:digit_ui_components/theme/digit_extended_theme.dart';
 import 'package:digit_ui_components/utils/date_utils.dart';
+import '../../../utils/date_utils.dart' as date_utils_local;
 import 'package:digit_ui_components/widgets/molecules/digit_card.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -374,7 +375,7 @@ class _DigitDobPickerState extends LocalizedState<CustomDigitDobPicker> {
 
     if (days < 0) {
       months--;
-      days += DateTime(now.year, now.month, 0).day;
+      days += DateTime(now.year, now.month, now.day).day;
     }
     if (months < 0) {
       years--;
@@ -411,7 +412,7 @@ class _DigitDobPickerState extends LocalizedState<CustomDigitDobPicker> {
       });
     }
 
-    return DateTime(now.year - years, now.month - months);
+    return date_utils_local.DigitDateUtils.subtractMonths(now, months);
   }
 
   void _updateFormControl(DateTime? dob) {

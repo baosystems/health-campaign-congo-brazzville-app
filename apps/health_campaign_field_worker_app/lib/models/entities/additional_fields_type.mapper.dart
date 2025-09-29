@@ -85,6 +85,10 @@ class AdditionalFieldsTypeMapper extends EnumMapper<AdditionalFieldsType> {
         return AdditionalFieldsType.doseAdministeredBy;
       case "taskStatus":
         return AdditionalFieldsType.taskStatus;
+      case "individualClientReferenceId":
+        return AdditionalFieldsType.individualClientReferenceId;
+      case "uniqueBeneficiaryId":
+        return AdditionalFieldsType.uniqueBeneficiaryId;
       default:
         throw MapperException.unknownEnumValue(value);
     }
@@ -153,6 +157,10 @@ class AdditionalFieldsTypeMapper extends EnumMapper<AdditionalFieldsType> {
         return "doseAdministeredBy";
       case AdditionalFieldsType.taskStatus:
         return "taskStatus";
+      case AdditionalFieldsType.individualClientReferenceId:
+        return "individualClientReferenceId";
+      case AdditionalFieldsType.uniqueBeneficiaryId:
+        return "uniqueBeneficiaryId";
     }
   }
 }

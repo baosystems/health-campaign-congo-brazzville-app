@@ -476,13 +476,33 @@ class _VaccineDeliveryPageState extends LocalizedState<VaccineDeliveryPage> {
         form.control(_doseAdministeredByKey).value as String?;
     final deliveryComment = form.control(_deliveryCommentKey).value as String?;
 
+    Set<String> filterAdditionalFieldsKeys = {
+      AdditionalFieldsType.doseStatus.toValue(),
+      AdditionalFieldsType.selectedVaccines.toValue(),
+      AdditionalFieldsType.noSelectedVaccines.toValue(),
+      AdditionalFieldsType.cycleIndex.toValue(),
+      AdditionalFieldsType.doseIndex.toValue(),
+      AdditionalFieldsType.deliveryStrategy.toValue(),
+      AdditionalFieldsType.latitude.toValue(),
+      AdditionalFieldsType.longitude.toValue(),
+      AdditionalFieldsType.currentMonth.toValue(),
+      AdditionalFieldsType.dateOfVaccination.toValue(),
+      AdditionalFieldsType.doseAdministeredBy.toValue(),
+      AdditionalFieldsType.deliveryComment.toValue(),
+      // AdditionalFieldsType.age.toValue(),
+      // AdditionalFieldsType.gender.toValue(),
+      // AdditionalFieldsType.individualClientReferenceId.toValue(),
+      // AdditionalFieldsType.uniqueBeneficiaryId.toValue(),
+    };
+
     final oldAdditionalFields = task.additionalFields;
     List<AdditionalField> filteredAdditionalFields = oldAdditionalFields?.fields
-            .where((e) => (e.key != AdditionalFieldsType.doseStatus.toValue() ||
-                e.key != AdditionalFieldsType.selectedVaccines.toValue() ||
-                e.key != AdditionalFieldsType.noSelectedVaccines.toValue()))
+            .whereNot((e) => (filterAdditionalFieldsKeys.contains(e.key)))
             .toList() ??
         [];
+
+    DoseStatus doseStatus = getDoseStatus(
+        selectedVaccineSet.toList(), noSelectedVaccineSet.toList());
 
     // Update the task with information from the form and other context
     task = task.copyWith(
@@ -518,9 +538,7 @@ class _VaccineDeliveryPageState extends LocalizedState<VaccineDeliveryPage> {
           ...filteredAdditionalFields,
           AdditionalField(
             AdditionalFieldsType.doseStatus.toValue(),
-            getDoseStatus(
-                    selectedVaccineSet.toList(), noSelectedVaccineSet.toList())
-                .name,
+            doseStatus.name,
           ),
           AdditionalField(
             AdditionalFieldsType.selectedVaccines.toValue(),
@@ -573,38 +591,32 @@ class _VaccineDeliveryPageState extends LocalizedState<VaccineDeliveryPage> {
               AdditionalFieldsType.deliveryComment.toValue(),
               deliveryComment,
             ),
-          ...getIndividualAdditionalFields(selectedIndividual)
+          // if (selectedIndividual != null)
+          //   AdditionalField(
+          //     AdditionalFieldsType.age.toValue(),
+          //     getIndividualAge(selectedIndividual),
+          //   ),
+          // if (selectedIndividual?.gender != null)
+          //   AdditionalField(
+          //     AdditionalFieldsType.gender.toValue(),
+          //     selectedIndividual?.gender,
+          //   ),
+          // if (selectedIndividual?.clientReferenceId != null)
+          //   AdditionalField(
+          //     AdditionalFieldsType.individualClientReferenceId.toValue(),
+          //     selectedIndividual?.clientReferenceId,
+          //   ),
+          // if (selectedIndividual != null &&
+          //     getBeneficiaryId(selectedIndividual) != null)
+          //   AdditionalField(
+          //     AdditionalFieldsType.uniqueBeneficiaryId.toValue(),
+          //     getBeneficiaryId(selectedIndividual),
+          //   ),
         ],
       ),
     );
 
     return task;
-  }
-
-  List<AdditionalField> getIndividualAdditionalFields(
-      IndividualModel? individualModel) {
-    return [
-      if (individualModel != null)
-        AdditionalField(
-          AdditionalFieldsType.age.toValue(),
-          getIndividualAge(individualModel),
-        ),
-      if (individualModel?.gender != null)
-        AdditionalField(
-          AdditionalFieldsType.gender.toValue(),
-          individualModel?.gender,
-        ),
-      if (individualModel?.clientReferenceId != null)
-        AdditionalField(
-          'individualClientReferenceId',
-          individualModel?.clientReferenceId,
-        ),
-      if (individualModel != null && getBeneficiaryId(individualModel) != null)
-        AdditionalField(
-          'uniqueBeneficiaryId',
-          getBeneficiaryId(individualModel),
-        ),
-    ];
   }
 
   int getIndividualAge(IndividualModel individualModel) {
@@ -665,6 +677,8 @@ class _VaccineDeliveryPageState extends LocalizedState<VaccineDeliveryPage> {
     TaskModel updatedTask = _getTaskModel(
       context,
       form: form,
+      cycle: context.selectedCycle?.id,
+      dose: 1,
       oldTask: widget.doseStatusTask,
       projectBeneficiaryClientReferenceId:
           widget.projectBeneficiaryClientReferenceId,

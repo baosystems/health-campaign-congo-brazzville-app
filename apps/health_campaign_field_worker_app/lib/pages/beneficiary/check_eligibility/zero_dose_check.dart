@@ -31,6 +31,9 @@ import 'package:registration_delivery/utils/utils.dart';
 import 'package:registration_delivery/widgets/localized.dart';
 import 'package:survey_form/survey_form.dart';
 
+import '../../../blocs/app_initialization/app_initialization.dart';
+import '../../../blocs/delivery_intervention/vaccine_search.dart';
+import '../../../data/local_store/no_sql/schema/app_configuration.dart';
 import '../../../models/entities/additional_fields_type.dart'
     as additional_fields_local;
 import '../../../models/entities/additional_fields_type.dart';
@@ -46,6 +49,7 @@ import '../../../utils/i18_key_constants.dart' as i18_local;
 import '../../../utils/upper_case.dart';
 import '../../../utils/utils.dart';
 import '../../../widgets/custom_back_navigation.dart';
+import '../../../utils/date_utils.dart' as date_utils_local;
 // import '../../../widgets/showcase/showcase_wrappers.dart';
 
 @RoutePage()
@@ -98,6 +102,7 @@ class ZeroDoseCheckPageState extends LocalizedState<ZeroDoseCheckPage> {
   Map<String?, String> responses = {};
   final String yes = "YES";
   final String no = "NO";
+  List<String> allVaccineCodes = [];
 
   // List of controllers for form elements
   final List _controllers = [];
@@ -212,6 +217,14 @@ class ZeroDoseCheckPageState extends LocalizedState<ZeroDoseCheckPage> {
       fetched: (fetchedVariants) => fetchedVariants,
     );
 
+    final dobStr = context
+        .read<HouseholdOverviewBloc>()
+        .state
+        .selectedIndividual
+        ?.dateOfBirth;
+    final ageInDays =
+        date_utils_local.DigitDateUtils.calculateAgeInDaysFromDob(dobStr ?? '');
+
     return WillPopScope(
       onWillPop: () async {
         bool shouldPop = await _onBackPressed(context);
@@ -224,255 +237,143 @@ class ZeroDoseCheckPageState extends LocalizedState<ZeroDoseCheckPage> {
       child: Scaffold(
         body: BlocBuilder<location.LocationBloc, location.LocationState>(
           builder: (context, locationState) {
-            return BlocBuilder<HouseholdOverviewBloc, HouseholdOverviewState>(
-              builder: (context, householdOverviewState) {
-                double? latitude = locationState.latitude;
-                double? longitude = locationState.longitude;
-                String zeroDoseAssessment = "ZERODOSE_ASSESSMENT";
-                return BlocBuilder<ServiceDefinitionBloc,
-                    ServiceDefinitionState>(
-                  builder: (context, state) {
-                    state.mapOrNull(
-                      serviceDefinitionFetch: (value) {
-                        selectedServiceDefinition = value.serviceDefinitionList
-                            .where(
-                                (element) => element.code.toString().contains(
-                                      '${context.selectedProject.name}.$zeroDoseAssessment.${RolesType.communityDistributor.toValue()}',
-                                    ))
-                            .toList()
-                            .firstOrNull;
-                        initialAttributes =
-                            selectedServiceDefinition?.attributes;
-                        if (!isControllersInitialized) {
-                          initialAttributes?.forEach((e) {
-                            controller.add(TextEditingController());
-                          });
+            return BlocBuilder<AppInitializationBloc, AppInitializationState>(
+              builder: (context, appInitState) {
+                List<VaccineData> vaccineDataList = [];
+                if (appInitState is AppInitialized) {
+                  vaccineDataList =
+                      appInitState.appConfiguration.vaccinationData ?? [];
+                  allVaccineCodes = [for (final v in vaccineDataList) v.code];
+                }
+                context
+                    .read<VaccineSearchBloc>()
+                    .add(VaccineSearchEvent.eligibleVaccines(
+                      ageInDays: ageInDays,
+                      vaccineDataList: vaccineDataList,
+                    ));
+                return BlocBuilder<VaccineSearchBloc, VaccineSearchState>(
+                  builder: (context, vaccineSearchState) {
+                    return BlocBuilder<HouseholdOverviewBloc,
+                        HouseholdOverviewState>(
+                      builder: (context, householdOverviewState) {
+                        double? latitude = locationState.latitude;
+                        double? longitude = locationState.longitude;
+                        String zeroDoseAssessment = "ZERODOSE_ASSESSMENT";
+                        return BlocBuilder<ServiceDefinitionBloc,
+                            ServiceDefinitionState>(
+                          builder: (context, state) {
+                            state.mapOrNull(
+                              serviceDefinitionFetch: (value) {
+                                selectedServiceDefinition = value
+                                    .serviceDefinitionList
+                                    .where((element) =>
+                                        element.code.toString().contains(
+                                              '${context.selectedProject.name}.$zeroDoseAssessment.${RolesType.communityDistributor.toValue()}',
+                                            ))
+                                    .toList()
+                                    .firstOrNull;
+                                initialAttributes =
+                                    selectedServiceDefinition?.attributes;
+                                if (!isControllersInitialized) {
+                                  initialAttributes?.forEach((e) {
+                                    controller.add(TextEditingController());
+                                  });
 
-                          isControllersInitialized = true;
-                        }
-                      },
-                    );
-
-                    return state.maybeMap(
-                      orElse: () => Text(state.runtimeType.toString()),
-                      serviceDefinitionFetch: (value) {
-                        return ScrollableContent(
-                          header: Column(
-                            children: [
-                              if (!(context.isHealthFacilitySupervisor))
-                                const CustomBackNavigationHelpHeaderWidget(
-                                  showHelp: false,
-                                ),
-                            ],
-                          ),
-                          enableFixedButton: true,
-                          footer: DigitCard(
-                            margin:
-                                const EdgeInsets.fromLTRB(0, kPadding, 0, 0),
-                            padding: const EdgeInsets.fromLTRB(
-                                kPadding, 0, kPadding, 0),
-                            child: DigitElevatedButton(
-                              onPressed: () async {
-                                submitTriggered = true;
-                                final isValid =
-                                    checklistFormKey.currentState?.validate();
-                                if (!isValid!) {
-                                  return;
+                                  isControllersInitialized = true;
                                 }
-                                final itemsAttributes = initialAttributes;
+                              },
+                            );
 
-                                for (int i = 0; i < controller.length; i++) {
-                                  if (i == 0 && controller[i].text == 'YES') {
-                                    break;
-                                  }
-                                  if (itemsAttributes?[i].required == true &&
-                                      itemsAttributes?[i].dataType ==
-                                          'SingleValueList' &&
-                                      visibleChecklistIndexes.contains(i) &&
-                                      controller[i].text.isEmpty) {
-                                    return;
-                                  }
-                                }
-                                for (int i = 0; i < controller.length; i++) {
-                                  var attributeCode =
-                                      '${initialAttributes?[i].code}';
-                                  var value = initialAttributes?[i].dataType !=
-                                          'SingleValueList'
-                                      ? controller[i]
-                                              .text
-                                              .toString()
-                                              .trim()
-                                              .isNotEmpty
-                                          ? controller[i].text.toString()
-                                          : (initialAttributes?[i].dataType !=
-                                                  'Number'
-                                              ? ''
-                                              : '0')
-                                      : visibleChecklistIndexes.contains(i)
-                                          ? controller[i].text.toString()
-                                          : i18_local.checklist.notSelectedKey;
-                                  responses[attributeCode] = value;
-                                }
-
-                                bool showVaccineSelectionPage =
-                                    shouldShowVaccinePage(responses);
-                                bool zeroDose = isZeroDose(responses);
-                                bool underVaccinated = isIncompletementVaccine(
-                                  responses,
-                                );
-
-                                // TODO: Uncomment this block when the vaccine selection page is complete
-
-                                if (showVaccineSelectionPage ||
-                                    (!zeroDose && !underVaccinated)) {
-                                  final referenceId = IdGen.i.identifier;
-                                  List<ServiceAttributesModel> attributes = [];
-                                  for (int i = 0; i < controller.length; i++) {
-                                    final attribute = initialAttributes;
-
-                                    attributes.add(ServiceAttributesModel(
-                                      auditDetails: AuditDetails(
-                                        createdBy: context.loggedInUserUuid,
-                                        createdTime:
-                                            context.millisecondsSinceEpoch(),
-                                      ),
-                                      attributeCode: '${attribute?[i].code}',
-                                      dataType: attribute?[i].dataType,
-                                      clientReferenceId: IdGen.i.identifier,
-                                      referenceId: referenceId,
-                                      value: attribute?[i].dataType !=
-                                              'SingleValueList'
-                                          ? controller[i]
-                                                  .text
-                                                  .toString()
-                                                  .trim()
-                                                  .isNotEmpty
-                                              ? controller[i].text.toString()
-                                              : ''
-                                          : visibleChecklistIndexes.contains(i)
-                                              ? controller[i].text.toString()
-                                              : i18_local
-                                                  .checklist.notSelectedKey,
-                                      rowVersion: 1,
-                                      tenantId: attribute?[i].tenantId,
-                                      additionalFields:
-                                          ServiceAttributesAdditionalFields(
-                                        version: 1,
-                                        // TODO: This needs to be done after adding locationbloc
-                                        fields: [
-                                          AdditionalField(
-                                            'latitude',
-                                            latitude,
-                                          ),
-                                          AdditionalField(
-                                            'longitude',
-                                            longitude,
-                                          ),
-                                        ],
-                                      ),
-                                    ));
-                                  }
-
-                                  context.read<ServiceBloc>().add(
-                                        ServiceCreateEvent(
-                                          serviceModel: ServiceModel(
-                                              createdAt: DigitDateUtils
-                                                  .getDateFromTimestamp(
-                                                DateTime.now()
-                                                    .toLocal()
-                                                    .millisecondsSinceEpoch,
-                                                dateFormat: Constants
-                                                    .checklistViewDateFormat,
-                                              ),
-                                              tenantId:
-                                                  selectedServiceDefinition!
-                                                      .tenantId,
-                                              clientId: referenceId,
-                                              serviceDefId:
-                                                  selectedServiceDefinition?.id,
-                                              attributes: attributes,
-                                              rowVersion: 1,
-                                              accountId: context.projectId,
-                                              auditDetails: AuditDetails(
-                                                createdBy:
-                                                    context.loggedInUserUuid,
-                                                createdTime: DateTime.now()
-                                                    .millisecondsSinceEpoch,
-                                              ),
-                                              clientAuditDetails:
-                                                  ClientAuditDetails(
-                                                createdBy:
-                                                    context.loggedInUserUuid,
-                                                createdTime: context
-                                                    .millisecondsSinceEpoch(),
-                                                lastModifiedBy:
-                                                    context.loggedInUserUuid,
-                                                lastModifiedTime: context
-                                                    .millisecondsSinceEpoch(),
-                                              ),
-                                              additionalFields:
-                                                  ServiceAdditionalFields(
-                                                version: 1,
-                                                fields: [
-                                                  AdditionalField(
-                                                      'boundaryCode',
-                                                      context.boundary.code),
-                                                ],
-                                              )),
+                            return state.maybeMap(
+                              orElse: () => Text(state.runtimeType.toString()),
+                              serviceDefinitionFetch: (value) {
+                                return ScrollableContent(
+                                  header: Column(
+                                    children: [
+                                      if (!(context.isHealthFacilitySupervisor))
+                                        const CustomBackNavigationHelpHeaderWidget(
+                                          showHelp: false,
                                         ),
-                                      );
-                                  final projectBeneficiaryClientReferenceId =
-                                      widget.projectBeneficiaryClientReferenceId ??
-                                          relatedClientRefId ??
-                                          '';
-                                  final currentCycle =
-                                      RegistrationDeliverySingleton()
-                                          .projectType
-                                          ?.cycles
-                                          ?.firstWhereOrNull(
-                                            (e) =>
-                                                (e.startDate) <
-                                                    DateTime.now()
-                                                        .millisecondsSinceEpoch &&
-                                                (e.endDate) >
-                                                    DateTime.now()
-                                                        .millisecondsSinceEpoch,
-                                          );
-                                  final isZeroDoseAlreadyDone =
-                                      currentCycle!.id > 1;
-                                  context.router.push(VaccineSelectionRoute(
-                                      isAdministration: widget.isAdministration,
-                                      eligibilityAssessmentType:
-                                          widget.eligibilityAssessmentType,
-                                      isChecklistAssessmentDone:
-                                          widget.isChecklistAssessmentDone,
-                                      projectBeneficiaryClientReferenceId:
-                                          projectBeneficiaryClientReferenceId,
-                                      individual: widget.individual,
-                                      task: widget.task,
-                                      hasSideEffects: widget.hasSideEffects!,
-                                      sideEffect: widget.sideEffect!,
-                                      isZeroDoseAlreadyDone:
-                                          isZeroDoseAlreadyDone));
-                                } else {
-                                  final shouldSubmit = await DigitDialog.show(
-                                    context,
-                                    options: DigitDialogOptions(
-                                      titleText: localizations.translate(
-                                        i18.deliverIntervention.dialogTitle,
-                                      ),
-                                      content: Text(localizations
-                                          .translate(
-                                            i18.deliverIntervention
-                                                .dialogContent,
-                                          )
-                                          .replaceFirst('{}', '')),
-                                      primaryAction: DigitDialogActions(
-                                        label: localizations.translate(
-                                          i18_local.checklist
-                                              .checklistDialogPrimaryAction,
-                                        ),
-                                        action: (ctx) {
+                                    ],
+                                  ),
+                                  enableFixedButton: true,
+                                  footer: DigitCard(
+                                    margin: const EdgeInsets.fromLTRB(
+                                        0, kPadding, 0, 0),
+                                    padding: const EdgeInsets.fromLTRB(
+                                        kPadding, 0, kPadding, 0),
+                                    child: DigitElevatedButton(
+                                      onPressed: () async {
+                                        submitTriggered = true;
+                                        final isValid = checklistFormKey
+                                            .currentState
+                                            ?.validate();
+                                        if (!isValid!) {
+                                          return;
+                                        }
+                                        final itemsAttributes =
+                                            initialAttributes;
+
+                                        for (int i = 0;
+                                            i < controller.length;
+                                            i++) {
+                                          if (i == 0 &&
+                                              controller[i].text == 'YES') {
+                                            break;
+                                          }
+                                          if (itemsAttributes?[i].required ==
+                                                  true &&
+                                              itemsAttributes?[i].dataType ==
+                                                  'SingleValueList' &&
+                                              visibleChecklistIndexes
+                                                  .contains(i) &&
+                                              controller[i].text.isEmpty) {
+                                            return;
+                                          }
+                                        }
+                                        for (int i = 0;
+                                            i < controller.length;
+                                            i++) {
+                                          var attributeCode =
+                                              '${initialAttributes?[i].code}';
+                                          var value = initialAttributes?[i]
+                                                      .dataType !=
+                                                  'SingleValueList'
+                                              ? controller[i]
+                                                      .text
+                                                      .toString()
+                                                      .trim()
+                                                      .isNotEmpty
+                                                  ? controller[i]
+                                                      .text
+                                                      .toString()
+                                                  : (initialAttributes?[i]
+                                                              .dataType !=
+                                                          'Number'
+                                                      ? ''
+                                                      : '0')
+                                              : visibleChecklistIndexes
+                                                      .contains(i)
+                                                  ? controller[i]
+                                                      .text
+                                                      .toString()
+                                                  : i18_local
+                                                      .checklist.notSelectedKey;
+                                          responses[attributeCode] = value;
+                                        }
+
+                                        bool showVaccineSelectionPage =
+                                            shouldShowVaccinePage(responses);
+                                        bool zeroDose = isZeroDose(responses);
+                                        bool underVaccinated =
+                                            isIncompletementVaccine(
+                                          responses,
+                                        );
+
+                                        // TODO: Uncomment this block when the vaccine selection page is complete
+
+                                        if (showVaccineSelectionPage ||
+                                            (!zeroDose && !underVaccinated)) {
                                           final referenceId =
                                               IdGen.i.identifier;
                                           List<ServiceAttributesModel>
@@ -587,579 +488,865 @@ class ZeroDoseCheckPageState extends LocalizedState<ZeroDoseCheckPage> {
                                                       )),
                                                 ),
                                               );
-                                          Navigator.of(
-                                            context,
-                                            rootNavigator: true,
-                                          ).pop(true);
-                                        },
-                                      ),
-                                      secondaryAction: DigitDialogActions(
-                                        label: localizations.translate(
-                                          i18_local.checklist
-                                              .checklistDialogSecondaryAction,
-                                        ),
-                                        action: (context) {
-                                          Navigator.of(
-                                            context,
-                                            rootNavigator: true,
-                                          ).pop(false);
-                                        },
-                                      ),
-                                    ),
-                                  );
-                                  if (shouldSubmit ?? false) {
-                                    if (context.mounted) {
-                                      if (widget.isChecklistAssessmentDone ==
-                                          true) {
-                                        final householdMember = context
-                                            .read<HouseholdOverviewBloc>()
-                                            .state
-                                            .householdMemberWrapper;
-                                        final deliverState = context
-                                            .read<DeliverInterventionBloc>()
-                                            .state;
-
-                                        final oldTask =
-                                            deliverState.oldTask ?? widget.task;
-                                        final oldFields =
-                                            oldTask.additionalFields?.fields ??
-                                                [];
-
-                                        final updatedFields = [
-                                          ...oldFields,
-                                          AdditionalField(
-                                            additional_fields_local
-                                                .AdditionalFieldsType.doseStatus
-                                                .toValue(),
-                                            zeroDose
-                                                ? DoseStatus.zeroDose.name
-                                                : underVaccinated
-                                                    ? DoseStatus
-                                                        .underVaccinated.name
-                                                    : DoseStatus
-                                                        .fullyVaccinated.name,
-                                          ),
-                                        ];
-
-                                        final updatedTask = oldTask.copyWith(
-                                          additionalFields:
-                                              TaskAdditionalFields(
-                                            version: 1,
-                                            fields: updatedFields,
-                                          ),
-                                        );
-
-                                        context
-                                            .read<DeliverInterventionBloc>()
-                                            .add(
-                                              DeliverInterventionSubmitEvent(
-                                                task: updatedTask,
-                                                isEditing: (deliverState
-                                                                .tasks ??
-                                                            [])
-                                                        .isNotEmpty &&
-                                                    RegistrationDeliverySingleton()
-                                                            .beneficiaryType ==
-                                                        BeneficiaryType
-                                                            .household,
-                                                boundaryModel:
-                                                    RegistrationDeliverySingleton()
-                                                        .boundary!,
-                                              ),
-                                            );
-
-                                        ProjectTypeModel? projectTypeModel =
-                                            widget.eligibilityAssessmentType ==
-                                                    EligibilityAssessmentType
-                                                        .smc
-                                                ? RegistrationDeliverySingleton()
-                                                    .selectedProject
-                                                    ?.additionalDetails
-                                                    ?.projectType
-                                                : RegistrationDeliverySingleton()
-                                                    .selectedProject
-                                                    ?.additionalDetails
-                                                    ?.additionalProjectType;
-
-                                        if (widget.isAdministration == true) {
-                                          final router = context.router;
-                                          router.popUntilRouteWithName(
-                                              BeneficiaryWrapperRoute.name);
-                                          if (deliverState.futureDeliveries !=
-                                                  null &&
-                                              deliverState.futureDeliveries!
-                                                  .isNotEmpty &&
-                                              projectTypeModel
-                                                      ?.cycles?.isNotEmpty ==
-                                                  true) {
-                                            router.push(
-                                              CustomSplashAcknowledgementRoute(
-                                                  enableBackToSearch: false,
-                                                  eligibilityAssessmentType: widget
-                                                      .eligibilityAssessmentType),
-                                            );
-                                          } else {
-                                            final reloadState = context
-                                                .read<HouseholdOverviewBloc>();
-
-                                            reloadState.add(
-                                              HouseholdOverviewReloadEvent(
-                                                projectId:
-                                                    RegistrationDeliverySingleton()
-                                                        .projectId!,
-                                                projectBeneficiaryType:
-                                                    RegistrationDeliverySingleton()
-                                                        .beneficiaryType!,
-                                              ),
-                                            );
-                                            context.router.popAndPush(
-                                              CustomHouseholdAcknowledgementRoute(
-                                                enableViewHousehold: true,
-                                                eligibilityAssessmentType: widget
-                                                    .eligibilityAssessmentType,
-                                              ),
-                                            );
-                                          }
+                                          final projectBeneficiaryClientReferenceId =
+                                              widget.projectBeneficiaryClientReferenceId ??
+                                                  relatedClientRefId ??
+                                                  '';
+                                          final currentCycle =
+                                              RegistrationDeliverySingleton()
+                                                  .projectType
+                                                  ?.cycles
+                                                  ?.firstWhereOrNull(
+                                                    (e) =>
+                                                        (e.startDate) <
+                                                            DateTime.now()
+                                                                .millisecondsSinceEpoch &&
+                                                        (e.endDate) >
+                                                            DateTime.now()
+                                                                .millisecondsSinceEpoch,
+                                                  );
+                                          final isZeroDoseAlreadyDone =
+                                              currentCycle!.id > 1;
+                                          context.router.push(VaccineSelectionRoute(
+                                              isAdministration:
+                                                  widget.isAdministration,
+                                              eligibilityAssessmentType: widget
+                                                  .eligibilityAssessmentType,
+                                              isChecklistAssessmentDone: widget
+                                                  .isChecklistAssessmentDone,
+                                              projectBeneficiaryClientReferenceId:
+                                                  projectBeneficiaryClientReferenceId,
+                                              individual: widget.individual,
+                                              task: widget.task,
+                                              hasSideEffects:
+                                                  widget.hasSideEffects!,
+                                              sideEffect: widget.sideEffect!,
+                                              isZeroDoseAlreadyDone:
+                                                  isZeroDoseAlreadyDone));
                                         } else {
-                                          final router = context.router;
-                                          final searchBloc = context
-                                              .read<SearchHouseholdsBloc>();
-                                          searchBloc.add(
-                                            const SearchHouseholdsClearEvent(),
-                                          );
-                                          router.popUntilRouteWithName(
-                                              BeneficiaryWrapperRoute.name);
-                                          router.push(
-                                            CustomHouseholdAcknowledgementRoute(
-                                                enableViewHousehold: true,
-                                                eligibilityAssessmentType: widget
-                                                    .eligibilityAssessmentType),
-                                          );
-                                        }
-                                      } else {
-                                        if (widget.hasSideEffects == true) {
-                                          context.read<SideEffectsBloc>().add(
-                                                SideEffectsSubmitEvent(
-                                                  widget.sideEffect!,
-                                                  false,
+                                          final shouldSubmit =
+                                              await DigitDialog.show(
+                                            context,
+                                            options: DigitDialogOptions(
+                                              titleText:
+                                                  localizations.translate(
+                                                i18.deliverIntervention
+                                                    .dialogTitle,
+                                              ),
+                                              content: Text(localizations
+                                                  .translate(
+                                                    i18.deliverIntervention
+                                                        .dialogContent,
+                                                  )
+                                                  .replaceFirst('{}', '')),
+                                              primaryAction: DigitDialogActions(
+                                                label: localizations.translate(
+                                                  i18_local.checklist
+                                                      .checklistDialogPrimaryAction,
                                                 ),
-                                              );
-                                        }
-                                        final clientReferenceId =
-                                            IdGen.i.identifier;
-                                        List<String?> ineligibilityReasons = [];
-                                        ineligibilityReasons.add(
-                                            "CHILD_AGE_LESS_THAN_3_MONTHS");
-                                        context
-                                            .read<DeliverInterventionBloc>()
-                                            .add(
-                                              DeliverInterventionSubmitEvent(
-                                                task: TaskModel(
-                                                  projectBeneficiaryClientReferenceId:
-                                                      widget
-                                                          .projectBeneficiaryClientReferenceId,
-                                                  clientReferenceId:
-                                                      clientReferenceId,
-                                                  tenantId: envConfig
-                                                      .variables.tenantId,
-                                                  rowVersion: 1,
-                                                  auditDetails: AuditDetails(
-                                                    createdBy: context
-                                                        .loggedInUserUuid,
-                                                    createdTime: context
-                                                        .millisecondsSinceEpoch(),
-                                                  ),
-                                                  projectId: context.projectId,
-                                                  status:
-                                                      // (widget.hasSideEffects ??
-                                                      //         false)
-                                                      //     ? Status.inComplete
-                                                      //         .toValue()
-                                                      //     :
-                                                      status_local.Status
-                                                          .beneficiaryInEligible
-                                                          .toValue(),
-                                                  clientAuditDetails:
-                                                      ClientAuditDetails(
-                                                    createdBy: context
-                                                        .loggedInUserUuid,
-                                                    createdTime: context
-                                                        .millisecondsSinceEpoch(),
-                                                    lastModifiedBy: context
-                                                        .loggedInUserUuid,
-                                                    lastModifiedTime: context
-                                                        .millisecondsSinceEpoch(),
-                                                  ),
-                                                  additionalFields:
-                                                      TaskAdditionalFields(
-                                                    version: 1,
-                                                    fields: [
-                                                      AdditionalField(
-                                                        AdditionalFieldsType
-                                                            .cycleIndex
-                                                            .toValue(),
-                                                        "0${context.selectedCycle?.id}",
+                                                action: (ctx) {
+                                                  final referenceId =
+                                                      IdGen.i.identifier;
+                                                  List<ServiceAttributesModel>
+                                                      attributes = [];
+                                                  for (int i = 0;
+                                                      i < controller.length;
+                                                      i++) {
+                                                    final attribute =
+                                                        initialAttributes;
+
+                                                    attributes.add(
+                                                        ServiceAttributesModel(
+                                                      auditDetails:
+                                                          AuditDetails(
+                                                        createdBy: context
+                                                            .loggedInUserUuid,
+                                                        createdTime: context
+                                                            .millisecondsSinceEpoch(),
                                                       ),
-                                                      if (widget
-                                                              .hasSideEffects ??
-                                                          false == false) ...[
-                                                        AdditionalField(
-                                                          'ineligibleReasons',
-                                                          ineligibilityReasons
-                                                              .join(","),
+                                                      attributeCode:
+                                                          '${attribute?[i].code}',
+                                                      dataType: attribute?[i]
+                                                          .dataType,
+                                                      clientReferenceId:
+                                                          IdGen.i.identifier,
+                                                      referenceId: referenceId,
+                                                      value: attribute?[i]
+                                                                  .dataType !=
+                                                              'SingleValueList'
+                                                          ? controller[i]
+                                                                  .text
+                                                                  .toString()
+                                                                  .trim()
+                                                                  .isNotEmpty
+                                                              ? controller[i]
+                                                                  .text
+                                                                  .toString()
+                                                              : ''
+                                                          : visibleChecklistIndexes
+                                                                  .contains(i)
+                                                              ? controller[i]
+                                                                  .text
+                                                                  .toString()
+                                                              : i18_local
+                                                                  .checklist
+                                                                  .notSelectedKey,
+                                                      rowVersion: 1,
+                                                      tenantId: attribute?[i]
+                                                          .tenantId,
+                                                      additionalFields:
+                                                          ServiceAttributesAdditionalFields(
+                                                        version: 1,
+                                                        // TODO: This needs to be done after adding locationbloc
+                                                        fields: [
+                                                          AdditionalField(
+                                                            'latitude',
+                                                            latitude,
+                                                          ),
+                                                          AdditionalField(
+                                                            'longitude',
+                                                            longitude,
+                                                          ),
+                                                        ],
+                                                      ),
+                                                    ));
+                                                  }
+
+                                                  context
+                                                      .read<ServiceBloc>()
+                                                      .add(
+                                                        ServiceCreateEvent(
+                                                          serviceModel:
+                                                              ServiceModel(
+                                                                  createdAt:
+                                                                      DigitDateUtils
+                                                                          .getDateFromTimestamp(
+                                                                    DateTime.now()
+                                                                        .toLocal()
+                                                                        .millisecondsSinceEpoch,
+                                                                    dateFormat:
+                                                                        Constants
+                                                                            .checklistViewDateFormat,
+                                                                  ),
+                                                                  tenantId:
+                                                                      selectedServiceDefinition!
+                                                                          .tenantId,
+                                                                  clientId:
+                                                                      referenceId,
+                                                                  serviceDefId:
+                                                                      selectedServiceDefinition
+                                                                          ?.id,
+                                                                  attributes:
+                                                                      attributes,
+                                                                  rowVersion: 1,
+                                                                  accountId: context
+                                                                      .projectId,
+                                                                  auditDetails:
+                                                                      AuditDetails(
+                                                                    createdBy:
+                                                                        context
+                                                                            .loggedInUserUuid,
+                                                                    createdTime:
+                                                                        DateTime.now()
+                                                                            .millisecondsSinceEpoch,
+                                                                  ),
+                                                                  clientAuditDetails:
+                                                                      ClientAuditDetails(
+                                                                    createdBy:
+                                                                        context
+                                                                            .loggedInUserUuid,
+                                                                    createdTime:
+                                                                        context
+                                                                            .millisecondsSinceEpoch(),
+                                                                    lastModifiedBy:
+                                                                        context
+                                                                            .loggedInUserUuid,
+                                                                    lastModifiedTime:
+                                                                        context
+                                                                            .millisecondsSinceEpoch(),
+                                                                  ),
+                                                                  additionalFields:
+                                                                      ServiceAdditionalFields(
+                                                                    version: 1,
+                                                                    fields: [
+                                                                      AdditionalField(
+                                                                          'boundaryCode',
+                                                                          context
+                                                                              .boundary
+                                                                              .code),
+                                                                    ],
+                                                                  )),
                                                         ),
-                                                        AdditionalField(
-                                                            'ageBelow3Months',
-                                                            true.toString()),
-                                                      ] else ...[
-                                                        AdditionalField(
-                                                            'ineligibleReasons',
-                                                            ["SIDE_EFFECTS"]
-                                                                .join(",")),
-                                                        AdditionalField(
-                                                            additional_fields_local
-                                                                .AdditionalFieldsType
-                                                                .hasSideEffects
-                                                                .toValue(),
-                                                            true.toString()),
-                                                      ],
-                                                      AdditionalField(
-                                                        additional_fields_local
-                                                            .AdditionalFieldsType
-                                                            .deliveryType
-                                                            .toValue(),
-                                                        EligibilityAssessmentStatus
-                                                            .smcDone.name,
-                                                      ),
-                                                      AdditionalField(
-                                                        additional_fields_local
-                                                            .AdditionalFieldsType
-                                                            .doseStatus
-                                                            .toValue(),
-                                                        zeroDose
-                                                            ? DoseStatus
-                                                                .zeroDose.name
-                                                            : underVaccinated
-                                                                ? DoseStatus
-                                                                    .underVaccinated
-                                                                    .name
-                                                                : DoseStatus
-                                                                    .fullyVaccinated
-                                                                    .name,
-                                                      ),
-                                                      ...getIndividualAdditionalFields(
-                                                          widget.individual)
-                                                    ],
-                                                  ),
-                                                  address: widget.individual
-                                                      ?.address?.first
-                                                      .copyWith(
-                                                    relatedClientReferenceId:
-                                                        clientReferenceId,
-                                                    id: null,
-                                                  ),
+                                                      );
+                                                  Navigator.of(
+                                                    context,
+                                                    rootNavigator: true,
+                                                  ).pop(true);
+                                                },
+                                              ),
+                                              secondaryAction:
+                                                  DigitDialogActions(
+                                                label: localizations.translate(
+                                                  i18_local.checklist
+                                                      .checklistDialogSecondaryAction,
                                                 ),
-                                                isEditing: false,
-                                                boundaryModel: context.boundary,
-                                                navigateToSummary: false,
-                                                householdMemberWrapper: context
+                                                action: (context) {
+                                                  Navigator.of(
+                                                    context,
+                                                    rootNavigator: true,
+                                                  ).pop(false);
+                                                },
+                                              ),
+                                            ),
+                                          );
+                                          if (shouldSubmit ?? false) {
+                                            if (context.mounted) {
+                                              if (widget
+                                                      .isChecklistAssessmentDone ==
+                                                  true) {
+                                                final householdMember = context
                                                     .read<
                                                         HouseholdOverviewBloc>()
                                                     .state
-                                                    .householdMemberWrapper,
-                                              ),
-                                            );
-                                        final searchBloc = context
-                                            .read<SearchHouseholdsBloc>();
-                                        searchBloc.add(
-                                          const SearchHouseholdsClearEvent(),
-                                        );
-                                        final router = context.router;
-                                        router.popUntilRouteWithName(
-                                            BeneficiaryWrapperRoute.name);
-                                        if (widget.isAdministration == true) {
-                                          router.push(
-                                            CustomSplashAcknowledgementRoute(
-                                                enableBackToSearch: false,
-                                                eligibilityAssessmentType: widget
-                                                    .eligibilityAssessmentType),
-                                          );
-                                        } else {
-                                          router.push(
-                                            CustomHouseholdAcknowledgementRoute(
-                                                enableViewHousehold: true,
-                                                eligibilityAssessmentType: widget
-                                                    .eligibilityAssessmentType),
-                                          );
-                                        }
-                                      }
-                                    }
+                                                    .householdMemberWrapper;
+                                                final deliverState = context
+                                                    .read<
+                                                        DeliverInterventionBloc>()
+                                                    .state;
 
-                                    submitTriggered = true;
-                                    context.read<ServiceBloc>().add(
-                                          const ServiceSurveyFormEvent(
-                                            value: '',
-                                            submitTriggered: true,
-                                          ),
-                                        );
-                                  }
-                                }
-                              },
-                              child: Text(
-                                localizations.translate(
-                                    i18_local.common.coreCommonSubmit),
-                              ),
-                            ),
-                          ),
-                          children: [
-                            DigitCard(
-                              margin: const EdgeInsets.all(spacer2),
-                              child: Column(
-                                children: [
-                                  ReactiveFormBuilder(
-                                    form: () => buildForm(
-                                        context, productVariants, variant),
-                                    builder: (context, form, child) {
-                                      return Column(
-                                        crossAxisAlignment:
-                                            CrossAxisAlignment.start,
-                                        children: [
-                                          Padding(
-                                            padding:
-                                                const EdgeInsets.only(left: 8),
-                                            child: Text(
-                                              localizations.translate(
-                                                i18_local.deliverIntervention
-                                                    .zeroDoseCheckLabel,
-                                              ),
-                                              style: theme
-                                                  .textTheme.displayMedium
-                                                  ?.copyWith(
-                                                      fontWeight:
-                                                          FontWeight.bold),
-                                              textAlign: TextAlign.left,
-                                            ),
-                                          ),
-                                          const SizedBox(
-                                            height: 8,
-                                          ),
-                                          Padding(
-                                            padding: const EdgeInsets.all(8),
-                                            child: Column(
-                                              children: [
-                                                ReactiveWrapperField(
-                                                  formControlName:
-                                                      _dateOfAdministrationKey,
-                                                  builder: (field) =>
-                                                      LabeledField(
-                                                    label: localizations
-                                                        .translate(i18_local
-                                                            .householdDetails
-                                                            .dateOfAdministrationLabel),
-                                                    child: DigitDateFormInput(
-                                                      readOnly: true,
-                                                      initialValue: DateFormat(
-                                                              'dd MMM yyyy')
-                                                          .format(form
-                                                              .control(
-                                                                  _dateOfAdministrationKey)
-                                                              .value)
-                                                          .toString(),
-                                                      confirmText: localizations
-                                                          .translate(i18.common
-                                                              .coreCommonOk),
-                                                      cancelText: localizations
-                                                          .translate(i18.common
-                                                              .coreCommonCancel),
-                                                    ),
+                                                final oldTask =
+                                                    deliverState.oldTask ??
+                                                        widget.task;
+                                                final oldFields = oldTask
+                                                        .additionalFields
+                                                        ?.fields ??
+                                                    [];
+
+                                                final updatedFields = [
+                                                  ...oldFields,
+                                                  AdditionalField(
+                                                    additional_fields_local
+                                                        .AdditionalFieldsType
+                                                        .doseStatus
+                                                        .toValue(),
+                                                    zeroDose
+                                                        ? DoseStatus
+                                                            .zeroDose.name
+                                                        : underVaccinated
+                                                            ? DoseStatus
+                                                                .underVaccinated
+                                                                .name
+                                                            : DoseStatus
+                                                                .fullyVaccinated
+                                                                .name,
                                                   ),
-                                                ),
-                                              ],
-                                            ),
-                                          ),
-                                        ],
-                                      );
-                                    },
-                                  ),
-                                  Form(
-                                    key: checklistFormKey,
-                                    child: Column(
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.start,
-                                      children: [
-                                        ...initialAttributes!.map((e) {
-                                          int index = (initialAttributes ?? [])
-                                              .indexOf(e);
+                                                ];
 
-                                          return Column(children: [
-                                            if (e.dataType == 'String' &&
-                                                !(e.code ?? '')
-                                                    .contains('.')) ...[
-                                              DigitTextField(
-                                                autoValidation: AutovalidateMode
-                                                    .onUserInteraction,
-                                                isRequired: true,
-                                                controller: controller[index],
-                                                validator: (value) {
-                                                  if (((value == null ||
-                                                          value == '') &&
-                                                      e.required == true)) {
-                                                    return localizations
-                                                        .translate(
-                                                      i18_local.common
-                                                          .corecommonRequired,
+                                                final updatedTask =
+                                                    oldTask.copyWith(
+                                                  additionalFields:
+                                                      TaskAdditionalFields(
+                                                    version: 1,
+                                                    fields: updatedFields,
+                                                  ),
+                                                );
+
+                                                context
+                                                    .read<
+                                                        DeliverInterventionBloc>()
+                                                    .add(
+                                                      DeliverInterventionSubmitEvent(
+                                                        task: updatedTask,
+                                                        isEditing: (deliverState
+                                                                        .tasks ??
+                                                                    [])
+                                                                .isNotEmpty &&
+                                                            RegistrationDeliverySingleton()
+                                                                    .beneficiaryType ==
+                                                                BeneficiaryType
+                                                                    .household,
+                                                        boundaryModel:
+                                                            RegistrationDeliverySingleton()
+                                                                .boundary!,
+                                                      ),
+                                                    );
+
+                                                ProjectTypeModel? projectTypeModel = widget
+                                                            .eligibilityAssessmentType ==
+                                                        EligibilityAssessmentType
+                                                            .smc
+                                                    ? RegistrationDeliverySingleton()
+                                                        .selectedProject
+                                                        ?.additionalDetails
+                                                        ?.projectType
+                                                    : RegistrationDeliverySingleton()
+                                                        .selectedProject
+                                                        ?.additionalDetails
+                                                        ?.additionalProjectType;
+
+                                                if (widget.isAdministration ==
+                                                    true) {
+                                                  final router = context.router;
+                                                  router.popUntilRouteWithName(
+                                                      BeneficiaryWrapperRoute
+                                                          .name);
+                                                  if (deliverState
+                                                              .futureDeliveries !=
+                                                          null &&
+                                                      deliverState
+                                                          .futureDeliveries!
+                                                          .isNotEmpty &&
+                                                      projectTypeModel?.cycles
+                                                              ?.isNotEmpty ==
+                                                          true) {
+                                                    router.push(
+                                                      CustomSplashAcknowledgementRoute(
+                                                          enableBackToSearch:
+                                                              false,
+                                                          eligibilityAssessmentType:
+                                                              widget
+                                                                  .eligibilityAssessmentType),
+                                                    );
+                                                  } else {
+                                                    final reloadState =
+                                                        context.read<
+                                                            HouseholdOverviewBloc>();
+
+                                                    reloadState.add(
+                                                      HouseholdOverviewReloadEvent(
+                                                        projectId:
+                                                            RegistrationDeliverySingleton()
+                                                                .projectId!,
+                                                        projectBeneficiaryType:
+                                                            RegistrationDeliverySingleton()
+                                                                .beneficiaryType!,
+                                                      ),
+                                                    );
+                                                    context.router.popAndPush(
+                                                      CustomHouseholdAcknowledgementRoute(
+                                                        enableViewHousehold:
+                                                            true,
+                                                        eligibilityAssessmentType:
+                                                            widget
+                                                                .eligibilityAssessmentType,
+                                                      ),
                                                     );
                                                   }
-                                                  if (e.regex != null) {
-                                                    return (RegExp(e.regex!)
-                                                            .hasMatch(value!))
-                                                        ? null
-                                                        : localizations.translate(
-                                                            "${e.code}_REGEX");
-                                                  }
+                                                } else {
+                                                  final router = context.router;
+                                                  final searchBloc = context.read<
+                                                      SearchHouseholdsBloc>();
+                                                  searchBloc.add(
+                                                    const SearchHouseholdsClearEvent(),
+                                                  );
+                                                  router.popUntilRouteWithName(
+                                                      BeneficiaryWrapperRoute
+                                                          .name);
+                                                  router.push(
+                                                    CustomHouseholdAcknowledgementRoute(
+                                                        enableViewHousehold:
+                                                            true,
+                                                        eligibilityAssessmentType:
+                                                            widget
+                                                                .eligibilityAssessmentType),
+                                                  );
+                                                }
+                                              } else {
+                                                if (widget.hasSideEffects ==
+                                                    true) {
+                                                  context
+                                                      .read<SideEffectsBloc>()
+                                                      .add(
+                                                        SideEffectsSubmitEvent(
+                                                          widget.sideEffect!,
+                                                          false,
+                                                        ),
+                                                      );
+                                                }
+                                                final clientReferenceId =
+                                                    IdGen.i.identifier;
+                                                List<String?>
+                                                    ineligibilityReasons = [];
+                                                ineligibilityReasons.add(
+                                                    "CHILD_AGE_LESS_THAN_3_MONTHS");
+                                                context
+                                                    .read<
+                                                        DeliverInterventionBloc>()
+                                                    .add(
+                                                      DeliverInterventionSubmitEvent(
+                                                        task: TaskModel(
+                                                          projectBeneficiaryClientReferenceId:
+                                                              widget
+                                                                  .projectBeneficiaryClientReferenceId,
+                                                          clientReferenceId:
+                                                              clientReferenceId,
+                                                          tenantId: envConfig
+                                                              .variables
+                                                              .tenantId,
+                                                          rowVersion: 1,
+                                                          auditDetails:
+                                                              AuditDetails(
+                                                            createdBy: context
+                                                                .loggedInUserUuid,
+                                                            createdTime: context
+                                                                .millisecondsSinceEpoch(),
+                                                          ),
+                                                          projectId:
+                                                              context.projectId,
+                                                          status:
+                                                              // (widget.hasSideEffects ??
+                                                              //         false)
+                                                              //     ? Status.inComplete
+                                                              //         .toValue()
+                                                              //     :
+                                                              status_local
+                                                                  .Status
+                                                                  .beneficiaryInEligible
+                                                                  .toValue(),
+                                                          clientAuditDetails:
+                                                              ClientAuditDetails(
+                                                            createdBy: context
+                                                                .loggedInUserUuid,
+                                                            createdTime: context
+                                                                .millisecondsSinceEpoch(),
+                                                            lastModifiedBy: context
+                                                                .loggedInUserUuid,
+                                                            lastModifiedTime:
+                                                                context
+                                                                    .millisecondsSinceEpoch(),
+                                                          ),
+                                                          additionalFields:
+                                                              TaskAdditionalFields(
+                                                            version: 1,
+                                                            fields: [
+                                                              AdditionalField(
+                                                                AdditionalFieldsType
+                                                                    .cycleIndex
+                                                                    .toValue(),
+                                                                "0${context.selectedCycle?.id}",
+                                                              ),
+                                                              AdditionalField(
+                                                                AdditionalFieldsType
+                                                                    .selectedVaccines
+                                                                    .toValue(),
+                                                                "",
+                                                              ),
+                                                              AdditionalField(
+                                                                AdditionalFieldsType
+                                                                    .noSelectedVaccines
+                                                                    .toValue(),
+                                                                vaccineSearchState
+                                                                    .allVaccineCodes
+                                                                    ?.join("."),
+                                                              ),
+                                                              if (widget
+                                                                      .hasSideEffects ??
+                                                                  false ==
+                                                                      false) ...[
+                                                                AdditionalField(
+                                                                  'ineligibleReasons',
+                                                                  ineligibilityReasons
+                                                                      .join(
+                                                                          ","),
+                                                                ),
+                                                              ] else ...[
+                                                                AdditionalField(
+                                                                    'ineligibleReasons',
+                                                                    [
+                                                                      "SIDE_EFFECTS"
+                                                                    ].join(
+                                                                        ",")),
+                                                                AdditionalField(
+                                                                    additional_fields_local
+                                                                        .AdditionalFieldsType
+                                                                        .hasSideEffects
+                                                                        .toValue(),
+                                                                    true.toString()),
+                                                              ],
+                                                              AdditionalField(
+                                                                additional_fields_local
+                                                                    .AdditionalFieldsType
+                                                                    .deliveryType
+                                                                    .toValue(),
+                                                                EligibilityAssessmentStatus
+                                                                    .smcDone
+                                                                    .name,
+                                                              ),
+                                                              AdditionalField(
+                                                                additional_fields_local
+                                                                    .AdditionalFieldsType
+                                                                    .doseStatus
+                                                                    .toValue(),
+                                                                zeroDose
+                                                                    ? DoseStatus
+                                                                        .zeroDose
+                                                                        .name
+                                                                    : underVaccinated
+                                                                        ? DoseStatus
+                                                                            .underVaccinated
+                                                                            .name
+                                                                        : DoseStatus
+                                                                            .fullyVaccinated
+                                                                            .name,
+                                                              ),
+                                                              ...getIndividualAdditionalFields(
+                                                                  widget
+                                                                      .individual)
+                                                            ],
+                                                          ),
+                                                          address: widget
+                                                              .individual
+                                                              ?.address
+                                                              ?.first
+                                                              .copyWith(
+                                                            relatedClientReferenceId:
+                                                                clientReferenceId,
+                                                            id: null,
+                                                          ),
+                                                        ),
+                                                        isEditing: false,
+                                                        boundaryModel:
+                                                            context.boundary,
+                                                        navigateToSummary:
+                                                            false,
+                                                        householdMemberWrapper: context
+                                                            .read<
+                                                                HouseholdOverviewBloc>()
+                                                            .state
+                                                            .householdMemberWrapper,
+                                                      ),
+                                                    );
+                                                final searchBloc = context.read<
+                                                    SearchHouseholdsBloc>();
+                                                searchBloc.add(
+                                                  const SearchHouseholdsClearEvent(),
+                                                );
+                                                final router = context.router;
+                                                router.popUntilRouteWithName(
+                                                    BeneficiaryWrapperRoute
+                                                        .name);
+                                                if (widget.isAdministration ==
+                                                    true) {
+                                                  router.push(
+                                                    CustomSplashAcknowledgementRoute(
+                                                        enableBackToSearch:
+                                                            false,
+                                                        eligibilityAssessmentType:
+                                                            widget
+                                                                .eligibilityAssessmentType),
+                                                  );
+                                                } else {
+                                                  router.push(
+                                                    CustomHouseholdAcknowledgementRoute(
+                                                        enableViewHousehold:
+                                                            true,
+                                                        eligibilityAssessmentType:
+                                                            widget
+                                                                .eligibilityAssessmentType),
+                                                  );
+                                                }
+                                              }
+                                            }
 
-                                                  return null;
-                                                },
-                                                label: localizations.translate(
-                                                  '${selectedServiceDefinition?.code}.${e.code}',
-                                                ),
-                                              ),
-                                            ] else if (e.dataType == 'Number' &&
-                                                !(e.code ?? '')
-                                                    .contains('.')) ...[
-                                              DigitTextField(
-                                                autoValidation: AutovalidateMode
-                                                    .onUserInteraction,
-                                                textStyle: theme
-                                                    .textTheme.headlineMedium,
-                                                textInputType:
-                                                    TextInputType.number,
-                                                inputFormatter: [
-                                                  FilteringTextInputFormatter
-                                                      .allow(
-                                                    RegExp(
-                                                      "[0-9]",
+                                            submitTriggered = true;
+                                            context.read<ServiceBloc>().add(
+                                                  const ServiceSurveyFormEvent(
+                                                    value: '',
+                                                    submitTriggered: true,
+                                                  ),
+                                                );
+                                          }
+                                        }
+                                      },
+                                      child: Text(
+                                        localizations.translate(
+                                            i18_local.common.coreCommonSubmit),
+                                      ),
+                                    ),
+                                  ),
+                                  children: [
+                                    DigitCard(
+                                      margin: const EdgeInsets.all(spacer2),
+                                      child: Column(
+                                        children: [
+                                          ReactiveFormBuilder(
+                                            form: () => buildForm(context,
+                                                productVariants, variant),
+                                            builder: (context, form, child) {
+                                              return Column(
+                                                crossAxisAlignment:
+                                                    CrossAxisAlignment.start,
+                                                children: [
+                                                  Padding(
+                                                    padding:
+                                                        const EdgeInsets.only(
+                                                            left: 8),
+                                                    child: Text(
+                                                      localizations.translate(
+                                                        i18_local
+                                                            .deliverIntervention
+                                                            .zeroDoseCheckLabel,
+                                                      ),
+                                                      style: theme.textTheme
+                                                          .displayMedium
+                                                          ?.copyWith(
+                                                              fontWeight:
+                                                                  FontWeight
+                                                                      .bold),
+                                                      textAlign: TextAlign.left,
+                                                    ),
+                                                  ),
+                                                  const SizedBox(
+                                                    height: 8,
+                                                  ),
+                                                  Padding(
+                                                    padding:
+                                                        const EdgeInsets.all(8),
+                                                    child: Column(
+                                                      children: [
+                                                        ReactiveWrapperField(
+                                                          formControlName:
+                                                              _dateOfAdministrationKey,
+                                                          builder: (field) =>
+                                                              LabeledField(
+                                                            label: localizations
+                                                                .translate(i18_local
+                                                                    .householdDetails
+                                                                    .dateOfAdministrationLabel),
+                                                            child:
+                                                                DigitDateFormInput(
+                                                              readOnly: true,
+                                                              initialValue: DateFormat(
+                                                                      'dd MMM yyyy')
+                                                                  .format(form
+                                                                      .control(
+                                                                          _dateOfAdministrationKey)
+                                                                      .value)
+                                                                  .toString(),
+                                                              confirmText: localizations
+                                                                  .translate(i18
+                                                                      .common
+                                                                      .coreCommonOk),
+                                                              cancelText: localizations
+                                                                  .translate(i18
+                                                                      .common
+                                                                      .coreCommonCancel),
+                                                            ),
+                                                          ),
+                                                        ),
+                                                      ],
                                                     ),
                                                   ),
                                                 ],
-                                                validator: (value) {
-                                                  if (((value == null ||
-                                                          value == '') &&
-                                                      e.required == true)) {
-                                                    return localizations
-                                                        .translate(
-                                                      i18_local.common
-                                                          .corecommonRequired,
-                                                    );
-                                                  }
-                                                  if (e.regex != null) {
-                                                    return (RegExp(e.regex!)
-                                                            .hasMatch(value!))
-                                                        ? null
-                                                        : localizations.translate(
-                                                            "${e.code}_REGEX");
-                                                  }
+                                              );
+                                            },
+                                          ),
+                                          Form(
+                                            key: checklistFormKey,
+                                            child: Column(
+                                              crossAxisAlignment:
+                                                  CrossAxisAlignment.start,
+                                              children: [
+                                                ...initialAttributes!.map((e) {
+                                                  int index =
+                                                      (initialAttributes ?? [])
+                                                          .indexOf(e);
 
-                                                  return null;
-                                                },
-                                                controller: controller[index],
-                                                label: '${localizations.translate(
-                                                      '${selectedServiceDefinition?.code}.${e.code}',
-                                                    ).trim()} ${e.required == true ? '*' : ''}',
-                                              ),
-                                            ] else if (e.dataType ==
-                                                    'MultiValueList' &&
-                                                !(e.code ?? '')
-                                                    .contains('.')) ...[
-                                              Align(
-                                                alignment: Alignment.topLeft,
-                                                child: Padding(
-                                                  padding:
-                                                      const EdgeInsets.all(8),
-                                                  child: Column(
-                                                    children: [
-                                                      Text(
-                                                        '${localizations.translate(
+                                                  return Column(children: [
+                                                    if (e.dataType ==
+                                                            'String' &&
+                                                        !(e.code ?? '')
+                                                            .contains('.')) ...[
+                                                      DigitTextField(
+                                                        autoValidation:
+                                                            AutovalidateMode
+                                                                .onUserInteraction,
+                                                        isRequired: true,
+                                                        controller:
+                                                            controller[index],
+                                                        validator: (value) {
+                                                          if (((value == null ||
+                                                                  value ==
+                                                                      '') &&
+                                                              e.required ==
+                                                                  true)) {
+                                                            return localizations
+                                                                .translate(
+                                                              i18_local.common
+                                                                  .corecommonRequired,
+                                                            );
+                                                          }
+                                                          if (e.regex != null) {
+                                                            return (RegExp(e
+                                                                        .regex!)
+                                                                    .hasMatch(
+                                                                        value!))
+                                                                ? null
+                                                                : localizations
+                                                                    .translate(
+                                                                        "${e.code}_REGEX");
+                                                          }
+
+                                                          return null;
+                                                        },
+                                                        label: localizations
+                                                            .translate(
                                                           '${selectedServiceDefinition?.code}.${e.code}',
-                                                        )} ${e.required == true ? '*' : ''}',
-                                                        style: theme.textTheme
-                                                            .headlineSmall,
+                                                        ),
                                                       ),
+                                                    ] else if (e.dataType ==
+                                                            'Number' &&
+                                                        !(e.code ?? '')
+                                                            .contains('.')) ...[
+                                                      DigitTextField(
+                                                        autoValidation:
+                                                            AutovalidateMode
+                                                                .onUserInteraction,
+                                                        textStyle: theme
+                                                            .textTheme
+                                                            .headlineMedium,
+                                                        textInputType:
+                                                            TextInputType
+                                                                .number,
+                                                        inputFormatter: [
+                                                          FilteringTextInputFormatter
+                                                              .allow(
+                                                            RegExp(
+                                                              "[0-9]",
+                                                            ),
+                                                          ),
+                                                        ],
+                                                        validator: (value) {
+                                                          if (((value == null ||
+                                                                  value ==
+                                                                      '') &&
+                                                              e.required ==
+                                                                  true)) {
+                                                            return localizations
+                                                                .translate(
+                                                              i18_local.common
+                                                                  .corecommonRequired,
+                                                            );
+                                                          }
+                                                          if (e.regex != null) {
+                                                            return (RegExp(e
+                                                                        .regex!)
+                                                                    .hasMatch(
+                                                                        value!))
+                                                                ? null
+                                                                : localizations
+                                                                    .translate(
+                                                                        "${e.code}_REGEX");
+                                                          }
+
+                                                          return null;
+                                                        },
+                                                        controller:
+                                                            controller[index],
+                                                        label: '${localizations.translate(
+                                                              '${selectedServiceDefinition?.code}.${e.code}',
+                                                            ).trim()} ${e.required == true ? '*' : ''}',
+                                                      ),
+                                                    ] else if (e.dataType ==
+                                                            'MultiValueList' &&
+                                                        !(e.code ?? '')
+                                                            .contains('.')) ...[
+                                                      Align(
+                                                        alignment:
+                                                            Alignment.topLeft,
+                                                        child: Padding(
+                                                          padding:
+                                                              const EdgeInsets
+                                                                  .all(8),
+                                                          child: Column(
+                                                            children: [
+                                                              Text(
+                                                                '${localizations.translate(
+                                                                  '${selectedServiceDefinition?.code}.${e.code}',
+                                                                )} ${e.required == true ? '*' : ''}',
+                                                                style: theme
+                                                                    .textTheme
+                                                                    .headlineSmall,
+                                                              ),
+                                                            ],
+                                                          ),
+                                                        ),
+                                                      ),
+                                                      BlocBuilder<ServiceBloc,
+                                                          ServiceState>(
+                                                        builder:
+                                                            (context, state) {
+                                                          return Column(
+                                                            children: e.values!
+                                                                .map((e) =>
+                                                                    DigitCheckboxTile(
+                                                                      label: e,
+                                                                      value: controller[
+                                                                              index]
+                                                                          .text
+                                                                          .split(
+                                                                              '.')
+                                                                          .contains(
+                                                                              e),
+                                                                      onChanged:
+                                                                          (value) {
+                                                                        final String
+                                                                            ele;
+                                                                        var val = controller[index]
+                                                                            .text
+                                                                            .split('.');
+                                                                        if (val.contains(
+                                                                            e)) {
+                                                                          val.remove(
+                                                                              e);
+                                                                          ele =
+                                                                              val.join(".");
+                                                                        } else {
+                                                                          ele =
+                                                                              "${controller[index].text}.$e";
+                                                                        }
+                                                                        controller[index].value =
+                                                                            TextEditingController.fromValue(
+                                                                          TextEditingValue(
+                                                                            text:
+                                                                                ele,
+                                                                          ),
+                                                                        ).value;
+                                                                      },
+                                                                    ))
+                                                                .toList(),
+                                                          );
+                                                        },
+                                                      ),
+                                                    ] else if (e.dataType ==
+                                                        'SingleValueList') ...[
+                                                      if (!(e.code ?? '')
+                                                          .contains('.'))
+                                                        DigitCard(
+                                                          // Replace with your desired widget
+                                                          child:
+                                                              _buildChecklist(
+                                                            e,
+                                                            index,
+                                                            selectedServiceDefinition,
+                                                            context,
+                                                          ),
+                                                        ),
                                                     ],
-                                                  ),
-                                                ),
-                                              ),
-                                              BlocBuilder<ServiceBloc,
-                                                  ServiceState>(
-                                                builder: (context, state) {
-                                                  return Column(
-                                                    children: e.values!
-                                                        .map((e) =>
-                                                            DigitCheckboxTile(
-                                                              label: e,
-                                                              value: controller[
-                                                                      index]
-                                                                  .text
-                                                                  .split('.')
-                                                                  .contains(e),
-                                                              onChanged:
-                                                                  (value) {
-                                                                final String
-                                                                    ele;
-                                                                var val =
-                                                                    controller[
-                                                                            index]
-                                                                        .text
-                                                                        .split(
-                                                                            '.');
-                                                                if (val
-                                                                    .contains(
-                                                                        e)) {
-                                                                  val.remove(e);
-                                                                  ele =
-                                                                      val.join(
-                                                                          ".");
-                                                                } else {
-                                                                  ele =
-                                                                      "${controller[index].text}.$e";
-                                                                }
-                                                                controller[index]
-                                                                        .value =
-                                                                    TextEditingController
-                                                                        .fromValue(
-                                                                  TextEditingValue(
-                                                                    text: ele,
-                                                                  ),
-                                                                ).value;
-                                                              },
-                                                            ))
-                                                        .toList(),
-                                                  );
-                                                },
-                                              ),
-                                            ] else if (e.dataType ==
-                                                'SingleValueList') ...[
-                                              if (!(e.code ?? '').contains('.'))
-                                                DigitCard(
-                                                  // Replace with your desired widget
-                                                  child: _buildChecklist(
-                                                    e,
-                                                    index,
-                                                    selectedServiceDefinition,
-                                                    context,
-                                                  ),
-                                                ),
-                                            ],
-                                          ]);
-                                        }),
-                                      ],
+                                                  ]);
+                                                }),
+                                              ],
+                                            ),
+                                          ),
+                                          // ),
+                                        ],
+                                      ),
                                     ),
-                                  ),
-                                  // ),
-                                ],
-                              ),
-                            ),
-                          ],
+                                  ],
+                                );
+                              },
+                            );
+                          },
                         );
                       },
                     );

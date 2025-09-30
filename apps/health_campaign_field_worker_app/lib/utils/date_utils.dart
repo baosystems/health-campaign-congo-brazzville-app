@@ -120,9 +120,17 @@ class DigitDateUtils {
     }
   }
 
-  static DateTime subtractMonths(DateTime date, int monthsToSubtract) {
+  static int calculateAgeInDaysFromDob(String dobString) {
+    final dob = DigitDateUtils.getFormattedDateToDateTime(dobString);
+    if (dob == null) return 0;
+    final now = DateTime.now();
+    return now.difference(dob).inDays;
+  }
+
+  static DateTime subtractYearMonths(
+      DateTime date, int years, int monthsToSubtract) {
     return DateTime(
-        date.year,
+        date.year - years,
         date.month - monthsToSubtract,
         date.day,
         date.hour,

@@ -124,98 +124,11 @@ class ZeroDoseCheckPageState extends LocalizedState<ZeroDoseCheckPage> {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final deliveryInterventionState =
-        context.read<DeliverInterventionBloc>().state;
     final relatedClientRefId = context
         .read<HouseholdOverviewBloc>()
         .state
         .selectedIndividual
         ?.clientReferenceId;
-
-    final householdMemberWrapper =
-        context.read<HouseholdOverviewBloc>().state.householdMemberWrapper;
-
-    final projectBeneficiary =
-        RegistrationDeliverySingleton().beneficiaryType !=
-                BeneficiaryType.individual
-            ? [householdMemberWrapper.projectBeneficiaries!.first]
-            : householdMemberWrapper.projectBeneficiaries
-                ?.where((element) =>
-                    element.beneficiaryClientReferenceId ==
-                    context
-                        .read<HouseholdOverviewBloc>()
-                        .state
-                        .selectedIndividual
-                        ?.clientReferenceId)
-                .toList();
-
-    final projectTypeModel =
-        widget.eligibilityAssessmentType == EligibilityAssessmentType.smc
-            ? RegistrationDeliverySingleton()
-                .selectedProject
-                ?.additionalDetails
-                ?.projectType
-            : RegistrationDeliverySingleton()
-                .selectedProject
-                ?.additionalDetails
-                ?.additionalProjectType;
-
-    // final productVariants = !widget.isChecklistAssessmentDone
-    //     ? projectTypeModel?.resources
-    //         ?.map((r) =>
-    //             DeliveryProductVariant(productVariantId: r.productVariantId))
-    //         .toList()
-    //     : projectTypeModel?.cycles?.isNotEmpty == true
-    //         ? (fetchProductVariant(
-    //                 projectTypeModel
-    //                     ?.cycles?[deliveryInterventionState.cycle - 1]
-    //                     .deliveries?[deliveryInterventionState.dose - 1],
-    //                 context
-    //                     .read<HouseholdOverviewBloc>()
-    //                     .state
-    //                     .selectedIndividual,
-    //                 householdMemberWrapper.household)
-    //             ?.productVariants)
-    //         : projectTypeModel?.resources
-    //             ?.map((r) => DeliveryProductVariant(
-    //                 productVariantId: r.productVariantId))
-    //             .toList();
-
-    final productVariants = projectTypeModel?.resources
-        ?.map(
-            (r) => DeliveryProductVariant(productVariantId: r.productVariantId))
-        .toList();
-
-    if ((productVariants ?? []).isEmpty && context.mounted) {
-      SchedulerBinding.instance.addPostFrameCallback((_) {
-        showCustomPopup(
-          context: context,
-          builder: (popUpContext) => Popup(
-            title: localizations.translate(i18.common.noResultsFound),
-            description: localizations.translate(
-              i18.deliverIntervention.checkForProductVariantsConfig,
-            ),
-            type: PopUpType.alert,
-            actions: [
-              DigitButton(
-                label: localizations.translate(i18.common.coreCommonOk),
-                onPressed: () {
-                  context.router.maybePop();
-                  Navigator.of(popUpContext).pop();
-                },
-                type: DigitButtonType.primary,
-                size: DigitButtonSize.large,
-              ),
-            ],
-          ),
-        );
-      });
-    }
-
-    final productVariantState = context.read<ProductVariantBloc>().state;
-    final variant = productVariantState.whenOrNull(
-      fetched: (fetchedVariants) => fetchedVariants,
-    );
 
     final dobStr = context
         .read<HouseholdOverviewBloc>()
@@ -258,7 +171,6 @@ class ZeroDoseCheckPageState extends LocalizedState<ZeroDoseCheckPage> {
                       builder: (context, householdOverviewState) {
                         double? latitude = locationState.latitude;
                         double? longitude = locationState.longitude;
-                        String zeroDoseAssessment = "ZERODOSE_ASSESSMENT";
                         return BlocBuilder<ServiceDefinitionBloc,
                             ServiceDefinitionState>(
                           builder: (context, state) {
@@ -268,7 +180,7 @@ class ZeroDoseCheckPageState extends LocalizedState<ZeroDoseCheckPage> {
                                     .serviceDefinitionList
                                     .where((element) =>
                                         element.code.toString().contains(
-                                              '${context.selectedProject.name}.$zeroDoseAssessment.${RolesType.communityDistributor.toValue()}',
+                                              '${context.selectedProject.name}.${Constants.zeroDoseAssessment}.${RolesType.communityDistributor.toValue()}',
                                             ))
                                     .toList()
                                     .firstOrNull;
@@ -1070,8 +982,7 @@ class ZeroDoseCheckPageState extends LocalizedState<ZeroDoseCheckPage> {
                                       child: Column(
                                         children: [
                                           ReactiveFormBuilder(
-                                            form: () => buildForm(context,
-                                                productVariants, variant),
+                                            form: () => buildForm(context),
                                             builder: (context, form, child) {
                                               return Column(
                                                 crossAxisAlignment:
@@ -1363,42 +1274,17 @@ class ZeroDoseCheckPageState extends LocalizedState<ZeroDoseCheckPage> {
   // ignore: long-parameter-list
 
   // This method builds a form used for delivering interventions.
-  FormGroup buildForm(
-    BuildContext context,
-    List<DeliveryProductVariant>? productVariants,
-    List<ProductVariantModel>? variants,
-  ) {
+  FormGroup buildForm(BuildContext context) {
     final bloc = context.read<DeliverInterventionBloc>().state;
     final overViewbloc = context.read<HouseholdOverviewBloc>().state;
     _controllers.forEachIndexed((index, element) {
       _controllers.removeAt(index);
     });
-    ProjectTypeModel? projectTypeModel =
-        widget.eligibilityAssessmentType == EligibilityAssessmentType.smc
-            ? RegistrationDeliverySingleton()
-                .selectedProject
-                ?.additionalDetails
-                ?.projectType
-            : RegistrationDeliverySingleton()
-                .selectedProject
-                ?.additionalDetails
-                ?.additionalProjectType;
-    // Add controllers for each product variant to the _controllers list.
-    if (_controllers.isEmpty) {
-      final int r = projectTypeModel?.cycles == null
-          ? 1
-          : fetchProductVariant(
-                      projectTypeModel
-                          ?.cycles![bloc.cycle - 1].deliveries?[bloc.dose - 1],
-                      overViewbloc.selectedIndividual,
-                      overViewbloc.householdMemberWrapper.household)
-                  ?.productVariants
-                  ?.length ??
-              0;
 
-      _controllers.addAll(List.generate(r, (index) => index)
-          .mapIndexed((index, element) => index));
-    }
+    // if (_controllers.isEmpty) {
+    //   _controllers.addAll(List.generate(r, (index) => index)
+    //       .mapIndexed((index, element) => index));
+    // }
 
     return fb.group(<String, Object>{
       _doseAdministrationKey: FormControl<String>(

@@ -28,7 +28,7 @@
 
     </queries>
     <!--#enddocregion android-queries-->
-    <application android:name="${applicationName}" android:allowBackup="false" android:fullBackupContent="false" android:fullBackupOnly="false" android:icon="@mipmap/ic_launcher" android:label="Lafia">
+    <application android:name="${applicationName}" android:allowBackup="false" android:fullBackupContent="false" android:fullBackupOnly="false" android:icon="@mipmap/ic_launcher" android:label="CongoPEV">
         <service android:name=".LocationService" android:enabled="true" android:exported="false" android:foregroundServiceType="location" />
 
         <activity android:name=".MainActivity" android:configChanges="orientation|keyboardHidden|keyboard|screenSize|smallestScreenSize|locale|layoutDirection|fontScale|screenLayout|density|uiMode" android:enableOnBackInvokedCallback="true" android:exported="true" android:hardwareAccelerated="true" android:launchMode="singleTop" android:screenOrientation="portrait" android:showWhenLocked="false" android:theme="@style/LaunchTheme" android:turnScreenOn="true" android:windowSoftInputMode="adjustResize">

@@ -1350,12 +1350,6 @@ class _VaccineSelectionPageState extends LocalizedState<VaccineSelectionPage> {
                                                   ineligibilityReasons
                                                       .join(","),
                                                 ),
-                                                AdditionalField(
-                                                  AdditionalFieldsType
-                                                      .ageBelow3Months
-                                                      .toValue(),
-                                                  true.toString(),
-                                                ),
                                               ] else ...[
                                                 AdditionalField(
                                                     AdditionalFieldsType

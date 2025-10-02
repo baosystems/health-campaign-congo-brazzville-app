@@ -2893,7 +2893,7 @@ class CustomSideEffectsRoute extends PageRouteInfo<CustomSideEffectsRouteArgs> {
     Key? key,
     RegistrationDeliveryLocalization? appLocalizations,
     required List<TaskModel> tasks,
-    required String projectBeneficiaryClientReferenceId,
+    required String? projectBeneficiaryClientReferenceId,
     bool isEditing = false,
     List<PageRouteInfo>? children,
   }) : super(
@@ -2930,7 +2930,7 @@ class CustomSideEffectsRouteArgs {
 
   final List<TaskModel> tasks;
 
-  final String projectBeneficiaryClientReferenceId;
+  final String? projectBeneficiaryClientReferenceId;
 
   final bool isEditing;
 

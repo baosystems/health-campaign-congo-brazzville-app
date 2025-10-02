@@ -171,8 +171,8 @@ class CustomMemberCard extends StatelessWidget {
   Widget statusWidget(BuildContext context) {
     List<TaskModel>? smcTasks = _getSMCStatusData(context);
 
-    bool isBeneficiaryReferredSMC = checkBeneficiaryReferredSMC(smcTasks);
-    bool isBeneficiaryInEligibleSMC =
+    bool isBeneficiaryReferred = checkBeneficiaryReferred(smcTasks);
+    bool isBeneficiaryInEligible =
         checkBeneficiaryInEligibleSMC(smcTasks, context.selectedCycle);
     List<TaskModel>? currentTasks = _getCurrentCycleData(context);
     bool isBeneficiaryAbsent = checkBeneficiaryAbsentSMC(currentTasks);
@@ -190,6 +190,7 @@ class CustomMemberCard extends StatelessWidget {
                 .parse(individual.dateOfBirth!))
         : digits.DigitDateUtils.calculateAge(DateTime.now());
     final ageInMonths = (age.years * 12) + age.months;
+    Gender? gender = individual.gender;
 
     final theme = Theme.of(context);
     if (isHead) {
@@ -205,7 +206,8 @@ class CustomMemberCard extends StatelessWidget {
         ),
       );
     }
-    if (ageInMonths >= 120) {
+    if (((ageInMonths > 18 && gender == Gender.male) ||
+        (ageInMonths >= 120 && gender == Gender.female))) {
       return Align(
         alignment: Alignment.centerLeft,
         child: DigitIconButton(
@@ -218,15 +220,17 @@ class CustomMemberCard extends StatelessWidget {
         ),
       );
     }
-    if (isBeneficiaryRefuse || isBeneficiaryAbsent || isSideEffect) {
+    if (isBeneficiaryRefuse ||
+        isBeneficiaryAbsent ||
+        isSideEffect ||
+        isBeneficiaryReferred) {
       return Align(
         alignment: Alignment.centerLeft,
         child: DigitIconButton(
           icon: Icons.check_circle,
           iconText: localizations.translate(
-            isBeneficiaryReferredSMC
-                ? i18_local.householdOverView
-                    .householdOverViewBeneficiaryReferredSMCLabel
+            isBeneficiaryReferred
+                ? i18.householdOverView.householdOverViewNotEligibleIconLabel
                 : isBeneficiaryRefuse
                     ? i18_local.householdOverView
                         .householdOverViewBeneficiaryRefusedLabel
@@ -240,8 +244,8 @@ class CustomMemberCard extends StatelessWidget {
                                 .householdOverViewBeneficiaryInEligibleSMCLabel,
           ),
           iconSize: 20,
-          iconTextColor: theme.colorScheme.onSurfaceVariant,
-          iconColor: theme.colorScheme.onSurfaceVariant,
+          iconTextColor: theme.colorScheme.error,
+          iconColor: theme.colorScheme.error,
         ),
       );
     }
@@ -278,10 +282,11 @@ class CustomMemberCard extends StatelessWidget {
                 .parse(individual.dateOfBirth!))
         : digits.DigitDateUtils.calculateAge(DateTime.now());
     final ageInMonths = age.years * 12 + age.months;
+    Gender? gender = individual.gender;
 
     List<TaskModel>? smcTasks = _getSMCStatusData(context);
 
-    bool isBeneficiaryReferredSMC = checkBeneficiaryReferredSMC(smcTasks);
+    bool isBeneficiaryReferred = checkBeneficiaryReferred(smcTasks);
     bool isBeneficiaryInEligibleSMC =
         checkBeneficiaryInEligibleSMC(smcTasks, context.selectedCycle);
 
@@ -295,14 +300,15 @@ class CustomMemberCard extends StatelessWidget {
     bool isUnderVaccinated = checkBeneficiaryUnderVaccinated(doseStatusTasks);
     bool isFullyVaccinated = checkBeneficiaryZeroDoseDelivered(doseStatusTasks);
 
-    bool isHPVEligible = individual.gender == Gender.female &&
-        ageInMonths >= 108 &&
-        ageInMonths < 120;
+    bool isHPVEligible =
+        gender == Gender.female && ageInMonths >= 108 && ageInMonths < 120;
 
-    return ageInMonths >= 120 ||
+    return ((ageInMonths > 18 && gender == Gender.male) ||
+                (ageInMonths >= 120 && gender == Gender.female)) ||
             isBeneficiaryRefuse ||
             isBeneficiaryAbsent ||
-            isSideEffect
+            isSideEffect ||
+            isBeneficiaryReferred
         ? const Offstage()
         : Column(
             children: [

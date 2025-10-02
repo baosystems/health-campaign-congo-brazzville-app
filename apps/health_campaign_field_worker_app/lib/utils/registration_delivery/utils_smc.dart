@@ -206,7 +206,7 @@ bool checkBeneficiaryZeroDoseDelivered(List<TaskModel>? tasks) {
   return successfulTask != null;
 }
 
-bool checkBeneficiaryReferredSMC(List<TaskModel>? tasks) {
+bool checkBeneficiaryReferred(List<TaskModel>? tasks) {
   if ((tasks ?? []).isEmpty) {
     return false;
   }

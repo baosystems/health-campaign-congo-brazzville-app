@@ -65,5 +65,9 @@ enum AdditionalFieldsType {
   doseAdministeredBy,
   @MappableValue("taskStatus")
   taskStatus,
+  @MappableValue("individualClientReferenceId")
+  individualClientReferenceId,
+  @MappableValue("uniqueBeneficiaryId")
+  uniqueBeneficiaryId,
   ;
 }

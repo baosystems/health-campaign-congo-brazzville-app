@@ -287,34 +287,37 @@ class CustomReferBeneficiarySMCPageState
                                                 .toValue(),
                                             "0${context.selectedCycle?.id}",
                                           ),
-                                          AdditionalField(
-                                            'taskStatus',
-                                            Status.beneficiaryReferred
-                                                .toValue(),
-                                          ),
-                                          if (widget
-                                              .isReadministrationUnSuccessful)
-                                            AdditionalField(
-                                              'quantityWasted',
-                                              widget.quantityWasted
-                                                          .toString()
-                                                          .length ==
-                                                      1
-                                                  ? "0${widget.quantityWasted}"
-                                                  : widget.quantityWasted
-                                                      .toString(),
-                                            ),
-                                          if (widget
-                                              .isReadministrationUnSuccessful)
-                                            const AdditionalField(
-                                              'unsuccessfullDelivery',
-                                              'true',
-                                            ),
-                                          if (widget.productVariantId != null)
-                                            AdditionalField(
-                                              'productVariantId',
-                                              widget.productVariantId,
-                                            ),
+                                          // AdditionalField(
+                                          //   AdditionalFieldsType.taskStatus
+                                          //       .toValue(),
+                                          //   Status.beneficiaryReferred
+                                          //       .toValue(),
+                                          // ),
+                                          // if (widget
+                                          //     .isReadministrationUnSuccessful)
+                                          //   AdditionalField(
+                                          //     AdditionalFieldsType
+                                          //         .quantityWasted
+                                          //         .toValue(),
+                                          //     widget.quantityWasted
+                                          //                 .toString()
+                                          //                 .length ==
+                                          //             1
+                                          //         ? "0${widget.quantityWasted}"
+                                          //         : widget.quantityWasted
+                                          //             .toString(),
+                                          //   ),
+                                          // if (widget
+                                          //     .isReadministrationUnSuccessful)
+                                          //   const AdditionalField(
+                                          //     'unsuccessfulDelivery',
+                                          //     'true',
+                                          //   ),
+                                          // if (widget.productVariantId != null)
+                                          //   AdditionalField(
+                                          //     'productVariantId',
+                                          //     widget.productVariantId,
+                                          //   ),
                                           AdditionalField(
                                             additional_fields_local
                                                 .AdditionalFieldsType
@@ -334,20 +337,19 @@ class CustomReferBeneficiarySMCPageState
                                         id: null,
                                       ),
                                     );
-                                    // TODO: Currently, it's been shifted to the zero dose flow
 
-                                    // context.read<DeliverInterventionBloc>().add(
-                                    //       DeliverInterventionSubmitEvent(
-                                    //         task: task,
-                                    //         isEditing: false,
-                                    //         boundaryModel: context.boundary,
-                                    //       ),
-                                    //     );
-                                    // final searchBloc =
-                                    //     context.read<SearchHouseholdsBloc>();
-                                    // searchBloc.add(
-                                    //   const SearchHouseholdsClearEvent(),
-                                    // );
+                                    context.read<DeliverInterventionBloc>().add(
+                                          DeliverInterventionSubmitEvent(
+                                            task: task,
+                                            isEditing: false,
+                                            boundaryModel: context.boundary,
+                                          ),
+                                        );
+                                    final searchBloc =
+                                        context.read<SearchHouseholdsBloc>();
+                                    searchBloc.add(
+                                      const SearchHouseholdsClearEvent(),
+                                    );
 
                                     final reloadState =
                                         context.read<HouseholdOverviewBloc>();
@@ -363,21 +365,11 @@ class CustomReferBeneficiarySMCPageState
                                       },
                                     ).then(
                                       (value) => context.router.popAndPush(
-                                        ZeroDoseCheckRoute(
+                                        CustomHouseholdAcknowledgementRoute(
+                                          enableViewHousehold: true,
                                           eligibilityAssessmentType:
-                                              EligibilityAssessmentType.smc,
-                                          isAdministration: false,
-                                          task: task,
-                                          projectBeneficiaryClientReferenceId: task
-                                                  .projectBeneficiaryClientReferenceId ??
-                                              widget
-                                                  .projectBeneficiaryClientRefId,
+                                              EligibilityAssessmentType.vas,
                                         ),
-                                        // CustomHouseholdAcknowledgementRoute(
-                                        //   enableViewHousehold: true,
-                                        //   eligibilityAssessmentType:
-                                        //       EligibilityAssessmentType.vas,
-                                        // ),
                                       ),
                                     );
                                   }

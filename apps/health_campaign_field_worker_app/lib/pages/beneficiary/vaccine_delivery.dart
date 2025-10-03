@@ -115,7 +115,7 @@ class _VaccineDeliveryPageState extends LocalizedState<VaccineDeliveryPage> {
     double? latitude,
     double? longitude,
     IndividualModel? selectedIndividual,
-    List<String>? vaccineDeliveryDoseCodes,
+    List<String>? notDeliveredVaccineDoseCodes,
   }) {
     // Assumption here productVariantDelivered will always have one item
 
@@ -174,7 +174,7 @@ class _VaccineDeliveryPageState extends LocalizedState<VaccineDeliveryPage> {
 
     DoseStatus doseStatus = getDoseStatus(
       availedVaccineDoseCodes.toList(),
-      (vaccineDeliveryDoseCodes ?? []),
+      (notDeliveredVaccineDoseCodes ?? []),
     );
 
     // Update the task with information from the form and other context
@@ -195,11 +195,11 @@ class _VaccineDeliveryPageState extends LocalizedState<VaccineDeliveryPage> {
           ),
           AdditionalField(
             AdditionalFieldsType.selectedVaccines.toValue(),
-            json.encode(availedVaccineDoseCodes.toList()),
+            availedVaccineDoseCodes.join("."),
           ),
           AdditionalField(
             AdditionalFieldsType.noSelectedVaccines.toValue(),
-            json.encode((vaccineDeliveryDoseCodes ?? [])),
+            (notDeliveredVaccineDoseCodes ?? []).join("."),
           ),
           AdditionalField(
             AdditionalFieldsType.cycleIndex.toValue(),
@@ -261,7 +261,7 @@ class _VaccineDeliveryPageState extends LocalizedState<VaccineDeliveryPage> {
     double? latitude,
     double? longitude,
     IndividualModel? selectedIndividual,
-    List<String>? vaccineDeliveryDoseCodes,
+    List<String>? notDeliveredVaccineDoseCodes,
   }) {
     var clientReferenceId = IdGen.i.identifier;
     final currentMonth = form.control(_currentMonthKey).value as String?;
@@ -272,14 +272,21 @@ class _VaccineDeliveryPageState extends LocalizedState<VaccineDeliveryPage> {
     final deliveryComment = form.control(_deliveryCommentKey).value as String?;
     DoseStatus doseStatus = getDoseStatus(
       availedVaccineDoseCodes.toList(),
-      (vaccineDeliveryDoseCodes ?? []),
+      (notDeliveredVaccineDoseCodes ?? []),
     );
     DateTime nextDateOfDelivery = DateTime(
-        DateTime.now().year, DateTime.now().month, DateTime.now().day + 28);
+        DateTime.now().year,
+        DateTime.now().month,
+        DateTime.now().day,
+        DateTime.now().hour,
+        DateTime.now().minute + 5);
     TaskModel task = TaskModel(
       projectBeneficiaryClientReferenceId: projectBeneficiaryClientReferenceId,
       clientReferenceId: clientReferenceId,
-      address: address,
+      address: address?.copyWith(
+        relatedClientReferenceId: clientReferenceId,
+        id: null,
+      ),
       tenantId: RegistrationDeliverySingleton().tenantId,
       rowVersion: 1,
       auditDetails: AuditDetails(
@@ -332,11 +339,11 @@ class _VaccineDeliveryPageState extends LocalizedState<VaccineDeliveryPage> {
           ),
           AdditionalField(
             AdditionalFieldsType.selectedVaccines.toValue(),
-            json.encode(availedVaccineDoseCodes.toList()),
+            availedVaccineDoseCodes.join("."),
           ),
           AdditionalField(
             AdditionalFieldsType.noSelectedVaccines.toValue(),
-            json.encode((vaccineDeliveryDoseCodes ?? [])),
+            (notDeliveredVaccineDoseCodes ?? []).join("."),
           ),
           AdditionalField(
             AdditionalFieldsType.cycleIndex.toValue(),
@@ -408,159 +415,6 @@ class _VaccineDeliveryPageState extends LocalizedState<VaccineDeliveryPage> {
 
     return task;
   }
-
-  // TaskModel _getNextDoseTaskModel(
-  //   BuildContext context, {
-  //   required FormGroup form,
-  //   int? cycle,
-  //   int? dose,
-  //   String? projectBeneficiaryClientReferenceId,
-  //   AddressModel? address,
-  //   double? latitude,
-  //   double? longitude,
-  //   IndividualModel? selectedIndividual,
-  // }) {
-  //   var clientReferenceId = IdGen.i.identifier;
-  //   final currentMonth = form.control(_currentMonthKey).value as String?;
-  //   final dateOfVaccination =
-  //       form.control(_dateOfVaccinationKey).value as String?;
-  //   final doseAdministeredBy =
-  //       form.control(_doseAdministeredByKey).value as String?;
-  //   final deliveryComment = form.control(_deliveryCommentKey).value as String?;
-  //   DateTime dateOfDelivery = DateTime(
-  //       DateTime.now().year, DateTime.now().month, DateTime.now().day + 28);
-  //   DoseStatus doseStatus = getDoseStatus(
-  //     availedVaccineDoseCodes.toList(),
-  //     vaccineDeliveryDoseCodes.toList(),
-  //   );
-  //   TaskModel task = TaskModel(
-  //     projectBeneficiaryClientReferenceId: projectBeneficiaryClientReferenceId,
-  //     clientReferenceId: clientReferenceId,
-  //     address: address,
-  //     tenantId: RegistrationDeliverySingleton().tenantId,
-  //     rowVersion: 1,
-  //     auditDetails: AuditDetails(
-  //       createdBy: RegistrationDeliverySingleton().loggedInUserUuid!,
-  //       createdTime: context.millisecondsSinceEpoch(),
-  //       lastModifiedBy: RegistrationDeliverySingleton().loggedInUserUuid!,
-  //       lastModifiedTime: DateTime.now().millisecondsSinceEpoch,
-  //     ),
-  //     clientAuditDetails: ClientAuditDetails(
-  //       createdBy: RegistrationDeliverySingleton().loggedInUserUuid!,
-  //       createdTime: context.millisecondsSinceEpoch(),
-  //       lastModifiedBy: RegistrationDeliverySingleton().loggedInUserUuid!,
-  //       lastModifiedTime: DateTime.now().millisecondsSinceEpoch,
-  //     ),
-  //     projectId: RegistrationDeliverySingleton().projectId,
-  //     resources: nextVaccineDoseData
-  //         .map((e) => TaskResourceModel(
-  //               taskclientReferenceId: clientReferenceId,
-  //               clientReferenceId: IdGen.i.identifier,
-  //               productVariantId: e.productVariationId,
-  //               isDelivered: true,
-  //               tenantId: RegistrationDeliverySingleton().tenantId,
-  //               rowVersion: 1,
-  //               quantity: e.numberOfDose.toString(),
-  //               clientAuditDetails: ClientAuditDetails(
-  //                 createdBy: RegistrationDeliverySingleton().loggedInUserUuid!,
-  //                 createdTime: context.millisecondsSinceEpoch(),
-  //               ),
-  //               auditDetails: AuditDetails(
-  //                 createdBy: RegistrationDeliverySingleton().loggedInUserUuid!,
-  //                 createdTime: context.millisecondsSinceEpoch(),
-  //               ),
-  //             ))
-  //         .toList(),
-  //     status: Status.delivered.toValue(),
-  //     additionalFields: TaskAdditionalFields(
-  //       version: 1,
-  //       fields: [
-  //         AdditionalField(
-  //           AdditionalFieldsType.dateOfDelivery.toValue(),
-  //           dateOfDelivery.millisecondsSinceEpoch.toString(),
-  //         ),
-  //         AdditionalField(
-  //           AdditionalFieldsType.doseStatus.toValue(),
-  //           doseStatus.name,
-  //         ),
-  //         AdditionalField(
-  //           AdditionalFieldsType.selectedVaccines.toValue(),
-  //           json.encode(availedVaccineDoseCodes.toList()),
-  //         ),
-  //         AdditionalField(
-  //           AdditionalFieldsType.noSelectedVaccines.toValue(),
-  //           json.encode(vaccineDeliveryDoseCodes.toList()),
-  //         ),
-  //         AdditionalField(
-  //           AdditionalFieldsType.cycleIndex.toValue(),
-  //           "0${cycle ?? 1}",
-  //         ),
-  //         AdditionalField(
-  //           AdditionalFieldsType.doseIndex.toValue(),
-  //           "0${dose ?? 1}",
-  //         ),
-  //         AdditionalField(
-  //           AdditionalFieldsType.deliveryStrategy.toValue(),
-  //           DeliverStrategyType.direct.toValue(),
-  //         ),
-  //         if (latitude != null)
-  //           AdditionalField(
-  //             AdditionalFieldsType.latitude.toValue(),
-  //             latitude,
-  //           ),
-  //         if (longitude != null)
-  //           AdditionalField(
-  //             AdditionalFieldsType.longitude.toValue(),
-  //             longitude,
-  //           ),
-  //         if (currentMonth != null)
-  //           AdditionalField(
-  //             AdditionalFieldsType.currentMonth.toValue(),
-  //             currentMonth,
-  //           ),
-  //         if (dateOfVaccination != null)
-  //           AdditionalField(
-  //             AdditionalFieldsType.dateOfVaccination.toValue(),
-  //             dateOfVaccination,
-  //           ),
-  //         if (doseAdministeredBy != null)
-  //           AdditionalField(
-  //             AdditionalFieldsType.doseAdministeredBy.toValue(),
-  //             doseAdministeredBy,
-  //           ),
-  //         if (deliveryComment != null &&
-  //             deliveryComment.trim().toString().isNotEmpty)
-  //           AdditionalField(
-  //             AdditionalFieldsType.deliveryComment.toValue(),
-  //             deliveryComment,
-  //           ),
-  //         if (selectedIndividual != null)
-  //           AdditionalField(
-  //             AdditionalFieldsType.age.toValue(),
-  //             getIndividualAge(selectedIndividual),
-  //           ),
-  //         if (selectedIndividual?.gender != null)
-  //           AdditionalField(
-  //             AdditionalFieldsType.gender.toValue(),
-  //             selectedIndividual?.gender,
-  //           ),
-  //         if (selectedIndividual?.clientReferenceId != null)
-  //           AdditionalField(
-  //             AdditionalFieldsType.individualClientReferenceId.toValue(),
-  //             selectedIndividual?.clientReferenceId,
-  //           ),
-  //         if (selectedIndividual != null &&
-  //             getBeneficiaryId(selectedIndividual) != null)
-  //           AdditionalField(
-  //             AdditionalFieldsType.uniqueBeneficiaryId.toValue(),
-  //             getBeneficiaryId(selectedIndividual),
-  //           ),
-  //       ],
-  //     ),
-  //   );
-
-  //   return task;
-  // }
 
   @override
   initState() {
@@ -641,6 +495,17 @@ class _VaccineDeliveryPageState extends LocalizedState<VaccineDeliveryPage> {
                                         );
                                         return;
                                       }
+                                      availedVaccineDoseCodes.addAll(
+                                        currentVaccineDoseDataSelected
+                                            .map((e) => e.vaccineCode),
+                                      );
+                                      List<String>
+                                          notDeliveredVaccineDoseCodes =
+                                          allEligibleVaccineDoseCodes
+                                              .whereNot((code) =>
+                                                  availedVaccineDoseCodes
+                                                      .contains(code))
+                                              .toList();
                                       final submit = await showCustomPopup(
                                         context: context,
                                         builder: (popupContext) => Popup(
@@ -689,12 +554,14 @@ class _VaccineDeliveryPageState extends LocalizedState<VaccineDeliveryPage> {
                                           ],
                                         ),
                                       ) as bool;
+
                                       if (submit == true) {
                                         handleLocationState(
                                           locationState,
                                           context,
                                           form,
                                           widget.individual,
+                                          notDeliveredVaccineDoseCodes,
                                         );
                                       }
                                     },
@@ -936,6 +803,7 @@ class _VaccineDeliveryPageState extends LocalizedState<VaccineDeliveryPage> {
     BuildContext context,
     FormGroup form,
     IndividualModel? selectedIndividual,
+    List<String> notDeliveredVaccineDoseCodes,
   ) {
     if (context.mounted) {
       DigitComponentsUtils.showDialog(
@@ -947,12 +815,8 @@ class _VaccineDeliveryPageState extends LocalizedState<VaccineDeliveryPage> {
       Future.delayed(const Duration(seconds: 0), () {
         // After delay, hide the initial dialog
         DigitComponentsUtils.hideDialog(context);
-        handleCapturedLocationState(
-          locationState,
-          context,
-          form,
-          selectedIndividual,
-        );
+        handleCapturedLocationState(locationState, context, form,
+            selectedIndividual, notDeliveredVaccineDoseCodes);
       });
     }
   }
@@ -962,13 +826,10 @@ class _VaccineDeliveryPageState extends LocalizedState<VaccineDeliveryPage> {
     BuildContext context,
     FormGroup form,
     IndividualModel? selectedIndividual,
+    List<String> notDeliveredVaccineDoseCodes,
   ) async {
     final lat = locationState.latitude;
     final long = locationState.longitude;
-
-    List<String> vaccineDeliveryDoseCodes = allEligibleVaccineDoseCodes
-        .whereNot((code) => availedVaccineDoseCodes.contains(code))
-        .toList();
 
     TaskModel updatedTask = _getTaskModel(
       context,
@@ -981,7 +842,7 @@ class _VaccineDeliveryPageState extends LocalizedState<VaccineDeliveryPage> {
       latitude: lat,
       longitude: long,
       selectedIndividual: selectedIndividual,
-      vaccineDeliveryDoseCodes: vaccineDeliveryDoseCodes,
+      notDeliveredVaccineDoseCodes: notDeliveredVaccineDoseCodes,
     );
 
     int currentDoseIndex = int.parse(updatedTask.additionalFields?.fields
@@ -1001,7 +862,7 @@ class _VaccineDeliveryPageState extends LocalizedState<VaccineDeliveryPage> {
       latitude: lat,
       longitude: long,
       selectedIndividual: selectedIndividual,
-      vaccineDeliveryDoseCodes: vaccineDeliveryDoseCodes,
+      notDeliveredVaccineDoseCodes: notDeliveredVaccineDoseCodes,
     );
 
     context.read<VaccineDeliveryBloc>().add(

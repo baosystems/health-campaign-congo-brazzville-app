@@ -103,7 +103,15 @@ class CustomMemberCard extends StatelessWidget {
       return false;
     }
 
-    String? timeStamp = tasks.first.additionalFields?.fields
+    List<TaskModel> futureTasks = tasks
+        .where((task) => task.status == Status.delivered.toValue())
+        .toList();
+
+    if (futureTasks.isEmpty) {
+      return false;
+    }
+
+    String? timeStamp = futureTasks.first.additionalFields?.fields
         .firstWhereOrNull(
             (e) => e.key == AdditionalFieldsType.nextDateOfDelivery.toValue())
         ?.value;
@@ -312,7 +320,7 @@ class CustomMemberCard extends StatelessWidget {
     bool isUnderVaccinated = checkBeneficiaryUnderVaccinated(doseStatusTasks);
     bool isFullyVaccinated = checkBeneficiaryZeroDoseDelivered(doseStatusTasks);
 
-    bool isDeliveryAvailable = _checkIfFutureTaskPresent(context);
+    bool isNextDeliveryAvailable = _checkIfFutureTaskPresent(context);
 
     bool isHPVEligible =
         gender == Gender.female && ageInMonths >= 108 && ageInMonths < 120;
@@ -322,7 +330,6 @@ class CustomMemberCard extends StatelessWidget {
             isBeneficiaryRefuse ||
             isBeneficiaryAbsent ||
             isSideEffect ||
-            !isDeliveryAvailable ||
             isBeneficiaryReferred
         ? const Offstage()
         : BlocBuilder<VaccineProductVariantBloc, VaccineProductVariantState>(
@@ -400,7 +407,8 @@ class CustomMemberCard extends StatelessWidget {
                         );
                       } else if (isZeroDose ||
                           isUnderVaccinated ||
-                          isFullyVaccinated) {
+                          isFullyVaccinated ||
+                          isNextDeliveryAvailable) {
                         return Column(
                           children: [
                             DigitElevatedButton(

@@ -174,7 +174,7 @@ class _VaccineSelectionPageState extends LocalizedState<VaccineSelectionPage> {
           ),
           AdditionalField(
             AdditionalFieldsType.doseStatus.toValue(),
-            getDoseStatus(selectedCodes, noSelectedCodes).name,
+            _getDoseStatus(selectedCodes, noSelectedCodes).name,
           ),
           AdditionalField(
             AdditionalFieldsType.selectedVaccines.toValue(),
@@ -669,7 +669,7 @@ class _VaccineSelectionPageState extends LocalizedState<VaccineSelectionPage> {
     );
   }
 
-  DoseStatus getDoseStatus(
+  DoseStatus _getDoseStatus(
       List<String> selectedCodes, List<String> noSelectedCodes) {
     if (selectedCodes.isEmpty && noSelectedCodes.isEmpty) {
       return DoseStatus.none;
@@ -714,11 +714,10 @@ class _VaccineSelectionPageState extends LocalizedState<VaccineSelectionPage> {
     }, child:
         BlocBuilder<VaccineProductVariantBloc, VaccineProductVariantState>(
       builder: (context, vaccineVariantsBloc) {
+        List<VaccineDoseData> vaccineDataList =
+            vaccineVariantsBloc.vaccineDataList ?? [];
         return BlocBuilder<VaccineSearchBloc, VaccineSearchState>(
           builder: (context, vaccineSearchBloc) {
-            List<VaccineDoseData> vaccineDataList =
-                vaccineVariantsBloc.vaccineDataList ?? [];
-
             Map<int, Set<String>>? eligibleVaccinesDoseCodeByAgeIndex =
                 vaccineSearchBloc.eligibleVaccinesDoseCodeByAgeIndex;
 
@@ -1259,7 +1258,7 @@ class _VaccineSelectionPageState extends LocalizedState<VaccineSelectionPage> {
                                               AdditionalField(
                                                 AdditionalFieldsType.doseStatus
                                                     .toValue(),
-                                                getDoseStatus(selectedCodes,
+                                                _getDoseStatus(selectedCodes,
                                                         noSelectedCodes)
                                                     .name,
                                               ),

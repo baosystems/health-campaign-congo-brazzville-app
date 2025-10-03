@@ -171,7 +171,7 @@ class ZeroDoseCheckPageState extends LocalizedState<ZeroDoseCheckPage> {
           if (availedVaccines.isNotEmpty)
             AdditionalField(
               AdditionalFieldsType.selectedVaccines.toValue(),
-              json.encode(availedVaccines),
+              availedVaccines.join("."),
             ),
           if (ineligibilityReasons.isNotEmpty)
             AdditionalField(

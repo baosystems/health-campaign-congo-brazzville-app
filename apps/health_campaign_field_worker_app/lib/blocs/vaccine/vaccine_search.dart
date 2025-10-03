@@ -65,14 +65,14 @@ class VaccineSearchBloc extends Bloc<VaccineSearchEvent, VaccineSearchState> {
       },
     ).toList();
 
-    final availedVaccineCodesMap = vaccineIdentificationTasks
+    String availedVaccineCodesMap = vaccineIdentificationTasks
             .first.additionalFields?.fields
             .firstWhereOrNull(
                 (e) => e.key == AdditionalFieldsType.selectedVaccines.toValue())
             ?.value ??
         "";
 
-    List<String> availedVaccineDoseCodes = json.decode(availedVaccineCodesMap);
+    List<String> availedVaccineDoseCodes = availedVaccineCodesMap.split(".");
 
     emit(state.copyWith(
       loading: false,
@@ -85,12 +85,12 @@ class VaccineSearchBloc extends Bloc<VaccineSearchEvent, VaccineSearchState> {
     VaccineSearchEligibleVaccinesEvent event,
     VaccineSearchEmitter emit,
   ) {
-    List<VaccineDoseData> vaccineData = event.vaccineDataList ?? [];
+    List<VaccineDoseData> vaccineDataList = event.vaccineDataList ?? [];
 
     final List<int> ageIndex =
-        (vaccineData.map((e) => e.ageInDays).toSet().toList()..sort());
+        (vaccineDataList.map((e) => e.ageInDays).toSet().toList()..sort());
     final Map<int, List<String>> ageToVaccineCodes = {};
-    for (final v in vaccineData) {
+    for (final v in vaccineDataList) {
       ageToVaccineCodes.putIfAbsent(v.ageInDays, () => []);
       ageToVaccineCodes[v.ageInDays]!.add(v.doseCode);
     }

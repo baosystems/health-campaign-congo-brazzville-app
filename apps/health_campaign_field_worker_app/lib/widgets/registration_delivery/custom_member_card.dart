@@ -103,12 +103,21 @@ class CustomMemberCard extends StatelessWidget {
       return false;
     }
 
-    return tasks?.firstWhereOrNull((e) =>
-            e.additionalFields?.fields.firstWhereOrNull((field) =>
-                field.key == AdditionalFieldsType.cycleIndex.toValue() &&
-                int.tryParse(field.value)! > context.selectedCycle!.id) !=
-            null) !=
-        null;
+    String? timeStamp = tasks.first.additionalFields?.fields
+        .firstWhereOrNull(
+            (e) => e.key == AdditionalFieldsType.nextDateOfDelivery.toValue())
+        ?.value;
+    if (timeStamp == null) {
+      return false;
+    }
+
+    DateTime nextDeliveryDate =
+        DateTime.fromMillisecondsSinceEpoch(int.parse(timeStamp));
+
+    if (nextDeliveryDate.isAfter(DateTime.now())) {
+      return true;
+    }
+    return false;
   }
 
   List<TaskModel>? _getCurrentCycleData(BuildContext context) {
@@ -285,7 +294,6 @@ class CustomMemberCard extends StatelessWidget {
                 .parse(individual.dateOfBirth!))
         : digits.DigitDateUtils.calculateAge(DateTime.now());
     final ageInMonths = age.years * 12 + age.months;
-    final ageInDays = (age.years * 12 * 30) + (age.months * 30) + age.days;
     Gender? gender = individual.gender;
 
     List<TaskModel>? smcTasks = _getSMCStatusData(context);
@@ -304,6 +312,8 @@ class CustomMemberCard extends StatelessWidget {
     bool isUnderVaccinated = checkBeneficiaryUnderVaccinated(doseStatusTasks);
     bool isFullyVaccinated = checkBeneficiaryZeroDoseDelivered(doseStatusTasks);
 
+    bool isDeliveryAvailable = _checkIfFutureTaskPresent(context);
+
     bool isHPVEligible =
         gender == Gender.female && ageInMonths >= 108 && ageInMonths < 120;
 
@@ -312,10 +322,26 @@ class CustomMemberCard extends StatelessWidget {
             isBeneficiaryRefuse ||
             isBeneficiaryAbsent ||
             isSideEffect ||
+            !isDeliveryAvailable ||
             isBeneficiaryReferred
         ? const Offstage()
         : BlocBuilder<VaccineProductVariantBloc, VaccineProductVariantState>(
             builder: (context, vaccineVariantState) {
+              context.read<VaccineSearchBloc>().add(
+                    VaccineSearchEvent.handleTaskSearch(
+                      projectBeneficiaryClientReferenceId:
+                          projectBeneficiaryClientReferenceId!,
+                    ),
+                  );
+              context
+                  .read<VaccineSearchBloc>()
+                  .add(VaccineSearchEvent.eligibleVaccinesSearch(
+                    ageInMonths: ageInMonths,
+                    vaccineDataList: vaccineVariantState.vaccineDataList ?? [],
+                    vaccineDoseDataVariation:
+                        vaccineVariantState.vaccineDoseDataVariation ?? {},
+                  ));
+
               return Column(
                 children: [
                   if (doseStatusTasks == null || doseStatusTasks.isEmpty)
@@ -337,15 +363,7 @@ class CustomMemberCard extends StatelessWidget {
                             individualModel: individual,
                           ),
                         );
-                        context.read<VaccineSearchBloc>().add(
-                              VaccineSearchEvent.handleSearch(
-                                projectBeneficiaryClientReferenceId:
-                                    projectBeneficiaryClientReferenceId!,
-                                ageInDays: ageInDays,
-                                vaccineDataList:
-                                    vaccineVariantState.vaccineData,
-                              ),
-                            );
+
                         context.router.push(
                           ZeroDoseCheckRoute(
                             eligibilityAssessmentType:

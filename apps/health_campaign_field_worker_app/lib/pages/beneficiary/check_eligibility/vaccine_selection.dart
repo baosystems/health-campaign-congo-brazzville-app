@@ -1,34 +1,23 @@
-// import 'dart:math';
-
-import 'dart:async';
-import 'dart:convert';
-import 'dart:ffi';
-import 'dart:math';
-
 import 'package:collection/collection.dart';
 import 'package:digit_components/widgets/atoms/digit_toaster.dart';
-import 'package:digit_components/widgets/digit_checkbox_tile.dart';
 import 'package:digit_components/widgets/digit_dialog.dart';
 import 'package:digit_components/widgets/digit_elevated_button.dart';
-import 'package:digit_data_model/data/local_store/sql_store/tables/service.dart';
 import 'package:digit_ui_components/digit_components.dart';
 import 'package:digit_ui_components/services/location_bloc.dart';
 import 'package:digit_ui_components/widgets/molecules/digit_card.dart';
 // import 'package:drift/drift.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:flutter_local_notifications/flutter_local_notifications.dart';
-import 'package:health_campaign_field_worker_app/blocs/app_initialization/app_initialization.dart';
 import 'package:health_campaign_field_worker_app/data/local_store/no_sql/schema/app_configuration.dart';
 import 'package:registration_delivery/registration_delivery.dart';
 import 'package:registration_delivery/router/registration_delivery_router.gm.dart';
 import '../../../blocs/localization/app_localization.dart';
-import '../../../data/repositories/custom_task.dart';
+import '../../../blocs/vaccine/vaccine_product_variants.dart';
+import '../../../blocs/vaccine/vaccine_search.dart';
 import '../../../models/entities/additional_fields_type.dart';
 import '../../../models/entities/roles_type.dart';
 import 'package:registration_delivery/blocs/household_overview/household_overview.dart';
 import 'package:survey_form/survey_form.dart';
-import '../../../models/entities/status.dart';
 import '../../../router/app_router.dart';
 import '../../../utils/app_enums.dart';
 import '../../../utils/constants.dart';
@@ -47,7 +36,6 @@ import '../../../widgets/custom_back_navigation.dart';
 import '../../../widgets/showcase/showcase_wrappers.dart';
 import 'package:registration_delivery/utils/i18_key_constants.dart' as i18;
 import '../../../utils/i18_key_constants.dart' as i18_local;
-import 'package:digit_components/widgets/atoms/checkbox_icon.dart';
 import 'package:survey_form/utils/i18_key_constants.dart' as i18_survey_form;
 
 //  Add this import for the radio button component.
@@ -63,7 +51,6 @@ class VaccineSelectionPage extends LocalizedStatefulWidget {
   final TaskModel task;
   final bool? hasSideEffects;
   final SideEffectModel sideEffect;
-  final bool isZeroDoseAlreadyDone;
 
   const VaccineSelectionPage({
     super.key,
@@ -76,7 +63,6 @@ class VaccineSelectionPage extends LocalizedStatefulWidget {
     required this.task,
     this.hasSideEffects = false,
     required this.sideEffect,
-    this.isZeroDoseAlreadyDone = false,
   });
 
   @override
@@ -140,6 +126,73 @@ class _VaccineSelectionPageState extends LocalizedState<VaccineSelectionPage> {
 
   final String _yes = "YES";
   final String _no = "NO";
+
+  TaskModel _getTaskModel() {
+    final clientReferenceId = IdGen.i.identifier;
+    List<String?> ineligibilityReasons = [];
+    ineligibilityReasons.add(Constants.ineligibleForBCG);
+    ineligibilityReasons.add(Constants.ineligibleForRota);
+    return TaskModel(
+      projectBeneficiaryClientReferenceId:
+          widget.projectBeneficiaryClientReferenceId,
+      clientReferenceId: clientReferenceId,
+      tenantId: envConfig.variables.tenantId,
+      rowVersion: 1,
+      auditDetails: AuditDetails(
+        createdBy: context.loggedInUserUuid,
+        createdTime: context.millisecondsSinceEpoch(),
+      ),
+      projectId: context.projectId,
+      status: status_local.Status.beneficiaryInEligible.toValue(),
+      clientAuditDetails: ClientAuditDetails(
+        createdBy: context.loggedInUserUuid,
+        createdTime: context.millisecondsSinceEpoch(),
+        lastModifiedBy: context.loggedInUserUuid,
+        lastModifiedTime: context.millisecondsSinceEpoch(),
+      ),
+      additionalFields: TaskAdditionalFields(
+        version: 1,
+        fields: [
+          AdditionalField(
+            AdditionalFieldsType.cycleIndex.toValue(),
+            "0${context.selectedCycle?.id}",
+          ),
+          if (widget.hasSideEffects == false) ...[
+            AdditionalField(
+              AdditionalFieldsType.ineligibleReasons.toValue(),
+              ineligibilityReasons.join(","),
+            ),
+          ] else ...[
+            AdditionalField(AdditionalFieldsType.ineligibleReasons.toValue(),
+                ["SIDE_EFFECTS"].join(",")),
+            AdditionalField(
+                AdditionalFieldsType.hasSideEffects.toValue(), true.toString()),
+          ],
+          AdditionalField(
+            AdditionalFieldsType.deliveryType.toValue(),
+            EligibilityAssessmentStatus.smcDone.name,
+          ),
+          AdditionalField(
+            AdditionalFieldsType.doseStatus.toValue(),
+            getDoseStatus(selectedCodes, noSelectedCodes).name,
+          ),
+          AdditionalField(
+            AdditionalFieldsType.selectedVaccines.toValue(),
+            selectedCodes.join('.'),
+          ),
+          AdditionalField(
+            AdditionalFieldsType.noSelectedVaccines.toValue(),
+            noSelectedCodes.join('.'),
+          ),
+          ...getIndividualAdditionalFields(widget.individual)
+        ],
+      ),
+      address: widget.individual?.address?.first.copyWith(
+        relatedClientReferenceId: clientReferenceId,
+        id: null,
+      ),
+    );
+  }
 
   Widget _buildGuidancePanel({
     required BuildContext context,
@@ -237,113 +290,119 @@ class _VaccineSelectionPageState extends LocalizedState<VaccineSelectionPage> {
   @override
   void initState() {
     context.read<LocationBloc>().add(const LocationEvent.load());
-    if (!widget.isZeroDoseAlreadyDone) {
-      context.read<ServiceBloc>().add(ServiceSurveyFormEvent(
-            value: Random().nextInt(100).toString(),
-            submitTriggered: true,
-          ));
-    } else {
-      context.read<ServiceBloc>().add(ServiceSearchEvent(
-            serviceSearchModel: ServiceSearchModel(
-              relatedClientReferenceId:
-                  widget.projectBeneficiaryClientReferenceId,
-            ),
-          ));
-    }
-    fetchTasksData();
+    context.read<ServiceBloc>().add(ServiceSearchEvent(
+          serviceSearchModel: ServiceSearchModel(
+            relatedClientReferenceId:
+                widget.projectBeneficiaryClientReferenceId,
+          ),
+        ));
+    // if (!widget.isZeroDoseAlreadyDone) {
+    //   context.read<ServiceBloc>().add(ServiceSurveyFormEvent(
+    //         value: Random().nextInt(100).toString(),
+    //         submitTriggered: true,
+    //       ));
+    // } else {
+    //   context.read<ServiceBloc>().add(ServiceSearchEvent(
+    //         serviceSearchModel: ServiceSearchModel(
+    //           relatedClientReferenceId:
+    //               widget.projectBeneficiaryClientReferenceId,
+    //         ),
+    //       ));
+    // }
+    // fetchTasksData();
     super.initState();
   }
 
-  Future<void> fetchTasksData() async {
-    final taskDataRepository =
-        context.read<LocalRepository<TaskModel, TaskSearchModel>>()
-            as CustomTaskLocalRepository;
+  // Future<void> fetchTasksData() async {
+  //   final taskDataRepository =
+  //       context.read<LocalRepository<TaskModel, TaskSearchModel>>()
+  //           as CustomTaskLocalRepository;
 
-    List<TaskModel> tasksData = await taskDataRepository.search(
-      TaskSearchModel(
-        projectBeneficiaryClientReferenceId:
-            widget.projectBeneficiaryClientReferenceId != null
-                ? [widget.projectBeneficiaryClientReferenceId!]
-                : null,
-      ),
-    );
+  //   List<TaskModel> tasksData = await taskDataRepository.search(
+  //     TaskSearchModel(
+  //       projectBeneficiaryClientReferenceId:
+  //           widget.projectBeneficiaryClientReferenceId != null
+  //               ? [widget.projectBeneficiaryClientReferenceId!]
+  //               : null,
+  //     ),
+  //   );
 
-    List<TaskModel> lastVaccinationTask = tasksData.where(
-      (task) {
-        final fields = task.additionalFields?.fields;
-        if (fields == null) return false;
+  //   List<TaskModel> lastVaccinationTask = tasksData.where(
+  //     (task) {
+  //       final fields = task.additionalFields?.fields;
+  //       if (fields == null) return false;
 
-        final hasZeroDoseStatus = fields.any(
-          (e) => e.key == AdditionalFieldsType.doseStatus.toValue(),
-        );
-        final hasSelectedVaccines = fields.any(
-          (e) => e.key == AdditionalFieldsType.selectedVaccines.toValue(),
-        );
-        final hasNoSelectedVaccines = fields.any(
-          (e) => e.key == AdditionalFieldsType.noSelectedVaccines.toValue(),
-        );
-        return hasZeroDoseStatus &&
-            (hasSelectedVaccines || hasNoSelectedVaccines);
-      },
-    ).toList();
+  //       final hasZeroDoseStatus = fields.any(
+  //         (e) => e.key == AdditionalFieldsType.doseStatus.toValue(),
+  //       );
+  //       final hasSelectedVaccines = fields.any(
+  //         (e) => e.key == AdditionalFieldsType.selectedVaccines.toValue(),
+  //       );
+  //       final hasNoSelectedVaccines = fields.any(
+  //         (e) => e.key == AdditionalFieldsType.noSelectedVaccines.toValue(),
+  //       );
+  //       return hasZeroDoseStatus &&
+  //           (hasSelectedVaccines || hasNoSelectedVaccines);
+  //     },
+  //   ).toList();
 
-    if (lastVaccinationTask.isNotEmpty) {
-      lastVaccinationTask.sort((a, b) {
-        final aCycle = a.additionalFields?.fields
-            .firstWhereOrNull(
-              (e) => e.key == AdditionalFieldsType.cycleIndex.toValue(),
-            )
-            ?.value;
-        final bCycle = b.additionalFields?.fields
-            .firstWhereOrNull(
-              (e) => e.key == AdditionalFieldsType.cycleIndex.toValue(),
-            )
-            ?.value;
+  //   if (lastVaccinationTask.isNotEmpty) {
+  //     lastVaccinationTask.sort((a, b) {
+  //       final aCycle = a.additionalFields?.fields
+  //           .firstWhereOrNull(
+  //             (e) => e.key == AdditionalFieldsType.cycleIndex.toValue(),
+  //           )
+  //           ?.value;
+  //       final bCycle = b.additionalFields?.fields
+  //           .firstWhereOrNull(
+  //             (e) => e.key == AdditionalFieldsType.cycleIndex.toValue(),
+  //           )
+  //           ?.value;
 
-        if (aCycle == bCycle) {
-          final aCreatedTime = a.auditDetails?.createdTime;
-          final bCreatedTime = b.auditDetails?.createdTime;
-          return (aCreatedTime != null && bCreatedTime != null)
-              ? aCreatedTime.compareTo(bCreatedTime)
-              : 0;
-        }
-        return (int.tryParse(aCycle ?? '0') ?? 0) -
-            (int.tryParse(bCycle ?? '0') ?? 0);
-      });
+  //       if (aCycle == bCycle) {
+  //         final aCreatedTime = a.auditDetails?.createdTime;
+  //         final bCreatedTime = b.auditDetails?.createdTime;
+  //         return (aCreatedTime != null && bCreatedTime != null)
+  //             ? aCreatedTime.compareTo(bCreatedTime)
+  //             : 0;
+  //       }
+  //       return (int.tryParse(aCycle ?? '0') ?? 0) -
+  //           (int.tryParse(bCycle ?? '0') ?? 0);
+  //     });
 
-      List<String> yesSelectedVaccines = [];
-      List<String> noSelectedVaccines = [];
-      // ignore: avoid_dynamic_calls
-      yesSelectedVaccines = ((lastVaccinationTask.last.additionalFields!.fields
-                  .firstWhereOrNull((e) =>
-                      e.key == AdditionalFieldsType.selectedVaccines.toValue())
-                  ?.value as String?) ??
-              '')
-          .split('.')
-          // ignore: avoid_dynamic_calls
-          .where((e) => e.isNotEmpty)
-          .toList();
+  //     List<String> yesSelectedVaccines = [];
+  //     List<String> noSelectedVaccines = [];
+  //     // ignore: avoid_dynamic_calls
+  //     yesSelectedVaccines = ((lastVaccinationTask.last.additionalFields!.fields
+  //                 .firstWhereOrNull((e) =>
+  //                     e.key == AdditionalFieldsType.selectedVaccines.toValue())
+  //                 ?.value as String?) ??
+  //             '')
+  //         .split('.')
+  //         // ignore: avoid_dynamic_calls
+  //         .where((e) => e.isNotEmpty)
+  //         .toList();
 
-      // ignore: avoid_dynamic_calls
-      noSelectedVaccines = ((lastVaccinationTask.last.additionalFields!.fields
-                  .firstWhereOrNull((e) =>
-                      e.key ==
-                      AdditionalFieldsType.noSelectedVaccines.toValue())
-                  ?.value as String?) ??
-              '')
-          .split('.')
-          // ignore: avoid_dynamic_calls
-          .where((e) => e.isNotEmpty)
-          .toList();
+  //     // ignore: avoid_dynamic_calls
+  //     noSelectedVaccines = ((lastVaccinationTask.last.additionalFields!.fields
+  //                 .firstWhereOrNull((e) =>
+  //                     e.key ==
+  //                     AdditionalFieldsType.noSelectedVaccines.toValue())
+  //                 ?.value as String?) ??
+  //             '')
+  //         .split('.')
+  //         // ignore: avoid_dynamic_calls
+  //         .where((e) => e.isNotEmpty)
+  //         .toList();
 
-      setState(() {
-        selectedCodes = yesSelectedVaccines;
-        noSelectedCodes = noSelectedVaccines;
-      });
-    }
-  }
+  //     setState(() {
+  //       selectedCodes = yesSelectedVaccines;
+  //       noSelectedCodes = noSelectedVaccines;
+  //     });
+  //   }
+  // }
 
-  bool isVaccineAllowedToShow({
+  bool _isVaccineAllowedToShow({
     required String vaccineCode,
     required List<String> allVaccineCodes,
   }) {
@@ -374,7 +433,7 @@ class _VaccineSelectionPageState extends LocalizedState<VaccineSelectionPage> {
     return selectedCodes.contains(prevCode);
   }
 
-  void saveResponses(Map<String, String?> responses) {
+  void _saveResponses(Map<String, String?> responses) {
     final newlyNoSelected = <String>[];
     for (var entry in responses.entries) {
       final key = entry.key;
@@ -429,14 +488,14 @@ class _VaccineSelectionPageState extends LocalizedState<VaccineSelectionPage> {
     }
   }
 
-  bool isValid({
+  bool _isValid({
     required Map<String, String?> responses,
     required List<String> allVaccineCodes,
     required List<String> vaccineCodes,
   }) {
     for (int i = 0; i < vaccineCodes.length; i++) {
       String vaccineCode = vaccineCodes[i];
-      if (isVaccineAllowedToShow(
+      if (_isVaccineAllowedToShow(
           vaccineCode: vaccineCode, allVaccineCodes: allVaccineCodes)) {
         if (responses[vaccineCode] == null) {
           return false;
@@ -467,7 +526,6 @@ class _VaccineSelectionPageState extends LocalizedState<VaccineSelectionPage> {
   Widget _buildVaccineRadioChecklist({
     required int index,
     required BuildContext context,
-    required Map<String, String> vaccineCodeToName,
     required Map<String, String?> vaccineResponses,
     required List<String> vaccineCodes,
   }) {
@@ -513,7 +571,7 @@ class _VaccineSelectionPageState extends LocalizedState<VaccineSelectionPage> {
                           width: spacer3,
                         ),
                         Expanded(
-                          child: Text(vaccineCodeToName[vaccineCode] ?? '',
+                          child: Text(localizations.translate(vaccineCode),
                               style: theme.textTheme.headlineMedium?.copyWith(
                                 fontWeight: FontWeight.w900,
                               )),
@@ -653,80 +711,36 @@ class _VaccineSelectionPageState extends LocalizedState<VaccineSelectionPage> {
           }
         },
       );
-    }, child: BlocBuilder<AppInitializationBloc, AppInitializationState>(
-      builder: (context, appInitState) {
-        List<VaccineData> vaccineDataList = [];
-        if (appInitState is AppInitialized) {
-          vaccineDataList = appInitState.appConfiguration.vaccinationData ?? [];
-        }
+    }, child:
+        BlocBuilder<VaccineProductVariantBloc, VaccineProductVariantState>(
+      builder: (context, vaccineVariantsBloc) {
+        return BlocBuilder<VaccineSearchBloc, VaccineSearchState>(
+          builder: (context, vaccineSearchBloc) {
+            List<VaccineDoseData> vaccineDataList =
+                vaccineVariantsBloc.vaccineDataList ?? [];
 
-        final dobStr = context
-            .read<HouseholdOverviewBloc>()
-            .state
-            .selectedIndividual
-            ?.dateOfBirth;
-        final ageInDays = calculateAgeInDaysFromDob(dobStr ?? '');
+            Map<int, Set<String>>? eligibleVaccinesDoseCodeByAgeIndex =
+                vaccineSearchBloc.eligibleVaccinesDoseCodeByAgeIndex;
 
-        final allVaccineCodes = [for (final v in vaccineDataList) v.code];
-        final Map<String, String> vaccineCodeToName = {
-          for (final v in vaccineDataList) v.code: v.name
-        };
+            final dobStr = context
+                .read<HouseholdOverviewBloc>()
+                .state
+                .selectedIndividual
+                ?.dateOfBirth;
+            final ageInDays = calculateAgeInDaysFromDob(dobStr ?? '');
 
-        final List<int> ageList =
-            (vaccineDataList.map((e) => e.ageInDays).toSet().toList()..sort());
+            final allVaccineCodes = [
+              for (final v in vaccineDataList) v.doseCode
+            ];
+            // final Map<String, String> vaccineCodeToName = {
+            //   for (final v in vaccineDataList) v.doseCode: v.name
+            // };
 
-        if (ageList.isEmpty) {
-          final pbId = widget.projectBeneficiaryClientReferenceId ??
-              context
-                  .read<HouseholdOverviewBloc>()
-                  .state
-                  .selectedIndividual
-                  ?.clientReferenceId ??
-              '';
-          return const SizedBox.shrink();
-        }
+            final List<int> ageList =
+                (vaccineDataList.map((e) => e.ageInDays).toSet().toList()
+                  ..sort());
 
-        final Map<int, List<String>> ageToVaccineCodes = {};
-        for (final v in vaccineDataList) {
-          ageToVaccineCodes.putIfAbsent(v.ageInDays, () => []);
-          ageToVaccineCodes[v.ageInDays]!.add(v.code);
-        }
-
-// Find last bucket allowed for the child age
-        int lastIndex = ageList.length - 1;
-        for (final age in ageList) {
-          if (age > ageInDays) {
-            lastIndex = ageList.indexOf(age) - 1;
-            break;
-          }
-        }
-// Clamp lastIndex to valid range
-        if (lastIndex < 0) lastIndex = 0;
-
-// Always clamp currentIndex before indexing
-        final int safeIndex = currentIndex.clamp(0, lastIndex);
-        final int bucketAge = ageList[safeIndex];
-
-// Build current bucket codes (filtering dose dependencies)
-        final List<String> rawCodes = List<String>.from(
-          ageToVaccineCodes[bucketAge] ?? const <String>[],
-        );
-        final List<String> currentVaccineCodes = [
-          for (final code in rawCodes)
-            if (isVaccineAllowedToShow(
-              vaccineCode: code,
-              allVaccineCodes: allVaccineCodes,
-            ))
-              code
-        ];
-
-// If current bucket ends up empty, move forward (or finish if we’re at the end)
-        if (currentVaccineCodes.isEmpty) {
-          WidgetsBinding.instance.addPostFrameCallback((_) async {
-            if (currentIndex < lastIndex) {
-              setState(() => currentIndex += 1);
-            } else {
-              // No more buckets to show: go final step (Reasons if any "NO", else submit)
+            if (ageList.isEmpty) {
               final pbId = widget.projectBeneficiaryClientReferenceId ??
                   context
                       .read<HouseholdOverviewBloc>()
@@ -734,524 +748,665 @@ class _VaccineSelectionPageState extends LocalizedState<VaccineSelectionPage> {
                       .selectedIndividual
                       ?.clientReferenceId ??
                   '';
+              return const SizedBox.shrink();
             }
-          });
-          return const SizedBox.shrink();
-        }
 
-// Pre-fill responses (so validators don’t trip)
-        final Map<String, String?> currentResponses = {};
-        for (final code in currentVaccineCodes) {
-          if (selectedCodes.contains(code)) {
-            currentResponses[code] = _yes;
-          } else if (noSelectedCodes.contains(code)) {
-            currentResponses[code] = _no;
-          }
-        }
+            final Map<int, List<String>> ageToVaccineCodes = {};
+            for (final v in vaccineDataList) {
+              ageToVaccineCodes.putIfAbsent(v.ageInDays, () => []);
+              ageToVaccineCodes[v.ageInDays]!.add(v.doseCode);
+            }
 
-        if (currentIndex < lastIndex) {
-          return ScrollableContent(
-            header: const Column(children: [
-              CustomBackNavigationHelpHeaderWidget(
-                showHelp: false,
-              )
-            ]),
-            enableFixedDigitButton: true,
-            footer: DigitCard(
-              margin: const EdgeInsets.fromLTRB(0, kPadding, 0, 0),
-              padding: const EdgeInsets.fromLTRB(kPadding, 0, kPadding, 0),
-              children: [
-                DigitElevatedButton(
-                  onPressed: () async {
-                    if (!isValid(
-                        responses: currentResponses,
-                        allVaccineCodes: allVaccineCodes,
-                        vaccineCodes: currentVaccineCodes)) {
-                      await DigitToast.show(
-                        context,
-                        options: DigitToastOptions(
-                          localizations.translate(
-                            i18.common.corecommonRequired,
-                          ),
-                          true,
-                          theme,
-                        ),
-                      );
-                      return;
-                    }
-                    saveResponses(currentResponses);
-                    setState(() {
-                      currentIndex++;
-                    });
-                  },
-                  child: Text(
-                    localizations.translate(i18.common.coreCommonNext),
+            // Find last bucket allowed for the child age
+            int lastIndex = ageList.length - 1;
+            for (final age in ageList) {
+              if (age > ageInDays) {
+                lastIndex = ageList.indexOf(age) - 1;
+                break;
+              }
+            }
+            // Clamp lastIndex to valid range
+            if (lastIndex < 0) lastIndex = 0;
+
+            // Always clamp currentIndex before indexing
+            final int safeIndex = currentIndex.clamp(0, lastIndex);
+            final int bucketAge = ageList[safeIndex];
+
+            // Build current bucket codes (filtering dose dependencies)
+            final List<String> rawCodes = List<String>.from(
+              ageToVaccineCodes[bucketAge] ?? const <String>[],
+            );
+            final List<String> currentVaccineCodes = [
+              for (final code in rawCodes)
+                if (_isVaccineAllowedToShow(
+                  vaccineCode: code,
+                  allVaccineCodes: allVaccineCodes,
+                ))
+                  code
+            ];
+
+            // If current bucket ends up empty, move forward (or finish if we’re at the end)
+            if (currentVaccineCodes.isEmpty) {
+              WidgetsBinding.instance.addPostFrameCallback((_) async {
+                if (currentIndex < lastIndex) {
+                  setState(() => currentIndex += 1);
+                } else {
+                  // No more buckets to show: go final step (Reasons if any "NO", else submit)
+                  final pbId = widget.projectBeneficiaryClientReferenceId ??
+                      context
+                          .read<HouseholdOverviewBloc>()
+                          .state
+                          .selectedIndividual
+                          ?.clientReferenceId ??
+                      '';
+                }
+              });
+              return const SizedBox.shrink();
+            }
+
+            // Pre-fill responses (so validators don’t trip)
+            final Map<String, String?> currentResponses = {};
+            for (final code in currentVaccineCodes) {
+              if (selectedCodes.contains(code)) {
+                currentResponses[code] = _yes;
+              } else if (noSelectedCodes.contains(code)) {
+                currentResponses[code] = _no;
+              }
+            }
+
+            if (currentIndex < lastIndex) {
+              return ScrollableContent(
+                header: const Column(children: [
+                  CustomBackNavigationHelpHeaderWidget(
+                    showHelp: false,
+                  )
+                ]),
+                enableFixedDigitButton: true,
+                footer: DigitCard(
+                  margin: const EdgeInsets.fromLTRB(0, kPadding, 0, 0),
+                  padding: const EdgeInsets.fromLTRB(kPadding, 0, kPadding, 0),
+                  children: [
+                    DigitElevatedButton(
+                      onPressed: () async {
+                        if (!_isValid(
+                            responses: currentResponses,
+                            allVaccineCodes: allVaccineCodes,
+                            vaccineCodes: currentVaccineCodes)) {
+                          await DigitToast.show(
+                            context,
+                            options: DigitToastOptions(
+                              localizations.translate(
+                                i18.common.corecommonRequired,
+                              ),
+                              true,
+                              theme,
+                            ),
+                          );
+                          return;
+                        }
+                        _saveResponses(currentResponses);
+                        setState(() {
+                          currentIndex++;
+                        });
+                      },
+                      child: Text(
+                        localizations.translate(i18.common.coreCommonNext),
+                      ),
+                    )
+                  ],
+                ),
+                children: [
+                  _buildVaccineRadioChecklist(
+                    context: context,
+                    index: currentIndex,
+                    vaccineResponses: currentResponses,
+                    vaccineCodes: currentVaccineCodes,
                   ),
-                )
-              ],
-            ),
-            children: [
-              _buildVaccineRadioChecklist(
-                context: context,
-                index: currentIndex,
-                vaccineCodeToName: vaccineCodeToName,
-                vaccineResponses: currentResponses,
-                vaccineCodes: currentVaccineCodes,
-              ),
-              _buildGuidancePanel(
-                context: context,
-                vaccineCodesInBucket: currentVaccineCodes,
-              ),
-            ],
-          );
-        }
+                  _buildGuidancePanel(
+                    context: context,
+                    vaccineCodesInBucket: currentVaccineCodes,
+                  ),
+                ],
+              );
+            }
 
-        return PopScope(
-            canPop: true,
-            child: Scaffold(body: BlocBuilder<LocationBloc, LocationState>(
-                builder: (context, locationState) {
-              return BlocBuilder<HouseholdOverviewBloc, HouseholdOverviewState>(
-                builder: (context, householdOverviewState) {
-                  double? latitude = locationState.latitude;
-                  double? longitude = locationState.longitude;
-                  String vaccineSelection = "ZERODOSE_ASSESSMENT";
-                  return BlocBuilder<ServiceDefinitionBloc,
-                      ServiceDefinitionState>(
-                    builder: (context, state) {
-                      state.maybeMap(
-                        orElse: () {},
-                        serviceDefinitionFetch: (value) {
-                          selectedServiceDefinition = value
-                              .serviceDefinitionList
-                              .where(
-                                  (element) => element.code.toString().contains(
-                                        '${context.selectedProject.name}.$vaccineSelection.${RolesType.communityDistributor.toValue()}',
-                                      ))
-                              .toList()
-                              .firstOrNull;
-                          initialAttributes =
-                              selectedServiceDefinition?.attributes!;
-                          if (!isControllersInitialized) {
-                            initialAttributes?.forEach((e) {
-                              if (e.dataType == 'MultiValueList') {
-                                controller.add(TextEditingController(
-                                    text: selectedCodes.join('.')));
-                                selectedVaccines = selectedCodes.toSet();
-                              } else {
-                                controller.add(TextEditingController());
+            return PopScope(
+                canPop: true,
+                child: Scaffold(body: BlocBuilder<LocationBloc, LocationState>(
+                    builder: (context, locationState) {
+                  return BlocBuilder<HouseholdOverviewBloc,
+                      HouseholdOverviewState>(
+                    builder: (context, householdOverviewState) {
+                      double? latitude = locationState.latitude;
+                      double? longitude = locationState.longitude;
+                      String vaccineSelection = "ZERODOSE_ASSESSMENT";
+                      return BlocBuilder<ServiceDefinitionBloc,
+                          ServiceDefinitionState>(
+                        builder: (context, state) {
+                          state.maybeMap(
+                            orElse: () {},
+                            serviceDefinitionFetch: (value) {
+                              selectedServiceDefinition = value
+                                  .serviceDefinitionList
+                                  .where((element) =>
+                                      element.code.toString().contains(
+                                            '${context.selectedProject.name}.$vaccineSelection.${RolesType.communityDistributor.toValue()}',
+                                          ))
+                                  .toList()
+                                  .firstOrNull;
+                              initialAttributes =
+                                  selectedServiceDefinition?.attributes!;
+                              if (!isControllersInitialized) {
+                                initialAttributes?.forEach((e) {
+                                  if (e.dataType == 'MultiValueList') {
+                                    controller.add(TextEditingController(
+                                        text: selectedCodes.join('.')));
+                                    selectedVaccines = selectedCodes.toSet();
+                                  } else {
+                                    controller.add(TextEditingController());
+                                  }
+                                });
+                                isControllersInitialized = true;
                               }
-                            });
-                            isControllersInitialized = true;
-                          }
-                        },
-                      );
+                            },
+                          );
 
-                      return state.maybeMap(
-                        orElse: () => Text(state.runtimeType.toString()),
-                        serviceDefinitionFetch: (value) {
-                          return ScrollableContent(
-                            header: const Column(children: [
-                              CustomBackNavigationHelpHeaderWidget(
-                                showHelp: false,
-                              )
-                            ]),
-                            enableFixedDigitButton: true,
-                            footer: DigitCard(
-                              margin:
-                                  const EdgeInsets.fromLTRB(0, kPadding, 0, 0),
-                              padding: const EdgeInsets.fromLTRB(
-                                  kPadding, 0, kPadding, 0),
-                              children: [
-                                DigitElevatedButton(
-                                  onPressed: () async {
-                                    if (!isValid(
-                                        responses: currentResponses,
-                                        allVaccineCodes: allVaccineCodes,
-                                        vaccineCodes: currentVaccineCodes)) {
-                                      await DigitToast.show(
-                                        context,
-                                        options: DigitToastOptions(
-                                          localizations.translate(
-                                            i18.common.corecommonRequired,
-                                          ),
-                                          true,
-                                          theme,
-                                        ),
-                                      );
-                                      return;
-                                    }
-                                    saveResponses(currentResponses);
-
-                                    final pbId = widget
-                                            .projectBeneficiaryClientReferenceId ??
-                                        context
-                                            .read<HouseholdOverviewBloc>()
-                                            .state
-                                            .selectedIndividual
-                                            ?.clientReferenceId;
-
-                                    if (pbId == null || pbId.isEmpty) {
-                                      await DigitToast.show(
-                                        context,
-                                        options: DigitToastOptions(
-                                            'Missing beneficiary ID',
-                                            true,
-                                            Theme.of(context)),
-                                      );
-                                      return;
-                                    }
-
-                                    submitTriggered = true;
-                                    final itemsAttributes = initialAttributes;
-
-                                    final nonEmptySelectedCodes = selectedCodes
-                                        .where((e) => e.trim().isNotEmpty)
-                                        .toList();
-
-                                    for (int i = 0;
-                                        i < initialAttributes!.length;
-                                        i++) {
-                                      if (itemsAttributes?[i].dataType ==
-                                          'SingleValueList') {
-                                        controller[i].text = 'NOT_SELECTED';
-                                      }
-                                      if (itemsAttributes?[i].dataType ==
-                                              'MultiValueList' &&
-                                          controller[i].text == '') {
-                                        controller[i].text =
-                                            (nonEmptySelectedCodes.isNotEmpty
-                                                ? nonEmptySelectedCodes
-                                                    .join('.')
-                                                : 'NOT_SELECTED');
-                                      }
-                                      if (itemsAttributes?[i].required ==
-                                              true &&
-                                          ((itemsAttributes?[i].dataType ==
-                                                      'SingleValueList' &&
-                                                  (controller[i].text == '')) ||
-                                              (itemsAttributes?[i].dataType !=
-                                                      'SingleValueList' &&
-                                                  (controller[i].text == '' ||
-                                                      !(widget.projectBeneficiaryClientReferenceId !=
-                                                          null))))) {
-                                        return;
-                                      }
-                                    }
-                                    for (final code in selectedCodes) {
-                                      final match =
-                                          RegExp(r'^(.*?)([_-])(\d+)$')
-                                              .firstMatch(code);
-                                      if (match != null) {
-                                        final base = match.group(1);
-                                        final sep =
-                                            match.group(2); // '_' or '-'
-                                        final num =
-                                            int.tryParse(match.group(3) ?? '');
-                                        if (num != null && num > 1) {
-                                          final prevCode =
-                                              '$base$sep${num - 1}';
-                                          if (!selectedCodes
-                                              .contains(prevCode)) {
-                                            DigitToast.show(
-                                              context,
-                                              options: DigitToastOptions(
-                                                'You have not selected ${vaccineCodeToName[prevCode] ?? prevCode}.',
-                                                true,
-                                                theme,
+                          return state.maybeMap(
+                            orElse: () => Text(state.runtimeType.toString()),
+                            serviceDefinitionFetch: (value) {
+                              return ScrollableContent(
+                                header: const Column(children: [
+                                  CustomBackNavigationHelpHeaderWidget(
+                                    showHelp: false,
+                                  )
+                                ]),
+                                enableFixedDigitButton: true,
+                                footer: DigitCard(
+                                  margin: const EdgeInsets.fromLTRB(
+                                      0, kPadding, 0, 0),
+                                  padding: const EdgeInsets.fromLTRB(
+                                      kPadding, 0, kPadding, 0),
+                                  children: [
+                                    DigitElevatedButton(
+                                      onPressed: () async {
+                                        if (!_isValid(
+                                            responses: currentResponses,
+                                            allVaccineCodes: allVaccineCodes,
+                                            vaccineCodes:
+                                                currentVaccineCodes)) {
+                                          await DigitToast.show(
+                                            context,
+                                            options: DigitToastOptions(
+                                              localizations.translate(
+                                                i18.common.corecommonRequired,
                                               ),
-                                            );
+                                              true,
+                                              theme,
+                                            ),
+                                          );
+                                          return;
+                                        }
+                                        _saveResponses(currentResponses);
+
+                                        final pbId = widget
+                                                .projectBeneficiaryClientReferenceId ??
+                                            context
+                                                .read<HouseholdOverviewBloc>()
+                                                .state
+                                                .selectedIndividual
+                                                ?.clientReferenceId;
+
+                                        if (pbId == null || pbId.isEmpty) {
+                                          await DigitToast.show(
+                                            context,
+                                            options: DigitToastOptions(
+                                                'Missing beneficiary ID',
+                                                true,
+                                                Theme.of(context)),
+                                          );
+                                          return;
+                                        }
+
+                                        submitTriggered = true;
+                                        final itemsAttributes =
+                                            initialAttributes;
+
+                                        final nonEmptySelectedCodes =
+                                            selectedCodes
+                                                .where(
+                                                    (e) => e.trim().isNotEmpty)
+                                                .toList();
+
+                                        for (int i = 0;
+                                            i < initialAttributes!.length;
+                                            i++) {
+                                          if (itemsAttributes?[i].dataType ==
+                                              'SingleValueList') {
+                                            controller[i].text = 'NOT_SELECTED';
+                                          }
+                                          if (itemsAttributes?[i].dataType ==
+                                                  'MultiValueList' &&
+                                              controller[i].text == '') {
+                                            controller[i].text =
+                                                (nonEmptySelectedCodes
+                                                        .isNotEmpty
+                                                    ? nonEmptySelectedCodes
+                                                        .join('.')
+                                                    : 'NOT_SELECTED');
+                                          }
+                                          if (itemsAttributes?[i].required ==
+                                                  true &&
+                                              ((itemsAttributes?[i].dataType ==
+                                                          'SingleValueList' &&
+                                                      (controller[i].text ==
+                                                          '')) ||
+                                                  (itemsAttributes?[i]
+                                                              .dataType !=
+                                                          'SingleValueList' &&
+                                                      (controller[i].text ==
+                                                              '' ||
+                                                          !(widget.projectBeneficiaryClientReferenceId !=
+                                                              null))))) {
                                             return;
                                           }
                                         }
-                                      }
-                                    }
-                                    triggerLocalization = true;
+                                        for (final code in selectedCodes) {
+                                          final match =
+                                              RegExp(r'^(.*?)([_-])(\d+)$')
+                                                  .firstMatch(code);
+                                          if (match != null) {
+                                            final base = match.group(1);
+                                            final sep =
+                                                match.group(2); // '_' or '-'
+                                            final num = int.tryParse(
+                                                match.group(3) ?? '');
+                                            if (num != null && num > 1) {
+                                              final prevCode =
+                                                  '$base$sep${num - 1}';
+                                              if (!selectedCodes
+                                                  .contains(prevCode)) {
+                                                DigitToast.show(
+                                                  context,
+                                                  options: DigitToastOptions(
+                                                    'You have not selected ${localizations.translate(prevCode)}.',
+                                                    true,
+                                                    theme,
+                                                  ),
+                                                );
+                                                return;
+                                              }
+                                            }
+                                          }
+                                        }
+                                        triggerLocalization = true;
 
-                                    final shouldSubmit = await DigitDialog.show(
-                                      context,
-                                      options: DigitDialogOptions(
-                                        titleText: localizations.translate(
-                                          i18.deliverIntervention.dialogTitle,
-                                        ),
-                                        contentText: localizations.translate(
-                                          i18.deliverIntervention.dialogContent,
-                                        ),
-                                        primaryAction: DigitDialogActions(
-                                          label: localizations.translate(
-                                            i18.common.coreCommonSubmit,
-                                          ),
-                                          action: (ctx) {
-                                            final referenceId =
-                                                IdGen.i.identifier;
-                                            List<ServiceAttributesModel>
-                                                attributes = [];
-                                            for (int i = 0;
-                                                i < controller.length;
-                                                i++) {
-                                              final attribute =
-                                                  initialAttributes;
+                                        final shouldSubmit =
+                                            await DigitDialog.show(
+                                          context,
+                                          options: DigitDialogOptions(
+                                            titleText: localizations.translate(
+                                              i18.deliverIntervention
+                                                  .dialogTitle,
+                                            ),
+                                            contentText:
+                                                localizations.translate(
+                                              i18.deliverIntervention
+                                                  .dialogContent,
+                                            ),
+                                            primaryAction: DigitDialogActions(
+                                              label: localizations.translate(
+                                                i18.common.coreCommonSubmit,
+                                              ),
+                                              action: (ctx) {
+                                                final referenceId =
+                                                    IdGen.i.identifier;
+                                                List<ServiceAttributesModel>
+                                                    attributes = [];
+                                                for (int i = 0;
+                                                    i < controller.length;
+                                                    i++) {
+                                                  final attribute =
+                                                      initialAttributes;
 
-                                              attributes
-                                                  .add(ServiceAttributesModel(
-                                                auditDetails: AuditDetails(
-                                                  createdBy:
-                                                      context.loggedInUserUuid,
-                                                  createdTime: context
-                                                      .millisecondsSinceEpoch(),
-                                                ),
-                                                attributeCode:
-                                                    '${attribute?[i].code}',
-                                                dataType:
-                                                    attribute?[i].dataType,
-                                                clientReferenceId:
-                                                    IdGen.i.identifier,
-                                                referenceId: referenceId,
-                                                value: attribute?[i].dataType ==
-                                                        'MultiValueList'
-                                                    ? controller[i]
-                                                            .text
-                                                            .toString()
-                                                            .isNotEmpty
-                                                        ? controller[i]
-                                                            .text
-                                                            .toString()
-                                                        : i18_survey_form
-                                                            .surveyForm
-                                                            .notSelectedKey
-                                                    : attribute?[i].dataType !=
-                                                            'SingleValueList'
+                                                  attributes.add(
+                                                      ServiceAttributesModel(
+                                                    auditDetails: AuditDetails(
+                                                      createdBy: context
+                                                          .loggedInUserUuid,
+                                                      createdTime: context
+                                                          .millisecondsSinceEpoch(),
+                                                    ),
+                                                    attributeCode:
+                                                        '${attribute?[i].code}',
+                                                    dataType:
+                                                        attribute?[i].dataType,
+                                                    clientReferenceId:
+                                                        IdGen.i.identifier,
+                                                    referenceId: referenceId,
+                                                    value: attribute?[i]
+                                                                .dataType ==
+                                                            'MultiValueList'
                                                         ? controller[i]
                                                                 .text
                                                                 .toString()
-                                                                .trim()
                                                                 .isNotEmpty
-                                                            ? controller[i]
-                                                                .text
-                                                                .toString()
-                                                            : (attribute?[i]
-                                                                        .dataType !=
-                                                                    'Number'
-                                                                ? i18_survey_form
-                                                                    .surveyForm
-                                                                    .notSelectedKey
-                                                                : '0')
-                                                        : visibleChecklistIndexes
-                                                                .contains(i)
                                                             ? controller[i]
                                                                 .text
                                                                 .toString()
                                                             : i18_survey_form
                                                                 .surveyForm
-                                                                .notSelectedKey,
-                                                rowVersion: 1,
-                                                tenantId:
-                                                    attribute?[i].tenantId,
-                                                additionalFields:
-                                                    ServiceAttributesAdditionalFields(
-                                                  version: 1,
-                                                  // TODO: This needs to be done after adding locationbloc
-                                                  fields: [
-                                                    AdditionalField(
-                                                      'latitude',
-                                                      latitude,
+                                                                .notSelectedKey
+                                                        : attribute?[i]
+                                                                    .dataType !=
+                                                                'SingleValueList'
+                                                            ? controller[i]
+                                                                    .text
+                                                                    .toString()
+                                                                    .trim()
+                                                                    .isNotEmpty
+                                                                ? controller[i]
+                                                                    .text
+                                                                    .toString()
+                                                                : (attribute?[i]
+                                                                            .dataType !=
+                                                                        'Number'
+                                                                    ? i18_survey_form
+                                                                        .surveyForm
+                                                                        .notSelectedKey
+                                                                    : '0')
+                                                            : visibleChecklistIndexes
+                                                                    .contains(i)
+                                                                ? controller[i]
+                                                                    .text
+                                                                    .toString()
+                                                                : i18_survey_form
+                                                                    .surveyForm
+                                                                    .notSelectedKey,
+                                                    rowVersion: 1,
+                                                    tenantId:
+                                                        attribute?[i].tenantId,
+                                                    additionalFields:
+                                                        ServiceAttributesAdditionalFields(
+                                                      version: 1,
+                                                      // TODO: This needs to be done after adding locationbloc
+                                                      fields: [
+                                                        AdditionalField(
+                                                          'latitude',
+                                                          latitude,
+                                                        ),
+                                                        AdditionalField(
+                                                          'longitude',
+                                                          longitude,
+                                                        ),
+                                                      ],
                                                     ),
-                                                    AdditionalField(
-                                                      'longitude',
-                                                      longitude,
-                                                    ),
-                                                  ],
-                                                ),
-                                              ));
-                                            }
+                                                  ));
+                                                }
 
-                                            context.read<ServiceBloc>().add(
-                                                  ServiceCreateEvent(
-                                                    serviceModel: ServiceModel(
-                                                        createdAt: DigitDateUtils
-                                                            .getDateFromTimestamp(
-                                                          DateTime.now()
-                                                              .toLocal()
-                                                              .millisecondsSinceEpoch,
-                                                          dateFormat: Constants
-                                                              .checklistViewDateFormat,
-                                                        ),
-                                                        tenantId:
-                                                            selectedServiceDefinition!
-                                                                .tenantId,
-                                                        clientId: referenceId,
-                                                        serviceDefId:
-                                                            selectedServiceDefinition
-                                                                ?.id,
-                                                        relatedClientReferenceId:
-                                                            widget
-                                                                .projectBeneficiaryClientReferenceId,
-                                                        attributes: attributes,
-                                                        rowVersion: 1,
-                                                        accountId:
-                                                            context.projectId,
-                                                        auditDetails:
-                                                            AuditDetails(
-                                                          createdBy: context
-                                                              .loggedInUserUuid,
-                                                          createdTime: DateTime
-                                                                  .now()
-                                                              .millisecondsSinceEpoch,
-                                                        ),
-                                                        clientAuditDetails:
-                                                            ClientAuditDetails(
-                                                          createdBy: context
-                                                              .loggedInUserUuid,
-                                                          createdTime: context
-                                                              .millisecondsSinceEpoch(),
-                                                          lastModifiedBy: context
-                                                              .loggedInUserUuid,
-                                                          lastModifiedTime: context
-                                                              .millisecondsSinceEpoch(),
-                                                        ),
-                                                        additionalFields:
-                                                            ServiceAdditionalFields(
-                                                          version: 1,
-                                                          fields: [
-                                                            AdditionalField(
-                                                                'boundaryCode',
-                                                                context.boundary
-                                                                    .code),
-                                                            // AdditionalField(
-                                                            //   'vaccinationsuccessful',
-                                                            //   isVaccinationSuccessful,
-                                                            // ),
-                                                          ],
-                                                        )),
-                                                  ),
-                                                );
+                                                context.read<ServiceBloc>().add(
+                                                      ServiceCreateEvent(
+                                                        serviceModel:
+                                                            ServiceModel(
+                                                                createdAt: DigitDateUtils
+                                                                    .getDateFromTimestamp(
+                                                                  DateTime.now()
+                                                                      .toLocal()
+                                                                      .millisecondsSinceEpoch,
+                                                                  dateFormat:
+                                                                      Constants
+                                                                          .checklistViewDateFormat,
+                                                                ),
+                                                                tenantId:
+                                                                    selectedServiceDefinition!
+                                                                        .tenantId,
+                                                                clientId:
+                                                                    referenceId,
+                                                                serviceDefId:
+                                                                    selectedServiceDefinition
+                                                                        ?.id,
+                                                                relatedClientReferenceId: widget
+                                                                    .projectBeneficiaryClientReferenceId,
+                                                                attributes:
+                                                                    attributes,
+                                                                rowVersion: 1,
+                                                                accountId: context
+                                                                    .projectId,
+                                                                auditDetails:
+                                                                    AuditDetails(
+                                                                  createdBy: context
+                                                                      .loggedInUserUuid,
+                                                                  createdTime: DateTime
+                                                                          .now()
+                                                                      .millisecondsSinceEpoch,
+                                                                ),
+                                                                clientAuditDetails:
+                                                                    ClientAuditDetails(
+                                                                  createdBy: context
+                                                                      .loggedInUserUuid,
+                                                                  createdTime:
+                                                                      context
+                                                                          .millisecondsSinceEpoch(),
+                                                                  lastModifiedBy:
+                                                                      context
+                                                                          .loggedInUserUuid,
+                                                                  lastModifiedTime:
+                                                                      context
+                                                                          .millisecondsSinceEpoch(),
+                                                                ),
+                                                                additionalFields:
+                                                                    ServiceAdditionalFields(
+                                                                  version: 1,
+                                                                  fields: [
+                                                                    AdditionalField(
+                                                                        'boundaryCode',
+                                                                        context
+                                                                            .boundary
+                                                                            .code),
+                                                                    // AdditionalField(
+                                                                    //   'vaccinationsuccessful',
+                                                                    //   isVaccinationSuccessful,
+                                                                    // ),
+                                                                  ],
+                                                                )),
+                                                      ),
+                                                    );
 
-                                            Navigator.of(
-                                              context,
-                                              rootNavigator: true,
-                                            ).pop(true);
-                                          },
-                                        ),
-                                        secondaryAction: DigitDialogActions(
-                                          label: localizations.translate(
-                                            i18.common.coreCommonGoback,
-                                          ),
-                                          action: (ctx) {
-                                            Navigator.of(ctx,
-                                                    rootNavigator: true)
-                                                .pop(false);
-                                          },
-                                        ),
-                                      ),
-                                    );
-                                    if (shouldSubmit ?? false) {
-                                      final router = context.router;
-                                      submitTriggered = true;
-
-                                      context.read<ServiceBloc>().add(
-                                            const ServiceSurveyFormEvent(
-                                              value: '',
-                                              submitTriggered: true,
+                                                Navigator.of(
+                                                  context,
+                                                  rootNavigator: true,
+                                                ).pop(true);
+                                              },
                                             ),
-                                          );
-
-                                      if (widget.isChecklistAssessmentDone ==
-                                          true) {
-                                        final householdMember = context
-                                            .read<HouseholdOverviewBloc>()
-                                            .state
-                                            .householdMemberWrapper;
-                                        final deliverState = context
-                                            .read<DeliverInterventionBloc>()
-                                            .state;
-
-                                        final oldTask =
-                                            deliverState.oldTask ?? widget.task;
-                                        final oldFields =
-                                            oldTask.additionalFields?.fields ??
-                                                [];
-
-                                        final updatedFields = [
-                                          ...oldFields,
-                                          AdditionalField(
-                                            AdditionalFieldsType.doseStatus
-                                                .toValue(),
-                                            getDoseStatus(selectedCodes,
-                                                    noSelectedCodes)
-                                                .name,
-                                          ),
-                                          if (selectedCodes.isNotEmpty)
-                                            AdditionalField(
-                                              AdditionalFieldsType
-                                                  .selectedVaccines
-                                                  .toValue(),
-                                              selectedCodes.join('.'),
+                                            secondaryAction: DigitDialogActions(
+                                              label: localizations.translate(
+                                                i18.common.coreCommonGoback,
+                                              ),
+                                              action: (ctx) {
+                                                Navigator.of(ctx,
+                                                        rootNavigator: true)
+                                                    .pop(false);
+                                              },
                                             ),
-                                          if (noSelectedCodes.isNotEmpty)
-                                            AdditionalField(
-                                              AdditionalFieldsType
-                                                  .noSelectedVaccines
-                                                  .toValue(),
-                                              noSelectedCodes.join('.'),
-                                            ),
-                                        ];
-
-                                        final updatedTask = oldTask.copyWith(
-                                          additionalFields:
-                                              TaskAdditionalFields(
-                                            version: 1,
-                                            fields: updatedFields,
                                           ),
                                         );
+                                        if (shouldSubmit ?? false) {
+                                          final router = context.router;
+                                          submitTriggered = true;
 
-                                        context
-                                            .read<DeliverInterventionBloc>()
-                                            .add(
-                                              DeliverInterventionSubmitEvent(
-                                                task: updatedTask,
-                                                isEditing: (deliverState
-                                                                .tasks ??
-                                                            [])
-                                                        .isNotEmpty &&
-                                                    RegistrationDeliverySingleton()
-                                                            .beneficiaryType ==
-                                                        BeneficiaryType
-                                                            .household,
-                                                boundaryModel:
-                                                    RegistrationDeliverySingleton()
-                                                        .boundary!,
+                                          context.read<ServiceBloc>().add(
+                                                const ServiceSurveyFormEvent(
+                                                  value: '',
+                                                  submitTriggered: true,
+                                                ),
+                                              );
+
+                                          if (widget
+                                                  .isChecklistAssessmentDone ==
+                                              true) {
+                                            final deliverState = context
+                                                .read<DeliverInterventionBloc>()
+                                                .state;
+
+                                            final oldTask =
+                                                deliverState.oldTask ??
+                                                    widget.task;
+                                            final oldFields = oldTask
+                                                    .additionalFields?.fields ??
+                                                [];
+
+                                            final updatedFields = [
+                                              ...oldFields,
+                                              AdditionalField(
+                                                AdditionalFieldsType.doseStatus
+                                                    .toValue(),
+                                                getDoseStatus(selectedCodes,
+                                                        noSelectedCodes)
+                                                    .name,
+                                              ),
+                                              if (selectedCodes.isNotEmpty)
+                                                AdditionalField(
+                                                  AdditionalFieldsType
+                                                      .selectedVaccines
+                                                      .toValue(),
+                                                  selectedCodes.join('.'),
+                                                ),
+                                              if (noSelectedCodes.isNotEmpty)
+                                                AdditionalField(
+                                                  AdditionalFieldsType
+                                                      .noSelectedVaccines
+                                                      .toValue(),
+                                                  noSelectedCodes.join('.'),
+                                                ),
+                                            ];
+
+                                            final updatedTask =
+                                                oldTask.copyWith(
+                                              additionalFields:
+                                                  TaskAdditionalFields(
+                                                version: 1,
+                                                fields: updatedFields,
                                               ),
                                             );
 
-                                        ProjectTypeModel? projectTypeModel =
-                                            widget.eligibilityAssessmentType ==
-                                                    EligibilityAssessmentType
-                                                        .smc
-                                                ? RegistrationDeliverySingleton()
-                                                    .selectedProject
-                                                    ?.additionalDetails
-                                                    ?.projectType
-                                                : RegistrationDeliverySingleton()
-                                                    .selectedProject
-                                                    ?.additionalDetails
-                                                    ?.additionalProjectType;
+                                            context
+                                                .read<DeliverInterventionBloc>()
+                                                .add(
+                                                  DeliverInterventionSubmitEvent(
+                                                    task: updatedTask,
+                                                    isEditing: (deliverState
+                                                                    .tasks ??
+                                                                [])
+                                                            .isNotEmpty &&
+                                                        RegistrationDeliverySingleton()
+                                                                .beneficiaryType ==
+                                                            BeneficiaryType
+                                                                .household,
+                                                    boundaryModel:
+                                                        RegistrationDeliverySingleton()
+                                                            .boundary!,
+                                                  ),
+                                                );
 
-                                        if (widget.isAdministration == true) {
-                                          router.popUntilRouteWithName(
-                                              BeneficiaryWrapperRoute.name);
-                                          if (deliverState.futureDeliveries !=
-                                                  null &&
-                                              deliverState.futureDeliveries!
-                                                  .isNotEmpty &&
-                                              projectTypeModel
-                                                      ?.cycles?.isNotEmpty ==
-                                                  true) {
-                                            router.push(
-                                              CustomSplashAcknowledgementRoute(
-                                                  enableBackToSearch: false,
-                                                  eligibilityAssessmentType: widget
-                                                      .eligibilityAssessmentType),
-                                            );
+                                            ProjectTypeModel? projectTypeModel =
+                                                widget.eligibilityAssessmentType ==
+                                                        EligibilityAssessmentType
+                                                            .smc
+                                                    ? RegistrationDeliverySingleton()
+                                                        .selectedProject
+                                                        ?.additionalDetails
+                                                        ?.projectType
+                                                    : RegistrationDeliverySingleton()
+                                                        .selectedProject
+                                                        ?.additionalDetails
+                                                        ?.additionalProjectType;
+
+                                            if (widget.isAdministration ==
+                                                true) {
+                                              router.popUntilRouteWithName(
+                                                  BeneficiaryWrapperRoute.name);
+                                              if (deliverState
+                                                          .futureDeliveries !=
+                                                      null &&
+                                                  deliverState.futureDeliveries!
+                                                      .isNotEmpty &&
+                                                  projectTypeModel?.cycles
+                                                          ?.isNotEmpty ==
+                                                      true) {
+                                                router.push(
+                                                  CustomSplashAcknowledgementRoute(
+                                                      enableBackToSearch: false,
+                                                      eligibilityAssessmentType:
+                                                          widget
+                                                              .eligibilityAssessmentType),
+                                                );
+                                              } else {
+                                                final reloadState = context.read<
+                                                    HouseholdOverviewBloc>();
+
+                                                reloadState.add(
+                                                  HouseholdOverviewReloadEvent(
+                                                    projectId:
+                                                        RegistrationDeliverySingleton()
+                                                            .projectId!,
+                                                    projectBeneficiaryType:
+                                                        RegistrationDeliverySingleton()
+                                                            .beneficiaryType!,
+                                                  ),
+                                                );
+                                                router.popAndPush(
+                                                  CustomHouseholdAcknowledgementRoute(
+                                                    enableViewHousehold: true,
+                                                    eligibilityAssessmentType:
+                                                        widget
+                                                            .eligibilityAssessmentType,
+                                                  ),
+                                                );
+                                              }
+                                            } else {
+                                              final searchBloc = context
+                                                  .read<SearchHouseholdsBloc>();
+                                              searchBloc.add(
+                                                const SearchHouseholdsClearEvent(),
+                                              );
+                                              router.popUntilRouteWithName(
+                                                  BeneficiaryWrapperRoute.name);
+                                              router.push(
+                                                CustomHouseholdAcknowledgementRoute(
+                                                    enableViewHousehold: true,
+                                                    eligibilityAssessmentType:
+                                                        widget
+                                                            .eligibilityAssessmentType),
+                                              );
+                                            }
                                           } else {
+                                            if (widget.hasSideEffects == true) {
+                                              context
+                                                  .read<SideEffectsBloc>()
+                                                  .add(
+                                                    SideEffectsSubmitEvent(
+                                                      widget.sideEffect!,
+                                                      false,
+                                                    ),
+                                                  );
+                                            }
+                                            TaskModel task = _getTaskModel();
+                                            context
+                                                .read<DeliverInterventionBloc>()
+                                                .add(
+                                                  DeliverInterventionSubmitEvent(
+                                                    task: task,
+                                                    isEditing: false,
+                                                    boundaryModel:
+                                                        context.boundary,
+                                                    navigateToSummary: false,
+                                                    householdMemberWrapper: context
+                                                        .read<
+                                                            HouseholdOverviewBloc>()
+                                                        .state
+                                                        .householdMemberWrapper,
+                                                  ),
+                                                );
+
                                             final reloadState = context
                                                 .read<HouseholdOverviewBloc>();
 
@@ -1265,257 +1420,92 @@ class _VaccineSelectionPageState extends LocalizedState<VaccineSelectionPage> {
                                                         .beneficiaryType!,
                                               ),
                                             );
-                                            router.popAndPush(
-                                              CustomHouseholdAcknowledgementRoute(
-                                                enableViewHousehold: true,
-                                                eligibilityAssessmentType: widget
-                                                    .eligibilityAssessmentType,
-                                              ),
+                                            final searchBloc = context
+                                                .read<SearchHouseholdsBloc>();
+                                            searchBloc.add(
+                                              const SearchHouseholdsClearEvent(),
                                             );
-                                          }
-                                        } else {
-                                          final searchBloc = context
-                                              .read<SearchHouseholdsBloc>();
-                                          searchBloc.add(
-                                            const SearchHouseholdsClearEvent(),
-                                          );
-                                          router.popUntilRouteWithName(
-                                              BeneficiaryWrapperRoute.name);
-                                          router.push(
-                                            CustomHouseholdAcknowledgementRoute(
-                                                enableViewHousehold: true,
-                                                eligibilityAssessmentType: widget
-                                                    .eligibilityAssessmentType),
-                                          );
-                                        }
-                                      } else {
-                                        if (widget.hasSideEffects == true) {
-                                          context.read<SideEffectsBloc>().add(
-                                                SideEffectsSubmitEvent(
-                                                  widget.sideEffect!,
-                                                  false,
-                                                ),
-                                              );
-                                        }
-                                        final clientReferenceId =
-                                            IdGen.i.identifier;
-                                        List<String?> ineligibilityReasons = [];
-                                        // ineligibilityReasons.add(
-                                        //     "CHILD_AGE_LESS_THAN_3_MONTHS");
-                                        ineligibilityReasons
-                                            .add(Constants.ineligibleForBCG);
-                                        ineligibilityReasons
-                                            .add(Constants.ineligibleForRota);
-                                        TaskModel task = TaskModel(
-                                          projectBeneficiaryClientReferenceId:
-                                              widget
-                                                  .projectBeneficiaryClientReferenceId,
-                                          clientReferenceId: clientReferenceId,
-                                          tenantId:
-                                              envConfig.variables.tenantId,
-                                          rowVersion: 1,
-                                          auditDetails: AuditDetails(
-                                            createdBy: context.loggedInUserUuid,
-                                            createdTime: context
-                                                .millisecondsSinceEpoch(),
-                                          ),
-                                          projectId: context.projectId,
-                                          status: status_local
-                                              .Status.beneficiaryInEligible
-                                              .toValue(),
-                                          clientAuditDetails:
-                                              ClientAuditDetails(
-                                            createdBy: context.loggedInUserUuid,
-                                            createdTime: context
-                                                .millisecondsSinceEpoch(),
-                                            lastModifiedBy:
-                                                context.loggedInUserUuid,
-                                            lastModifiedTime: context
-                                                .millisecondsSinceEpoch(),
-                                          ),
-                                          additionalFields:
-                                              TaskAdditionalFields(
-                                            version: 1,
-                                            fields: [
-                                              AdditionalField(
-                                                AdditionalFieldsType.cycleIndex
-                                                    .toValue(),
-                                                "0${context.selectedCycle?.id}",
-                                              ),
-                                              if (widget.hasSideEffects ==
-                                                  false) ...[
-                                                AdditionalField(
-                                                  AdditionalFieldsType
-                                                      .ineligibleReasons
-                                                      .toValue(),
-                                                  ineligibilityReasons
-                                                      .join(","),
-                                                ),
-                                              ] else ...[
-                                                AdditionalField(
-                                                    AdditionalFieldsType
-                                                        .ineligibleReasons
-                                                        .toValue(),
-                                                    ["SIDE_EFFECTS"].join(",")),
-                                                AdditionalField(
-                                                    AdditionalFieldsType
-                                                        .hasSideEffects
-                                                        .toValue(),
-                                                    true.toString()),
-                                              ],
-                                              AdditionalField(
-                                                AdditionalFieldsType
-                                                    .deliveryType
-                                                    .toValue(),
-                                                EligibilityAssessmentStatus
-                                                    .smcDone.name,
-                                              ),
-                                              AdditionalField(
-                                                AdditionalFieldsType.doseStatus
-                                                    .toValue(),
-                                                getDoseStatus(selectedCodes,
-                                                        noSelectedCodes)
-                                                    .name,
-                                              ),
-                                              AdditionalField(
-                                                AdditionalFieldsType
-                                                    .selectedVaccines
-                                                    .toValue(),
-                                                selectedCodes.join('.'),
-                                              ),
-                                              AdditionalField(
-                                                AdditionalFieldsType
-                                                    .noSelectedVaccines
-                                                    .toValue(),
-                                                noSelectedCodes.join('.'),
-                                              ),
-                                              if (selectedVaccines.isNotEmpty)
-                                                AdditionalField(
-                                                  AdditionalFieldsType
-                                                      .availedVaccines
-                                                      .toValue(),
-                                                  json.encode(selectedVaccines
-                                                      .toList()),
-                                                ),
-                                              ...getIndividualAdditionalFields(
-                                                  widget.individual)
-                                            ],
-                                          ),
-                                          address: widget
-                                              .individual?.address?.first
-                                              .copyWith(
-                                            relatedClientReferenceId:
-                                                clientReferenceId,
-                                            id: null,
-                                          ),
-                                        );
-                                        context
-                                            .read<DeliverInterventionBloc>()
-                                            .add(
-                                              DeliverInterventionSubmitEvent(
-                                                task: task,
-                                                isEditing: false,
-                                                boundaryModel: context.boundary,
-                                                navigateToSummary: false,
-                                                householdMemberWrapper: context
+                                            final pbId = widget
+                                                    .projectBeneficiaryClientReferenceId ??
+                                                context
                                                     .read<
                                                         HouseholdOverviewBloc>()
                                                     .state
-                                                    .householdMemberWrapper,
-                                              ),
-                                            );
-                                        final reloadState = context
-                                            .read<HouseholdOverviewBloc>();
+                                                    .selectedIndividual
+                                                    ?.clientReferenceId ??
+                                                '';
+                                            if (noSelectedCodes.isNotEmpty) {
+                                              final taskToPass = context
+                                                      .read<
+                                                          DeliverInterventionBloc>()
+                                                      .state
+                                                      .oldTask ??
+                                                  widget.task;
 
-                                        reloadState.add(
-                                          HouseholdOverviewReloadEvent(
-                                            projectId:
-                                                RegistrationDeliverySingleton()
-                                                    .projectId!,
-                                            projectBeneficiaryType:
-                                                RegistrationDeliverySingleton()
-                                                    .beneficiaryType!,
-                                          ),
-                                        );
-                                        final searchBloc = context
-                                            .read<SearchHouseholdsBloc>();
-                                        searchBloc.add(
-                                          const SearchHouseholdsClearEvent(),
-                                        );
-                                        final pbId = widget
-                                                .projectBeneficiaryClientReferenceId ??
-                                            context
-                                                .read<HouseholdOverviewBloc>()
-                                                .state
-                                                .selectedIndividual
-                                                ?.clientReferenceId ??
-                                            '';
-                                        if (noSelectedCodes.isNotEmpty) {
-                                          final taskToPass = context
-                                                  .read<
-                                                      DeliverInterventionBloc>()
-                                                  .state
-                                                  .oldTask ??
-                                              widget.task;
-
-                                          router.push(
-                                            ReasonsForNonVaccinationRoute(
-                                              projectBeneficiaryClientReferenceId:
-                                                  pbId,
-                                              individual: widget.individual,
-                                              selectedYesCodes: selectedCodes,
-                                              selectedNoCodes: noSelectedCodes,
-                                              task: taskToPass,
-                                            ),
-                                          );
-                                        } else {
-                                          if (widget.isAdministration == true) {
-                                            router.push(
-                                              CustomSplashAcknowledgementRoute(
-                                                  enableBackToSearch: false,
-                                                  eligibilityAssessmentType: widget
-                                                      .eligibilityAssessmentType),
-                                            );
-                                          } else {
-                                            router.push(
-                                              CustomHouseholdAcknowledgementRoute(
-                                                  enableViewHousehold: true,
-                                                  eligibilityAssessmentType: widget
-                                                      .eligibilityAssessmentType),
-                                            );
+                                              router.push(
+                                                ReasonsForNonVaccinationRoute(
+                                                  projectBeneficiaryClientReferenceId:
+                                                      pbId,
+                                                  individual: widget.individual,
+                                                  selectedYesCodes:
+                                                      selectedCodes,
+                                                  selectedNoCodes:
+                                                      noSelectedCodes,
+                                                  task: taskToPass,
+                                                ),
+                                              );
+                                            } else {
+                                              if (widget.isAdministration ==
+                                                  true) {
+                                                router.push(
+                                                  CustomSplashAcknowledgementRoute(
+                                                      enableBackToSearch: false,
+                                                      eligibilityAssessmentType:
+                                                          widget
+                                                              .eligibilityAssessmentType),
+                                                );
+                                              } else {
+                                                router.push(
+                                                  CustomHouseholdAcknowledgementRoute(
+                                                      enableViewHousehold: true,
+                                                      eligibilityAssessmentType:
+                                                          widget
+                                                              .eligibilityAssessmentType),
+                                                );
+                                              }
+                                            }
                                           }
                                         }
-                                      }
-                                    }
-                                  },
-                                  child: Text(
-                                    localizations
-                                        .translate(i18.common.coreCommonSubmit),
+                                      },
+                                      child: Text(
+                                        localizations.translate(
+                                            i18.common.coreCommonSubmit),
+                                      ),
+                                    )
+                                  ],
+                                ),
+                                children: [
+                                  _buildVaccineRadioChecklist(
+                                    context: context,
+                                    index: currentIndex,
+                                    vaccineResponses: currentResponses,
+                                    vaccineCodes: currentVaccineCodes,
                                   ),
-                                )
-                              ],
-                            ),
-                            children: [
-                              _buildVaccineRadioChecklist(
-                                context: context,
-                                index: currentIndex,
-                                vaccineCodeToName: vaccineCodeToName,
-                                vaccineResponses: currentResponses,
-                                vaccineCodes: currentVaccineCodes,
-                              ),
-                              _buildGuidancePanel(
-                                context: context,
-                                vaccineCodesInBucket: currentVaccineCodes,
-                              ),
-                            ],
+                                  _buildGuidancePanel(
+                                    context: context,
+                                    vaccineCodesInBucket: currentVaccineCodes,
+                                  ),
+                                ],
+                              );
+                            },
                           );
                         },
                       );
                     },
                   );
-                },
-              );
-            })));
+                })));
+          },
+        );
       },
     ));
   }

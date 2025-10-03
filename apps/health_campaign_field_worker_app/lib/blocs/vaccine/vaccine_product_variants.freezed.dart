@@ -275,8 +275,9 @@ mixin _$VaccineProductVariantState {
   bool? get loading => throw _privateConstructorUsedError;
   List<ProductVariantModel>? get productVariants =>
       throw _privateConstructorUsedError;
-  List<VaccineDoseData>? get vaccineData => throw _privateConstructorUsedError;
-  Map<String, dynamic>? get vaccineDoseDataVariation =>
+  List<VaccineDoseData>? get vaccineDataList =>
+      throw _privateConstructorUsedError;
+  Map<String, VaccineDoseVariant>? get vaccineDoseDataVariation =>
       throw _privateConstructorUsedError;
 
   @JsonKey(ignore: true)
@@ -294,8 +295,8 @@ abstract class $VaccineProductVariantStateCopyWith<$Res> {
   $Res call(
       {bool? loading,
       List<ProductVariantModel>? productVariants,
-      List<VaccineDoseData>? vaccineData,
-      Map<String, dynamic>? vaccineDoseDataVariation});
+      List<VaccineDoseData>? vaccineDataList,
+      Map<String, VaccineDoseVariant>? vaccineDoseDataVariation});
 }
 
 /// @nodoc
@@ -314,7 +315,7 @@ class _$VaccineProductVariantStateCopyWithImpl<$Res,
   $Res call({
     Object? loading = freezed,
     Object? productVariants = freezed,
-    Object? vaccineData = freezed,
+    Object? vaccineDataList = freezed,
     Object? vaccineDoseDataVariation = freezed,
   }) {
     return _then(_value.copyWith(
@@ -326,14 +327,14 @@ class _$VaccineProductVariantStateCopyWithImpl<$Res,
           ? _value.productVariants
           : productVariants // ignore: cast_nullable_to_non_nullable
               as List<ProductVariantModel>?,
-      vaccineData: freezed == vaccineData
-          ? _value.vaccineData
-          : vaccineData // ignore: cast_nullable_to_non_nullable
+      vaccineDataList: freezed == vaccineDataList
+          ? _value.vaccineDataList
+          : vaccineDataList // ignore: cast_nullable_to_non_nullable
               as List<VaccineDoseData>?,
       vaccineDoseDataVariation: freezed == vaccineDoseDataVariation
           ? _value.vaccineDoseDataVariation
           : vaccineDoseDataVariation // ignore: cast_nullable_to_non_nullable
-              as Map<String, dynamic>?,
+              as Map<String, VaccineDoseVariant>?,
     ) as $Val);
   }
 }
@@ -350,8 +351,8 @@ abstract class _$$VaccineProductVariantStateImplCopyWith<$Res>
   $Res call(
       {bool? loading,
       List<ProductVariantModel>? productVariants,
-      List<VaccineDoseData>? vaccineData,
-      Map<String, dynamic>? vaccineDoseDataVariation});
+      List<VaccineDoseData>? vaccineDataList,
+      Map<String, VaccineDoseVariant>? vaccineDoseDataVariation});
 }
 
 /// @nodoc
@@ -369,7 +370,7 @@ class __$$VaccineProductVariantStateImplCopyWithImpl<$Res>
   $Res call({
     Object? loading = freezed,
     Object? productVariants = freezed,
-    Object? vaccineData = freezed,
+    Object? vaccineDataList = freezed,
     Object? vaccineDoseDataVariation = freezed,
   }) {
     return _then(_$VaccineProductVariantStateImpl(
@@ -381,14 +382,14 @@ class __$$VaccineProductVariantStateImplCopyWithImpl<$Res>
           ? _value._productVariants
           : productVariants // ignore: cast_nullable_to_non_nullable
               as List<ProductVariantModel>?,
-      vaccineData: freezed == vaccineData
-          ? _value._vaccineData
-          : vaccineData // ignore: cast_nullable_to_non_nullable
+      vaccineDataList: freezed == vaccineDataList
+          ? _value._vaccineDataList
+          : vaccineDataList // ignore: cast_nullable_to_non_nullable
               as List<VaccineDoseData>?,
       vaccineDoseDataVariation: freezed == vaccineDoseDataVariation
           ? _value._vaccineDoseDataVariation
           : vaccineDoseDataVariation // ignore: cast_nullable_to_non_nullable
-              as Map<String, dynamic>?,
+              as Map<String, VaccineDoseVariant>?,
     ));
   }
 }
@@ -399,10 +400,10 @@ class _$VaccineProductVariantStateImpl implements _VaccineProductVariantState {
   const _$VaccineProductVariantStateImpl(
       {this.loading,
       final List<ProductVariantModel>? productVariants,
-      final List<VaccineDoseData>? vaccineData,
-      final Map<String, dynamic>? vaccineDoseDataVariation})
+      final List<VaccineDoseData>? vaccineDataList,
+      final Map<String, VaccineDoseVariant>? vaccineDoseDataVariation})
       : _productVariants = productVariants,
-        _vaccineData = vaccineData,
+        _vaccineDataList = vaccineDataList,
         _vaccineDoseDataVariation = vaccineDoseDataVariation;
 
   @override
@@ -417,19 +418,19 @@ class _$VaccineProductVariantStateImpl implements _VaccineProductVariantState {
     return EqualUnmodifiableListView(value);
   }
 
-  final List<VaccineDoseData>? _vaccineData;
+  final List<VaccineDoseData>? _vaccineDataList;
   @override
-  List<VaccineDoseData>? get vaccineData {
-    final value = _vaccineData;
+  List<VaccineDoseData>? get vaccineDataList {
+    final value = _vaccineDataList;
     if (value == null) return null;
-    if (_vaccineData is EqualUnmodifiableListView) return _vaccineData;
+    if (_vaccineDataList is EqualUnmodifiableListView) return _vaccineDataList;
     // ignore: implicit_dynamic_type
     return EqualUnmodifiableListView(value);
   }
 
-  final Map<String, dynamic>? _vaccineDoseDataVariation;
+  final Map<String, VaccineDoseVariant>? _vaccineDoseDataVariation;
   @override
-  Map<String, dynamic>? get vaccineDoseDataVariation {
+  Map<String, VaccineDoseVariant>? get vaccineDoseDataVariation {
     final value = _vaccineDoseDataVariation;
     if (value == null) return null;
     if (_vaccineDoseDataVariation is EqualUnmodifiableMapView)
@@ -440,7 +441,7 @@ class _$VaccineProductVariantStateImpl implements _VaccineProductVariantState {
 
   @override
   String toString() {
-    return 'VaccineProductVariantState(loading: $loading, productVariants: $productVariants, vaccineData: $vaccineData, vaccineDoseDataVariation: $vaccineDoseDataVariation)';
+    return 'VaccineProductVariantState(loading: $loading, productVariants: $productVariants, vaccineDataList: $vaccineDataList, vaccineDoseDataVariation: $vaccineDoseDataVariation)';
   }
 
   @override
@@ -452,7 +453,7 @@ class _$VaccineProductVariantStateImpl implements _VaccineProductVariantState {
             const DeepCollectionEquality()
                 .equals(other._productVariants, _productVariants) &&
             const DeepCollectionEquality()
-                .equals(other._vaccineData, _vaccineData) &&
+                .equals(other._vaccineDataList, _vaccineDataList) &&
             const DeepCollectionEquality().equals(
                 other._vaccineDoseDataVariation, _vaccineDoseDataVariation));
   }
@@ -462,7 +463,7 @@ class _$VaccineProductVariantStateImpl implements _VaccineProductVariantState {
       runtimeType,
       loading,
       const DeepCollectionEquality().hash(_productVariants),
-      const DeepCollectionEquality().hash(_vaccineData),
+      const DeepCollectionEquality().hash(_vaccineDataList),
       const DeepCollectionEquality().hash(_vaccineDoseDataVariation));
 
   @JsonKey(ignore: true)
@@ -478,8 +479,8 @@ abstract class _VaccineProductVariantState
   const factory _VaccineProductVariantState(
           {final bool? loading,
           final List<ProductVariantModel>? productVariants,
-          final List<VaccineDoseData>? vaccineData,
-          final Map<String, dynamic>? vaccineDoseDataVariation}) =
+          final List<VaccineDoseData>? vaccineDataList,
+          final Map<String, VaccineDoseVariant>? vaccineDoseDataVariation}) =
       _$VaccineProductVariantStateImpl;
 
   @override
@@ -487,9 +488,9 @@ abstract class _VaccineProductVariantState
   @override
   List<ProductVariantModel>? get productVariants;
   @override
-  List<VaccineDoseData>? get vaccineData;
+  List<VaccineDoseData>? get vaccineDataList;
   @override
-  Map<String, dynamic>? get vaccineDoseDataVariation;
+  Map<String, VaccineDoseVariant>? get vaccineDoseDataVariation;
   @override
   @JsonKey(ignore: true)
   _$$VaccineProductVariantStateImplCopyWith<_$VaccineProductVariantStateImpl>

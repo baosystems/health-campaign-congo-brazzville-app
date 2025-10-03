@@ -12,25 +12,29 @@ String vaccineDeliveryDetailsToJson(List<VaccineDeliveryDetails> data) =>
     json.encode(List<dynamic>.from(data.map((x) => x.toJson())));
 
 class VaccineDeliveryDetails {
-  String vaccineName;
-  String batchNumber;
+  String productVariationId;
+  String vaccineCode;
+  String? batchNumber;
   int numberOfDose;
 
   VaccineDeliveryDetails({
-    required this.vaccineName,
-    required this.batchNumber,
-    required this.numberOfDose,
+    required this.productVariationId,
+    required this.vaccineCode,
+    this.batchNumber,
+    this.numberOfDose = 0,
   });
 
   factory VaccineDeliveryDetails.fromJson(Map<String, dynamic> json) =>
       VaccineDeliveryDetails(
-        vaccineName: json["vaccineName"],
+        productVariationId: json["productVariationId"],
+        vaccineCode: json["vaccineCode"],
         batchNumber: json["batchNumber"],
         numberOfDose: json["numberOfDose"],
       );
 
   Map<String, dynamic> toJson() => {
-        "vaccineName": vaccineName,
+        "productVariationId": productVariationId,
+        "vaccineCode": vaccineCode,
         "batchNumber": batchNumber,
         "numberOfDose": numberOfDose,
       };

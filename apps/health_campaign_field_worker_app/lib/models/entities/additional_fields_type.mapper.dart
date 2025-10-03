@@ -47,6 +47,8 @@ class AdditionalFieldsTypeMapper extends EnumMapper<AdditionalFieldsType> {
         return AdditionalFieldsType.dateOfAdministration;
       case "dateOfDelivery":
         return AdditionalFieldsType.dateOfDelivery;
+      case "nextDateOfDelivery":
+        return AdditionalFieldsType.nextDateOfDelivery;
       case "referralComments":
         return AdditionalFieldsType.referralComments;
       case "cycle":
@@ -91,8 +93,6 @@ class AdditionalFieldsTypeMapper extends EnumMapper<AdditionalFieldsType> {
         return AdditionalFieldsType.individualClientReferenceId;
       case "uniqueBeneficiaryId":
         return AdditionalFieldsType.uniqueBeneficiaryId;
-      case "availedVaccines":
-        return AdditionalFieldsType.availedVaccines;
       default:
         throw MapperException.unknownEnumValue(value);
     }
@@ -123,6 +123,8 @@ class AdditionalFieldsTypeMapper extends EnumMapper<AdditionalFieldsType> {
         return "dateOfAdministration";
       case AdditionalFieldsType.dateOfDelivery:
         return "dateOfDelivery";
+      case AdditionalFieldsType.nextDateOfDelivery:
+        return "nextDateOfDelivery";
       case AdditionalFieldsType.referralComments:
         return "referralComments";
       case AdditionalFieldsType.cycle:
@@ -167,8 +169,6 @@ class AdditionalFieldsTypeMapper extends EnumMapper<AdditionalFieldsType> {
         return "individualClientReferenceId";
       case AdditionalFieldsType.uniqueBeneficiaryId:
         return "uniqueBeneficiaryId";
-      case AdditionalFieldsType.availedVaccines:
-        return "availedVaccines";
     }
   }
 }

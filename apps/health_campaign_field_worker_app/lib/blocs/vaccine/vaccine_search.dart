@@ -23,12 +23,12 @@ class VaccineSearchBloc extends Bloc<VaccineSearchEvent, VaccineSearchState> {
     super.initialState, {
     required this.taskRepository,
   }) {
-    on(_handleSearch);
+    on(_handleTaskSearch);
     on(_handleVaccineEligibilitySearch);
   }
 
-  FutureOr<void> _handleSearch(
-    VaccineSearchTaskEvent event,
+  FutureOr<void> _handleTaskSearch(
+    VaccineTaskSearchEvent event,
     VaccineSearchEmitter emit,
   ) async {
     List<TaskModel> tasksData = await taskRepository.search(
@@ -65,18 +65,19 @@ class VaccineSearchBloc extends Bloc<VaccineSearchEvent, VaccineSearchState> {
       },
     ).toList();
 
-    final availedVaccinesMap = vaccineIdentificationTasks
+    final availedVaccineCodesMap = vaccineIdentificationTasks
             .first.additionalFields?.fields
             .firstWhereOrNull(
                 (e) => e.key == AdditionalFieldsType.selectedVaccines.toValue())
             ?.value ??
         "";
-    List<String> availedVaccines = json.decode(availedVaccinesMap);
+
+    List<String> availedVaccineDoseCodes = json.decode(availedVaccineCodesMap);
 
     emit(state.copyWith(
       loading: false,
       vaccineDeliveryDoseTasks: vaccineDeliveryDoseTasks,
-      availedVaccines: availedVaccines,
+      availedVaccineDoseCodes: availedVaccineDoseCodes,
     ));
   }
 
@@ -85,8 +86,7 @@ class VaccineSearchBloc extends Bloc<VaccineSearchEvent, VaccineSearchState> {
     VaccineSearchEmitter emit,
   ) {
     List<VaccineDoseData> vaccineData = event.vaccineDataList ?? [];
-    Map<String, dynamic> vaccineDoseDataVariation =
-        event.vaccineDoseDataVariation ?? {};
+
     final List<int> ageIndex =
         (vaccineData.map((e) => e.ageInDays).toSet().toList()..sort());
     final Map<int, List<String>> ageToVaccineCodes = {};
@@ -94,24 +94,28 @@ class VaccineSearchBloc extends Bloc<VaccineSearchEvent, VaccineSearchState> {
       ageToVaccineCodes.putIfAbsent(v.ageInDays, () => []);
       ageToVaccineCodes[v.ageInDays]!.add(v.doseCode);
     }
-    Map<int, Set<String>> vaccinesByAgeIndex = {};
-    Map<int, Set<String>> eligibleVaccinesByAgeIndex = {};
+    Map<int, Set<String>> allVaccinesCodeByAgeIndex = {};
+    Map<int, Set<String>> eligibleVaccinesCodeByAgeIndex = {};
     for (var age in ageIndex) {
-      vaccinesByAgeIndex[age] = ageToVaccineCodes[age]?.toSet() ?? {};
-      if (age < event.ageInDays) {
-        eligibleVaccinesByAgeIndex[age] = ageToVaccineCodes[age]?.toSet() ?? {};
+      allVaccinesCodeByAgeIndex[age] = ageToVaccineCodes[age]?.toSet() ?? {};
+      if (age < event.ageInMonths * 30) {
+        eligibleVaccinesCodeByAgeIndex[age] =
+            ageToVaccineCodes[age]?.toSet() ?? {};
       }
     }
 
-    Map<int, Set<String>> vaccineDoseList =
-        _getVaccineDoseListByIndex(eligibleVaccinesByAgeIndex, vaccineData);
+    List<String> allEligibleVaccineDoseCodes = eligibleVaccinesCodeByAgeIndex
+        .values
+        .fold<Set<String>>({}, (previousValue, element) {
+      previousValue.addAll(element);
+      return previousValue;
+    }).toList();
 
     emit(state.copyWith(
       loading: false,
-      ageIndex: ageIndex,
-      vaccineDoseList: vaccineDoseList,
-      vaccinesByAgeIndex: vaccinesByAgeIndex,
-      eligibleVaccinesByAgeIndex: eligibleVaccinesByAgeIndex,
+      allEligibleVaccineDoseCodes: allEligibleVaccineDoseCodes,
+      allVaccinesDoseCodeByAgeIndex: allVaccinesCodeByAgeIndex,
+      eligibleVaccinesDoseCodeByAgeIndex: eligibleVaccinesCodeByAgeIndex,
     ));
   }
 
@@ -152,27 +156,24 @@ class VaccineSearchBloc extends Bloc<VaccineSearchEvent, VaccineSearchState> {
 
 @freezed
 class VaccineSearchEvent with _$VaccineSearchEvent {
-  const factory VaccineSearchEvent.eligibleVaccinesSearch(
-          {required int ageInDays,
-          required List<VaccineDoseData>? vaccineDataList,
-          required Map<String, dynamic>? vaccineDoseDataVariation}) =
-      VaccineSearchEligibleVaccinesEvent;
-  const factory VaccineSearchEvent.handleSearch({
+  const factory VaccineSearchEvent.handleTaskSearch({
     required String projectBeneficiaryClientReferenceId,
-    required int ageInDays,
-    required List<VaccineDoseData>? vaccineDataList,
-  }) = VaccineSearchTaskEvent;
+  }) = VaccineTaskSearchEvent;
+  const factory VaccineSearchEvent.eligibleVaccinesSearch(
+          {required int ageInMonths,
+          required List<VaccineDoseData> vaccineDataList,
+          required Map<String, dynamic> vaccineDoseDataVariation}) =
+      VaccineSearchEligibleVaccinesEvent;
 }
 
 @freezed
 class VaccineSearchState with _$VaccineSearchState {
   const factory VaccineSearchState({
     @Default(false) bool loading,
-    List<String>? availedVaccines,
     List<TaskModel>? vaccineDeliveryDoseTasks,
-    List<int>? ageIndex,
-    Map<int, Set<String>>? vaccineDoseList,
-    Map<int, Set<String>>? vaccinesByAgeIndex,
-    Map<int, Set<String>>? eligibleVaccinesByAgeIndex,
+    List<String>? availedVaccineDoseCodes,
+    List<String>? allEligibleVaccineDoseCodes,
+    Map<int, Set<String>>? allVaccinesDoseCodeByAgeIndex,
+    Map<int, Set<String>>? eligibleVaccinesDoseCodeByAgeIndex,
   }) = _VaccineSearchState;
 }

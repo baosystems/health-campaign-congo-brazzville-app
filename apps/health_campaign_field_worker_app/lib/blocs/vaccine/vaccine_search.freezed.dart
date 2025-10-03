@@ -16,67 +16,57 @@ final _privateConstructorUsedError = UnsupportedError(
 
 /// @nodoc
 mixin _$VaccineSearchEvent {
-  int get ageInDays => throw _privateConstructorUsedError;
-  List<VaccineDoseData>? get vaccineDataList =>
-      throw _privateConstructorUsedError;
   @optionalTypeArgs
   TResult when<TResult extends Object?>({
+    required TResult Function(String projectBeneficiaryClientReferenceId)
+        handleTaskSearch,
     required TResult Function(
-            int ageInDays,
-            List<VaccineDoseData>? vaccineDataList,
-            Map<String, dynamic>? vaccineDoseDataVariation)
+            int ageInMonths,
+            List<VaccineDoseData> vaccineDataList,
+            Map<String, dynamic> vaccineDoseDataVariation)
         eligibleVaccinesSearch,
-    required TResult Function(String projectBeneficiaryClientReferenceId,
-            int ageInDays, List<VaccineDoseData>? vaccineDataList)
-        handleSearch,
   }) =>
       throw _privateConstructorUsedError;
   @optionalTypeArgs
   TResult? whenOrNull<TResult extends Object?>({
-    TResult? Function(int ageInDays, List<VaccineDoseData>? vaccineDataList,
-            Map<String, dynamic>? vaccineDoseDataVariation)?
+    TResult? Function(String projectBeneficiaryClientReferenceId)?
+        handleTaskSearch,
+    TResult? Function(int ageInMonths, List<VaccineDoseData> vaccineDataList,
+            Map<String, dynamic> vaccineDoseDataVariation)?
         eligibleVaccinesSearch,
-    TResult? Function(String projectBeneficiaryClientReferenceId, int ageInDays,
-            List<VaccineDoseData>? vaccineDataList)?
-        handleSearch,
   }) =>
       throw _privateConstructorUsedError;
   @optionalTypeArgs
   TResult maybeWhen<TResult extends Object?>({
-    TResult Function(int ageInDays, List<VaccineDoseData>? vaccineDataList,
-            Map<String, dynamic>? vaccineDoseDataVariation)?
+    TResult Function(String projectBeneficiaryClientReferenceId)?
+        handleTaskSearch,
+    TResult Function(int ageInMonths, List<VaccineDoseData> vaccineDataList,
+            Map<String, dynamic> vaccineDoseDataVariation)?
         eligibleVaccinesSearch,
-    TResult Function(String projectBeneficiaryClientReferenceId, int ageInDays,
-            List<VaccineDoseData>? vaccineDataList)?
-        handleSearch,
     required TResult orElse(),
   }) =>
       throw _privateConstructorUsedError;
   @optionalTypeArgs
   TResult map<TResult extends Object?>({
+    required TResult Function(VaccineTaskSearchEvent value) handleTaskSearch,
     required TResult Function(VaccineSearchEligibleVaccinesEvent value)
         eligibleVaccinesSearch,
-    required TResult Function(VaccineSearchTaskEvent value) handleSearch,
   }) =>
       throw _privateConstructorUsedError;
   @optionalTypeArgs
   TResult? mapOrNull<TResult extends Object?>({
+    TResult? Function(VaccineTaskSearchEvent value)? handleTaskSearch,
     TResult? Function(VaccineSearchEligibleVaccinesEvent value)?
         eligibleVaccinesSearch,
-    TResult? Function(VaccineSearchTaskEvent value)? handleSearch,
   }) =>
       throw _privateConstructorUsedError;
   @optionalTypeArgs
   TResult maybeMap<TResult extends Object?>({
+    TResult Function(VaccineTaskSearchEvent value)? handleTaskSearch,
     TResult Function(VaccineSearchEligibleVaccinesEvent value)?
         eligibleVaccinesSearch,
-    TResult Function(VaccineSearchTaskEvent value)? handleSearch,
     required TResult orElse(),
   }) =>
-      throw _privateConstructorUsedError;
-
-  @JsonKey(ignore: true)
-  $VaccineSearchEventCopyWith<VaccineSearchEvent> get copyWith =>
       throw _privateConstructorUsedError;
 }
 
@@ -85,8 +75,6 @@ abstract class $VaccineSearchEventCopyWith<$Res> {
   factory $VaccineSearchEventCopyWith(
           VaccineSearchEvent value, $Res Function(VaccineSearchEvent) then) =
       _$VaccineSearchEventCopyWithImpl<$Res, VaccineSearchEvent>;
-  @useResult
-  $Res call({int ageInDays, List<VaccineDoseData>? vaccineDataList});
 }
 
 /// @nodoc
@@ -98,39 +86,177 @@ class _$VaccineSearchEventCopyWithImpl<$Res, $Val extends VaccineSearchEvent>
   final $Val _value;
   // ignore: unused_field
   final $Res Function($Val) _then;
+}
+
+/// @nodoc
+abstract class _$$VaccineTaskSearchEventImplCopyWith<$Res> {
+  factory _$$VaccineTaskSearchEventImplCopyWith(
+          _$VaccineTaskSearchEventImpl value,
+          $Res Function(_$VaccineTaskSearchEventImpl) then) =
+      __$$VaccineTaskSearchEventImplCopyWithImpl<$Res>;
+  @useResult
+  $Res call({String projectBeneficiaryClientReferenceId});
+}
+
+/// @nodoc
+class __$$VaccineTaskSearchEventImplCopyWithImpl<$Res>
+    extends _$VaccineSearchEventCopyWithImpl<$Res, _$VaccineTaskSearchEventImpl>
+    implements _$$VaccineTaskSearchEventImplCopyWith<$Res> {
+  __$$VaccineTaskSearchEventImplCopyWithImpl(
+      _$VaccineTaskSearchEventImpl _value,
+      $Res Function(_$VaccineTaskSearchEventImpl) _then)
+      : super(_value, _then);
 
   @pragma('vm:prefer-inline')
   @override
   $Res call({
-    Object? ageInDays = null,
-    Object? vaccineDataList = freezed,
+    Object? projectBeneficiaryClientReferenceId = null,
   }) {
-    return _then(_value.copyWith(
-      ageInDays: null == ageInDays
-          ? _value.ageInDays
-          : ageInDays // ignore: cast_nullable_to_non_nullable
-              as int,
-      vaccineDataList: freezed == vaccineDataList
-          ? _value.vaccineDataList
-          : vaccineDataList // ignore: cast_nullable_to_non_nullable
-              as List<VaccineDoseData>?,
-    ) as $Val);
+    return _then(_$VaccineTaskSearchEventImpl(
+      projectBeneficiaryClientReferenceId: null ==
+              projectBeneficiaryClientReferenceId
+          ? _value.projectBeneficiaryClientReferenceId
+          : projectBeneficiaryClientReferenceId // ignore: cast_nullable_to_non_nullable
+              as String,
+    ));
   }
 }
 
 /// @nodoc
-abstract class _$$VaccineSearchEligibleVaccinesEventImplCopyWith<$Res>
-    implements $VaccineSearchEventCopyWith<$Res> {
+
+class _$VaccineTaskSearchEventImpl implements VaccineTaskSearchEvent {
+  const _$VaccineTaskSearchEventImpl(
+      {required this.projectBeneficiaryClientReferenceId});
+
+  @override
+  final String projectBeneficiaryClientReferenceId;
+
+  @override
+  String toString() {
+    return 'VaccineSearchEvent.handleTaskSearch(projectBeneficiaryClientReferenceId: $projectBeneficiaryClientReferenceId)';
+  }
+
+  @override
+  bool operator ==(Object other) {
+    return identical(this, other) ||
+        (other.runtimeType == runtimeType &&
+            other is _$VaccineTaskSearchEventImpl &&
+            (identical(other.projectBeneficiaryClientReferenceId,
+                    projectBeneficiaryClientReferenceId) ||
+                other.projectBeneficiaryClientReferenceId ==
+                    projectBeneficiaryClientReferenceId));
+  }
+
+  @override
+  int get hashCode =>
+      Object.hash(runtimeType, projectBeneficiaryClientReferenceId);
+
+  @JsonKey(ignore: true)
+  @override
+  @pragma('vm:prefer-inline')
+  _$$VaccineTaskSearchEventImplCopyWith<_$VaccineTaskSearchEventImpl>
+      get copyWith => __$$VaccineTaskSearchEventImplCopyWithImpl<
+          _$VaccineTaskSearchEventImpl>(this, _$identity);
+
+  @override
+  @optionalTypeArgs
+  TResult when<TResult extends Object?>({
+    required TResult Function(String projectBeneficiaryClientReferenceId)
+        handleTaskSearch,
+    required TResult Function(
+            int ageInMonths,
+            List<VaccineDoseData> vaccineDataList,
+            Map<String, dynamic> vaccineDoseDataVariation)
+        eligibleVaccinesSearch,
+  }) {
+    return handleTaskSearch(projectBeneficiaryClientReferenceId);
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult? whenOrNull<TResult extends Object?>({
+    TResult? Function(String projectBeneficiaryClientReferenceId)?
+        handleTaskSearch,
+    TResult? Function(int ageInMonths, List<VaccineDoseData> vaccineDataList,
+            Map<String, dynamic> vaccineDoseDataVariation)?
+        eligibleVaccinesSearch,
+  }) {
+    return handleTaskSearch?.call(projectBeneficiaryClientReferenceId);
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult maybeWhen<TResult extends Object?>({
+    TResult Function(String projectBeneficiaryClientReferenceId)?
+        handleTaskSearch,
+    TResult Function(int ageInMonths, List<VaccineDoseData> vaccineDataList,
+            Map<String, dynamic> vaccineDoseDataVariation)?
+        eligibleVaccinesSearch,
+    required TResult orElse(),
+  }) {
+    if (handleTaskSearch != null) {
+      return handleTaskSearch(projectBeneficiaryClientReferenceId);
+    }
+    return orElse();
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult map<TResult extends Object?>({
+    required TResult Function(VaccineTaskSearchEvent value) handleTaskSearch,
+    required TResult Function(VaccineSearchEligibleVaccinesEvent value)
+        eligibleVaccinesSearch,
+  }) {
+    return handleTaskSearch(this);
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult? mapOrNull<TResult extends Object?>({
+    TResult? Function(VaccineTaskSearchEvent value)? handleTaskSearch,
+    TResult? Function(VaccineSearchEligibleVaccinesEvent value)?
+        eligibleVaccinesSearch,
+  }) {
+    return handleTaskSearch?.call(this);
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult maybeMap<TResult extends Object?>({
+    TResult Function(VaccineTaskSearchEvent value)? handleTaskSearch,
+    TResult Function(VaccineSearchEligibleVaccinesEvent value)?
+        eligibleVaccinesSearch,
+    required TResult orElse(),
+  }) {
+    if (handleTaskSearch != null) {
+      return handleTaskSearch(this);
+    }
+    return orElse();
+  }
+}
+
+abstract class VaccineTaskSearchEvent implements VaccineSearchEvent {
+  const factory VaccineTaskSearchEvent(
+          {required final String projectBeneficiaryClientReferenceId}) =
+      _$VaccineTaskSearchEventImpl;
+
+  String get projectBeneficiaryClientReferenceId;
+  @JsonKey(ignore: true)
+  _$$VaccineTaskSearchEventImplCopyWith<_$VaccineTaskSearchEventImpl>
+      get copyWith => throw _privateConstructorUsedError;
+}
+
+/// @nodoc
+abstract class _$$VaccineSearchEligibleVaccinesEventImplCopyWith<$Res> {
   factory _$$VaccineSearchEligibleVaccinesEventImplCopyWith(
           _$VaccineSearchEligibleVaccinesEventImpl value,
           $Res Function(_$VaccineSearchEligibleVaccinesEventImpl) then) =
       __$$VaccineSearchEligibleVaccinesEventImplCopyWithImpl<$Res>;
-  @override
   @useResult
   $Res call(
-      {int ageInDays,
-      List<VaccineDoseData>? vaccineDataList,
-      Map<String, dynamic>? vaccineDoseDataVariation});
+      {int ageInMonths,
+      List<VaccineDoseData> vaccineDataList,
+      Map<String, dynamic> vaccineDoseDataVariation});
 }
 
 /// @nodoc
@@ -146,23 +272,23 @@ class __$$VaccineSearchEligibleVaccinesEventImplCopyWithImpl<$Res>
   @pragma('vm:prefer-inline')
   @override
   $Res call({
-    Object? ageInDays = null,
-    Object? vaccineDataList = freezed,
-    Object? vaccineDoseDataVariation = freezed,
+    Object? ageInMonths = null,
+    Object? vaccineDataList = null,
+    Object? vaccineDoseDataVariation = null,
   }) {
     return _then(_$VaccineSearchEligibleVaccinesEventImpl(
-      ageInDays: null == ageInDays
-          ? _value.ageInDays
-          : ageInDays // ignore: cast_nullable_to_non_nullable
+      ageInMonths: null == ageInMonths
+          ? _value.ageInMonths
+          : ageInMonths // ignore: cast_nullable_to_non_nullable
               as int,
-      vaccineDataList: freezed == vaccineDataList
+      vaccineDataList: null == vaccineDataList
           ? _value._vaccineDataList
           : vaccineDataList // ignore: cast_nullable_to_non_nullable
-              as List<VaccineDoseData>?,
-      vaccineDoseDataVariation: freezed == vaccineDoseDataVariation
+              as List<VaccineDoseData>,
+      vaccineDoseDataVariation: null == vaccineDoseDataVariation
           ? _value._vaccineDoseDataVariation
           : vaccineDoseDataVariation // ignore: cast_nullable_to_non_nullable
-              as Map<String, dynamic>?,
+              as Map<String, dynamic>,
     ));
   }
 }
@@ -172,38 +298,34 @@ class __$$VaccineSearchEligibleVaccinesEventImplCopyWithImpl<$Res>
 class _$VaccineSearchEligibleVaccinesEventImpl
     implements VaccineSearchEligibleVaccinesEvent {
   const _$VaccineSearchEligibleVaccinesEventImpl(
-      {required this.ageInDays,
-      required final List<VaccineDoseData>? vaccineDataList,
-      required final Map<String, dynamic>? vaccineDoseDataVariation})
+      {required this.ageInMonths,
+      required final List<VaccineDoseData> vaccineDataList,
+      required final Map<String, dynamic> vaccineDoseDataVariation})
       : _vaccineDataList = vaccineDataList,
         _vaccineDoseDataVariation = vaccineDoseDataVariation;
 
   @override
-  final int ageInDays;
-  final List<VaccineDoseData>? _vaccineDataList;
+  final int ageInMonths;
+  final List<VaccineDoseData> _vaccineDataList;
   @override
-  List<VaccineDoseData>? get vaccineDataList {
-    final value = _vaccineDataList;
-    if (value == null) return null;
+  List<VaccineDoseData> get vaccineDataList {
     if (_vaccineDataList is EqualUnmodifiableListView) return _vaccineDataList;
     // ignore: implicit_dynamic_type
-    return EqualUnmodifiableListView(value);
+    return EqualUnmodifiableListView(_vaccineDataList);
   }
 
-  final Map<String, dynamic>? _vaccineDoseDataVariation;
+  final Map<String, dynamic> _vaccineDoseDataVariation;
   @override
-  Map<String, dynamic>? get vaccineDoseDataVariation {
-    final value = _vaccineDoseDataVariation;
-    if (value == null) return null;
+  Map<String, dynamic> get vaccineDoseDataVariation {
     if (_vaccineDoseDataVariation is EqualUnmodifiableMapView)
       return _vaccineDoseDataVariation;
     // ignore: implicit_dynamic_type
-    return EqualUnmodifiableMapView(value);
+    return EqualUnmodifiableMapView(_vaccineDoseDataVariation);
   }
 
   @override
   String toString() {
-    return 'VaccineSearchEvent.eligibleVaccinesSearch(ageInDays: $ageInDays, vaccineDataList: $vaccineDataList, vaccineDoseDataVariation: $vaccineDoseDataVariation)';
+    return 'VaccineSearchEvent.eligibleVaccinesSearch(ageInMonths: $ageInMonths, vaccineDataList: $vaccineDataList, vaccineDoseDataVariation: $vaccineDoseDataVariation)';
   }
 
   @override
@@ -211,8 +333,8 @@ class _$VaccineSearchEligibleVaccinesEventImpl
     return identical(this, other) ||
         (other.runtimeType == runtimeType &&
             other is _$VaccineSearchEligibleVaccinesEventImpl &&
-            (identical(other.ageInDays, ageInDays) ||
-                other.ageInDays == ageInDays) &&
+            (identical(other.ageInMonths, ageInMonths) ||
+                other.ageInMonths == ageInMonths) &&
             const DeepCollectionEquality()
                 .equals(other._vaccineDataList, _vaccineDataList) &&
             const DeepCollectionEquality().equals(
@@ -222,7 +344,7 @@ class _$VaccineSearchEligibleVaccinesEventImpl
   @override
   int get hashCode => Object.hash(
       runtimeType,
-      ageInDays,
+      ageInMonths,
       const DeepCollectionEquality().hash(_vaccineDataList),
       const DeepCollectionEquality().hash(_vaccineDoseDataVariation));
 
@@ -237,47 +359,44 @@ class _$VaccineSearchEligibleVaccinesEventImpl
   @override
   @optionalTypeArgs
   TResult when<TResult extends Object?>({
+    required TResult Function(String projectBeneficiaryClientReferenceId)
+        handleTaskSearch,
     required TResult Function(
-            int ageInDays,
-            List<VaccineDoseData>? vaccineDataList,
-            Map<String, dynamic>? vaccineDoseDataVariation)
+            int ageInMonths,
+            List<VaccineDoseData> vaccineDataList,
+            Map<String, dynamic> vaccineDoseDataVariation)
         eligibleVaccinesSearch,
-    required TResult Function(String projectBeneficiaryClientReferenceId,
-            int ageInDays, List<VaccineDoseData>? vaccineDataList)
-        handleSearch,
   }) {
     return eligibleVaccinesSearch(
-        ageInDays, vaccineDataList, vaccineDoseDataVariation);
+        ageInMonths, vaccineDataList, vaccineDoseDataVariation);
   }
 
   @override
   @optionalTypeArgs
   TResult? whenOrNull<TResult extends Object?>({
-    TResult? Function(int ageInDays, List<VaccineDoseData>? vaccineDataList,
-            Map<String, dynamic>? vaccineDoseDataVariation)?
+    TResult? Function(String projectBeneficiaryClientReferenceId)?
+        handleTaskSearch,
+    TResult? Function(int ageInMonths, List<VaccineDoseData> vaccineDataList,
+            Map<String, dynamic> vaccineDoseDataVariation)?
         eligibleVaccinesSearch,
-    TResult? Function(String projectBeneficiaryClientReferenceId, int ageInDays,
-            List<VaccineDoseData>? vaccineDataList)?
-        handleSearch,
   }) {
     return eligibleVaccinesSearch?.call(
-        ageInDays, vaccineDataList, vaccineDoseDataVariation);
+        ageInMonths, vaccineDataList, vaccineDoseDataVariation);
   }
 
   @override
   @optionalTypeArgs
   TResult maybeWhen<TResult extends Object?>({
-    TResult Function(int ageInDays, List<VaccineDoseData>? vaccineDataList,
-            Map<String, dynamic>? vaccineDoseDataVariation)?
+    TResult Function(String projectBeneficiaryClientReferenceId)?
+        handleTaskSearch,
+    TResult Function(int ageInMonths, List<VaccineDoseData> vaccineDataList,
+            Map<String, dynamic> vaccineDoseDataVariation)?
         eligibleVaccinesSearch,
-    TResult Function(String projectBeneficiaryClientReferenceId, int ageInDays,
-            List<VaccineDoseData>? vaccineDataList)?
-        handleSearch,
     required TResult orElse(),
   }) {
     if (eligibleVaccinesSearch != null) {
       return eligibleVaccinesSearch(
-          ageInDays, vaccineDataList, vaccineDoseDataVariation);
+          ageInMonths, vaccineDataList, vaccineDoseDataVariation);
     }
     return orElse();
   }
@@ -285,9 +404,9 @@ class _$VaccineSearchEligibleVaccinesEventImpl
   @override
   @optionalTypeArgs
   TResult map<TResult extends Object?>({
+    required TResult Function(VaccineTaskSearchEvent value) handleTaskSearch,
     required TResult Function(VaccineSearchEligibleVaccinesEvent value)
         eligibleVaccinesSearch,
-    required TResult Function(VaccineSearchTaskEvent value) handleSearch,
   }) {
     return eligibleVaccinesSearch(this);
   }
@@ -295,9 +414,9 @@ class _$VaccineSearchEligibleVaccinesEventImpl
   @override
   @optionalTypeArgs
   TResult? mapOrNull<TResult extends Object?>({
+    TResult? Function(VaccineTaskSearchEvent value)? handleTaskSearch,
     TResult? Function(VaccineSearchEligibleVaccinesEvent value)?
         eligibleVaccinesSearch,
-    TResult? Function(VaccineSearchTaskEvent value)? handleSearch,
   }) {
     return eligibleVaccinesSearch?.call(this);
   }
@@ -305,9 +424,9 @@ class _$VaccineSearchEligibleVaccinesEventImpl
   @override
   @optionalTypeArgs
   TResult maybeMap<TResult extends Object?>({
+    TResult Function(VaccineTaskSearchEvent value)? handleTaskSearch,
     TResult Function(VaccineSearchEligibleVaccinesEvent value)?
         eligibleVaccinesSearch,
-    TResult Function(VaccineSearchTaskEvent value)? handleSearch,
     required TResult orElse(),
   }) {
     if (eligibleVaccinesSearch != null) {
@@ -320,17 +439,14 @@ class _$VaccineSearchEligibleVaccinesEventImpl
 abstract class VaccineSearchEligibleVaccinesEvent
     implements VaccineSearchEvent {
   const factory VaccineSearchEligibleVaccinesEvent(
-          {required final int ageInDays,
-          required final List<VaccineDoseData>? vaccineDataList,
-          required final Map<String, dynamic>? vaccineDoseDataVariation}) =
+          {required final int ageInMonths,
+          required final List<VaccineDoseData> vaccineDataList,
+          required final Map<String, dynamic> vaccineDoseDataVariation}) =
       _$VaccineSearchEligibleVaccinesEventImpl;
 
-  @override
-  int get ageInDays;
-  @override
-  List<VaccineDoseData>? get vaccineDataList;
-  Map<String, dynamic>? get vaccineDoseDataVariation;
-  @override
+  int get ageInMonths;
+  List<VaccineDoseData> get vaccineDataList;
+  Map<String, dynamic> get vaccineDoseDataVariation;
   @JsonKey(ignore: true)
   _$$VaccineSearchEligibleVaccinesEventImplCopyWith<
           _$VaccineSearchEligibleVaccinesEventImpl>
@@ -338,224 +454,17 @@ abstract class VaccineSearchEligibleVaccinesEvent
 }
 
 /// @nodoc
-abstract class _$$VaccineSearchTaskEventImplCopyWith<$Res>
-    implements $VaccineSearchEventCopyWith<$Res> {
-  factory _$$VaccineSearchTaskEventImplCopyWith(
-          _$VaccineSearchTaskEventImpl value,
-          $Res Function(_$VaccineSearchTaskEventImpl) then) =
-      __$$VaccineSearchTaskEventImplCopyWithImpl<$Res>;
-  @override
-  @useResult
-  $Res call(
-      {String projectBeneficiaryClientReferenceId,
-      int ageInDays,
-      List<VaccineDoseData>? vaccineDataList});
-}
-
-/// @nodoc
-class __$$VaccineSearchTaskEventImplCopyWithImpl<$Res>
-    extends _$VaccineSearchEventCopyWithImpl<$Res, _$VaccineSearchTaskEventImpl>
-    implements _$$VaccineSearchTaskEventImplCopyWith<$Res> {
-  __$$VaccineSearchTaskEventImplCopyWithImpl(
-      _$VaccineSearchTaskEventImpl _value,
-      $Res Function(_$VaccineSearchTaskEventImpl) _then)
-      : super(_value, _then);
-
-  @pragma('vm:prefer-inline')
-  @override
-  $Res call({
-    Object? projectBeneficiaryClientReferenceId = null,
-    Object? ageInDays = null,
-    Object? vaccineDataList = freezed,
-  }) {
-    return _then(_$VaccineSearchTaskEventImpl(
-      projectBeneficiaryClientReferenceId: null ==
-              projectBeneficiaryClientReferenceId
-          ? _value.projectBeneficiaryClientReferenceId
-          : projectBeneficiaryClientReferenceId // ignore: cast_nullable_to_non_nullable
-              as String,
-      ageInDays: null == ageInDays
-          ? _value.ageInDays
-          : ageInDays // ignore: cast_nullable_to_non_nullable
-              as int,
-      vaccineDataList: freezed == vaccineDataList
-          ? _value._vaccineDataList
-          : vaccineDataList // ignore: cast_nullable_to_non_nullable
-              as List<VaccineDoseData>?,
-    ));
-  }
-}
-
-/// @nodoc
-
-class _$VaccineSearchTaskEventImpl implements VaccineSearchTaskEvent {
-  const _$VaccineSearchTaskEventImpl(
-      {required this.projectBeneficiaryClientReferenceId,
-      required this.ageInDays,
-      required final List<VaccineDoseData>? vaccineDataList})
-      : _vaccineDataList = vaccineDataList;
-
-  @override
-  final String projectBeneficiaryClientReferenceId;
-  @override
-  final int ageInDays;
-  final List<VaccineDoseData>? _vaccineDataList;
-  @override
-  List<VaccineDoseData>? get vaccineDataList {
-    final value = _vaccineDataList;
-    if (value == null) return null;
-    if (_vaccineDataList is EqualUnmodifiableListView) return _vaccineDataList;
-    // ignore: implicit_dynamic_type
-    return EqualUnmodifiableListView(value);
-  }
-
-  @override
-  String toString() {
-    return 'VaccineSearchEvent.handleSearch(projectBeneficiaryClientReferenceId: $projectBeneficiaryClientReferenceId, ageInDays: $ageInDays, vaccineDataList: $vaccineDataList)';
-  }
-
-  @override
-  bool operator ==(Object other) {
-    return identical(this, other) ||
-        (other.runtimeType == runtimeType &&
-            other is _$VaccineSearchTaskEventImpl &&
-            (identical(other.projectBeneficiaryClientReferenceId,
-                    projectBeneficiaryClientReferenceId) ||
-                other.projectBeneficiaryClientReferenceId ==
-                    projectBeneficiaryClientReferenceId) &&
-            (identical(other.ageInDays, ageInDays) ||
-                other.ageInDays == ageInDays) &&
-            const DeepCollectionEquality()
-                .equals(other._vaccineDataList, _vaccineDataList));
-  }
-
-  @override
-  int get hashCode => Object.hash(
-      runtimeType,
-      projectBeneficiaryClientReferenceId,
-      ageInDays,
-      const DeepCollectionEquality().hash(_vaccineDataList));
-
-  @JsonKey(ignore: true)
-  @override
-  @pragma('vm:prefer-inline')
-  _$$VaccineSearchTaskEventImplCopyWith<_$VaccineSearchTaskEventImpl>
-      get copyWith => __$$VaccineSearchTaskEventImplCopyWithImpl<
-          _$VaccineSearchTaskEventImpl>(this, _$identity);
-
-  @override
-  @optionalTypeArgs
-  TResult when<TResult extends Object?>({
-    required TResult Function(
-            int ageInDays,
-            List<VaccineDoseData>? vaccineDataList,
-            Map<String, dynamic>? vaccineDoseDataVariation)
-        eligibleVaccinesSearch,
-    required TResult Function(String projectBeneficiaryClientReferenceId,
-            int ageInDays, List<VaccineDoseData>? vaccineDataList)
-        handleSearch,
-  }) {
-    return handleSearch(
-        projectBeneficiaryClientReferenceId, ageInDays, vaccineDataList);
-  }
-
-  @override
-  @optionalTypeArgs
-  TResult? whenOrNull<TResult extends Object?>({
-    TResult? Function(int ageInDays, List<VaccineDoseData>? vaccineDataList,
-            Map<String, dynamic>? vaccineDoseDataVariation)?
-        eligibleVaccinesSearch,
-    TResult? Function(String projectBeneficiaryClientReferenceId, int ageInDays,
-            List<VaccineDoseData>? vaccineDataList)?
-        handleSearch,
-  }) {
-    return handleSearch?.call(
-        projectBeneficiaryClientReferenceId, ageInDays, vaccineDataList);
-  }
-
-  @override
-  @optionalTypeArgs
-  TResult maybeWhen<TResult extends Object?>({
-    TResult Function(int ageInDays, List<VaccineDoseData>? vaccineDataList,
-            Map<String, dynamic>? vaccineDoseDataVariation)?
-        eligibleVaccinesSearch,
-    TResult Function(String projectBeneficiaryClientReferenceId, int ageInDays,
-            List<VaccineDoseData>? vaccineDataList)?
-        handleSearch,
-    required TResult orElse(),
-  }) {
-    if (handleSearch != null) {
-      return handleSearch(
-          projectBeneficiaryClientReferenceId, ageInDays, vaccineDataList);
-    }
-    return orElse();
-  }
-
-  @override
-  @optionalTypeArgs
-  TResult map<TResult extends Object?>({
-    required TResult Function(VaccineSearchEligibleVaccinesEvent value)
-        eligibleVaccinesSearch,
-    required TResult Function(VaccineSearchTaskEvent value) handleSearch,
-  }) {
-    return handleSearch(this);
-  }
-
-  @override
-  @optionalTypeArgs
-  TResult? mapOrNull<TResult extends Object?>({
-    TResult? Function(VaccineSearchEligibleVaccinesEvent value)?
-        eligibleVaccinesSearch,
-    TResult? Function(VaccineSearchTaskEvent value)? handleSearch,
-  }) {
-    return handleSearch?.call(this);
-  }
-
-  @override
-  @optionalTypeArgs
-  TResult maybeMap<TResult extends Object?>({
-    TResult Function(VaccineSearchEligibleVaccinesEvent value)?
-        eligibleVaccinesSearch,
-    TResult Function(VaccineSearchTaskEvent value)? handleSearch,
-    required TResult orElse(),
-  }) {
-    if (handleSearch != null) {
-      return handleSearch(this);
-    }
-    return orElse();
-  }
-}
-
-abstract class VaccineSearchTaskEvent implements VaccineSearchEvent {
-  const factory VaccineSearchTaskEvent(
-          {required final String projectBeneficiaryClientReferenceId,
-          required final int ageInDays,
-          required final List<VaccineDoseData>? vaccineDataList}) =
-      _$VaccineSearchTaskEventImpl;
-
-  String get projectBeneficiaryClientReferenceId;
-  @override
-  int get ageInDays;
-  @override
-  List<VaccineDoseData>? get vaccineDataList;
-  @override
-  @JsonKey(ignore: true)
-  _$$VaccineSearchTaskEventImplCopyWith<_$VaccineSearchTaskEventImpl>
-      get copyWith => throw _privateConstructorUsedError;
-}
-
-/// @nodoc
 mixin _$VaccineSearchState {
   bool get loading => throw _privateConstructorUsedError;
-  List<String>? get availedVaccines => throw _privateConstructorUsedError;
   List<TaskModel>? get vaccineDeliveryDoseTasks =>
       throw _privateConstructorUsedError;
-  List<int>? get ageIndex => throw _privateConstructorUsedError;
-  Map<int, Set<String>>? get vaccineDoseList =>
+  List<String>? get availedVaccineDoseCodes =>
       throw _privateConstructorUsedError;
-  Map<int, Set<String>>? get vaccinesByAgeIndex =>
+  List<String>? get allEligibleVaccineDoseCodes =>
       throw _privateConstructorUsedError;
-  Map<int, Set<String>>? get eligibleVaccinesByAgeIndex =>
+  Map<int, Set<String>>? get allVaccinesDoseCodeByAgeIndex =>
+      throw _privateConstructorUsedError;
+  Map<int, Set<String>>? get eligibleVaccinesDoseCodeByAgeIndex =>
       throw _privateConstructorUsedError;
 
   @JsonKey(ignore: true)
@@ -571,12 +480,11 @@ abstract class $VaccineSearchStateCopyWith<$Res> {
   @useResult
   $Res call(
       {bool loading,
-      List<String>? availedVaccines,
       List<TaskModel>? vaccineDeliveryDoseTasks,
-      List<int>? ageIndex,
-      Map<int, Set<String>>? vaccineDoseList,
-      Map<int, Set<String>>? vaccinesByAgeIndex,
-      Map<int, Set<String>>? eligibleVaccinesByAgeIndex});
+      List<String>? availedVaccineDoseCodes,
+      List<String>? allEligibleVaccineDoseCodes,
+      Map<int, Set<String>>? allVaccinesDoseCodeByAgeIndex,
+      Map<int, Set<String>>? eligibleVaccinesDoseCodeByAgeIndex});
 }
 
 /// @nodoc
@@ -593,41 +501,37 @@ class _$VaccineSearchStateCopyWithImpl<$Res, $Val extends VaccineSearchState>
   @override
   $Res call({
     Object? loading = null,
-    Object? availedVaccines = freezed,
     Object? vaccineDeliveryDoseTasks = freezed,
-    Object? ageIndex = freezed,
-    Object? vaccineDoseList = freezed,
-    Object? vaccinesByAgeIndex = freezed,
-    Object? eligibleVaccinesByAgeIndex = freezed,
+    Object? availedVaccineDoseCodes = freezed,
+    Object? allEligibleVaccineDoseCodes = freezed,
+    Object? allVaccinesDoseCodeByAgeIndex = freezed,
+    Object? eligibleVaccinesDoseCodeByAgeIndex = freezed,
   }) {
     return _then(_value.copyWith(
       loading: null == loading
           ? _value.loading
           : loading // ignore: cast_nullable_to_non_nullable
               as bool,
-      availedVaccines: freezed == availedVaccines
-          ? _value.availedVaccines
-          : availedVaccines // ignore: cast_nullable_to_non_nullable
-              as List<String>?,
       vaccineDeliveryDoseTasks: freezed == vaccineDeliveryDoseTasks
           ? _value.vaccineDeliveryDoseTasks
           : vaccineDeliveryDoseTasks // ignore: cast_nullable_to_non_nullable
               as List<TaskModel>?,
-      ageIndex: freezed == ageIndex
-          ? _value.ageIndex
-          : ageIndex // ignore: cast_nullable_to_non_nullable
-              as List<int>?,
-      vaccineDoseList: freezed == vaccineDoseList
-          ? _value.vaccineDoseList
-          : vaccineDoseList // ignore: cast_nullable_to_non_nullable
+      availedVaccineDoseCodes: freezed == availedVaccineDoseCodes
+          ? _value.availedVaccineDoseCodes
+          : availedVaccineDoseCodes // ignore: cast_nullable_to_non_nullable
+              as List<String>?,
+      allEligibleVaccineDoseCodes: freezed == allEligibleVaccineDoseCodes
+          ? _value.allEligibleVaccineDoseCodes
+          : allEligibleVaccineDoseCodes // ignore: cast_nullable_to_non_nullable
+              as List<String>?,
+      allVaccinesDoseCodeByAgeIndex: freezed == allVaccinesDoseCodeByAgeIndex
+          ? _value.allVaccinesDoseCodeByAgeIndex
+          : allVaccinesDoseCodeByAgeIndex // ignore: cast_nullable_to_non_nullable
               as Map<int, Set<String>>?,
-      vaccinesByAgeIndex: freezed == vaccinesByAgeIndex
-          ? _value.vaccinesByAgeIndex
-          : vaccinesByAgeIndex // ignore: cast_nullable_to_non_nullable
-              as Map<int, Set<String>>?,
-      eligibleVaccinesByAgeIndex: freezed == eligibleVaccinesByAgeIndex
-          ? _value.eligibleVaccinesByAgeIndex
-          : eligibleVaccinesByAgeIndex // ignore: cast_nullable_to_non_nullable
+      eligibleVaccinesDoseCodeByAgeIndex: freezed ==
+              eligibleVaccinesDoseCodeByAgeIndex
+          ? _value.eligibleVaccinesDoseCodeByAgeIndex
+          : eligibleVaccinesDoseCodeByAgeIndex // ignore: cast_nullable_to_non_nullable
               as Map<int, Set<String>>?,
     ) as $Val);
   }
@@ -643,12 +547,11 @@ abstract class _$$VaccineSearchStateImplCopyWith<$Res>
   @useResult
   $Res call(
       {bool loading,
-      List<String>? availedVaccines,
       List<TaskModel>? vaccineDeliveryDoseTasks,
-      List<int>? ageIndex,
-      Map<int, Set<String>>? vaccineDoseList,
-      Map<int, Set<String>>? vaccinesByAgeIndex,
-      Map<int, Set<String>>? eligibleVaccinesByAgeIndex});
+      List<String>? availedVaccineDoseCodes,
+      List<String>? allEligibleVaccineDoseCodes,
+      Map<int, Set<String>>? allVaccinesDoseCodeByAgeIndex,
+      Map<int, Set<String>>? eligibleVaccinesDoseCodeByAgeIndex});
 }
 
 /// @nodoc
@@ -663,41 +566,37 @@ class __$$VaccineSearchStateImplCopyWithImpl<$Res>
   @override
   $Res call({
     Object? loading = null,
-    Object? availedVaccines = freezed,
     Object? vaccineDeliveryDoseTasks = freezed,
-    Object? ageIndex = freezed,
-    Object? vaccineDoseList = freezed,
-    Object? vaccinesByAgeIndex = freezed,
-    Object? eligibleVaccinesByAgeIndex = freezed,
+    Object? availedVaccineDoseCodes = freezed,
+    Object? allEligibleVaccineDoseCodes = freezed,
+    Object? allVaccinesDoseCodeByAgeIndex = freezed,
+    Object? eligibleVaccinesDoseCodeByAgeIndex = freezed,
   }) {
     return _then(_$VaccineSearchStateImpl(
       loading: null == loading
           ? _value.loading
           : loading // ignore: cast_nullable_to_non_nullable
               as bool,
-      availedVaccines: freezed == availedVaccines
-          ? _value._availedVaccines
-          : availedVaccines // ignore: cast_nullable_to_non_nullable
-              as List<String>?,
       vaccineDeliveryDoseTasks: freezed == vaccineDeliveryDoseTasks
           ? _value._vaccineDeliveryDoseTasks
           : vaccineDeliveryDoseTasks // ignore: cast_nullable_to_non_nullable
               as List<TaskModel>?,
-      ageIndex: freezed == ageIndex
-          ? _value._ageIndex
-          : ageIndex // ignore: cast_nullable_to_non_nullable
-              as List<int>?,
-      vaccineDoseList: freezed == vaccineDoseList
-          ? _value._vaccineDoseList
-          : vaccineDoseList // ignore: cast_nullable_to_non_nullable
+      availedVaccineDoseCodes: freezed == availedVaccineDoseCodes
+          ? _value._availedVaccineDoseCodes
+          : availedVaccineDoseCodes // ignore: cast_nullable_to_non_nullable
+              as List<String>?,
+      allEligibleVaccineDoseCodes: freezed == allEligibleVaccineDoseCodes
+          ? _value._allEligibleVaccineDoseCodes
+          : allEligibleVaccineDoseCodes // ignore: cast_nullable_to_non_nullable
+              as List<String>?,
+      allVaccinesDoseCodeByAgeIndex: freezed == allVaccinesDoseCodeByAgeIndex
+          ? _value._allVaccinesDoseCodeByAgeIndex
+          : allVaccinesDoseCodeByAgeIndex // ignore: cast_nullable_to_non_nullable
               as Map<int, Set<String>>?,
-      vaccinesByAgeIndex: freezed == vaccinesByAgeIndex
-          ? _value._vaccinesByAgeIndex
-          : vaccinesByAgeIndex // ignore: cast_nullable_to_non_nullable
-              as Map<int, Set<String>>?,
-      eligibleVaccinesByAgeIndex: freezed == eligibleVaccinesByAgeIndex
-          ? _value._eligibleVaccinesByAgeIndex
-          : eligibleVaccinesByAgeIndex // ignore: cast_nullable_to_non_nullable
+      eligibleVaccinesDoseCodeByAgeIndex: freezed ==
+              eligibleVaccinesDoseCodeByAgeIndex
+          ? _value._eligibleVaccinesDoseCodeByAgeIndex
+          : eligibleVaccinesDoseCodeByAgeIndex // ignore: cast_nullable_to_non_nullable
               as Map<int, Set<String>>?,
     ));
   }
@@ -708,32 +607,21 @@ class __$$VaccineSearchStateImplCopyWithImpl<$Res>
 class _$VaccineSearchStateImpl implements _VaccineSearchState {
   const _$VaccineSearchStateImpl(
       {this.loading = false,
-      final List<String>? availedVaccines,
       final List<TaskModel>? vaccineDeliveryDoseTasks,
-      final List<int>? ageIndex,
-      final Map<int, Set<String>>? vaccineDoseList,
-      final Map<int, Set<String>>? vaccinesByAgeIndex,
-      final Map<int, Set<String>>? eligibleVaccinesByAgeIndex})
-      : _availedVaccines = availedVaccines,
-        _vaccineDeliveryDoseTasks = vaccineDeliveryDoseTasks,
-        _ageIndex = ageIndex,
-        _vaccineDoseList = vaccineDoseList,
-        _vaccinesByAgeIndex = vaccinesByAgeIndex,
-        _eligibleVaccinesByAgeIndex = eligibleVaccinesByAgeIndex;
+      final List<String>? availedVaccineDoseCodes,
+      final List<String>? allEligibleVaccineDoseCodes,
+      final Map<int, Set<String>>? allVaccinesDoseCodeByAgeIndex,
+      final Map<int, Set<String>>? eligibleVaccinesDoseCodeByAgeIndex})
+      : _vaccineDeliveryDoseTasks = vaccineDeliveryDoseTasks,
+        _availedVaccineDoseCodes = availedVaccineDoseCodes,
+        _allEligibleVaccineDoseCodes = allEligibleVaccineDoseCodes,
+        _allVaccinesDoseCodeByAgeIndex = allVaccinesDoseCodeByAgeIndex,
+        _eligibleVaccinesDoseCodeByAgeIndex =
+            eligibleVaccinesDoseCodeByAgeIndex;
 
   @override
   @JsonKey()
   final bool loading;
-  final List<String>? _availedVaccines;
-  @override
-  List<String>? get availedVaccines {
-    final value = _availedVaccines;
-    if (value == null) return null;
-    if (_availedVaccines is EqualUnmodifiableListView) return _availedVaccines;
-    // ignore: implicit_dynamic_type
-    return EqualUnmodifiableListView(value);
-  }
-
   final List<TaskModel>? _vaccineDeliveryDoseTasks;
   @override
   List<TaskModel>? get vaccineDeliveryDoseTasks {
@@ -745,51 +633,53 @@ class _$VaccineSearchStateImpl implements _VaccineSearchState {
     return EqualUnmodifiableListView(value);
   }
 
-  final List<int>? _ageIndex;
+  final List<String>? _availedVaccineDoseCodes;
   @override
-  List<int>? get ageIndex {
-    final value = _ageIndex;
+  List<String>? get availedVaccineDoseCodes {
+    final value = _availedVaccineDoseCodes;
     if (value == null) return null;
-    if (_ageIndex is EqualUnmodifiableListView) return _ageIndex;
+    if (_availedVaccineDoseCodes is EqualUnmodifiableListView)
+      return _availedVaccineDoseCodes;
     // ignore: implicit_dynamic_type
     return EqualUnmodifiableListView(value);
   }
 
-  final Map<int, Set<String>>? _vaccineDoseList;
+  final List<String>? _allEligibleVaccineDoseCodes;
   @override
-  Map<int, Set<String>>? get vaccineDoseList {
-    final value = _vaccineDoseList;
+  List<String>? get allEligibleVaccineDoseCodes {
+    final value = _allEligibleVaccineDoseCodes;
     if (value == null) return null;
-    if (_vaccineDoseList is EqualUnmodifiableMapView) return _vaccineDoseList;
+    if (_allEligibleVaccineDoseCodes is EqualUnmodifiableListView)
+      return _allEligibleVaccineDoseCodes;
+    // ignore: implicit_dynamic_type
+    return EqualUnmodifiableListView(value);
+  }
+
+  final Map<int, Set<String>>? _allVaccinesDoseCodeByAgeIndex;
+  @override
+  Map<int, Set<String>>? get allVaccinesDoseCodeByAgeIndex {
+    final value = _allVaccinesDoseCodeByAgeIndex;
+    if (value == null) return null;
+    if (_allVaccinesDoseCodeByAgeIndex is EqualUnmodifiableMapView)
+      return _allVaccinesDoseCodeByAgeIndex;
     // ignore: implicit_dynamic_type
     return EqualUnmodifiableMapView(value);
   }
 
-  final Map<int, Set<String>>? _vaccinesByAgeIndex;
+  final Map<int, Set<String>>? _eligibleVaccinesDoseCodeByAgeIndex;
   @override
-  Map<int, Set<String>>? get vaccinesByAgeIndex {
-    final value = _vaccinesByAgeIndex;
+  Map<int, Set<String>>? get eligibleVaccinesDoseCodeByAgeIndex {
+    final value = _eligibleVaccinesDoseCodeByAgeIndex;
     if (value == null) return null;
-    if (_vaccinesByAgeIndex is EqualUnmodifiableMapView)
-      return _vaccinesByAgeIndex;
-    // ignore: implicit_dynamic_type
-    return EqualUnmodifiableMapView(value);
-  }
-
-  final Map<int, Set<String>>? _eligibleVaccinesByAgeIndex;
-  @override
-  Map<int, Set<String>>? get eligibleVaccinesByAgeIndex {
-    final value = _eligibleVaccinesByAgeIndex;
-    if (value == null) return null;
-    if (_eligibleVaccinesByAgeIndex is EqualUnmodifiableMapView)
-      return _eligibleVaccinesByAgeIndex;
+    if (_eligibleVaccinesDoseCodeByAgeIndex is EqualUnmodifiableMapView)
+      return _eligibleVaccinesDoseCodeByAgeIndex;
     // ignore: implicit_dynamic_type
     return EqualUnmodifiableMapView(value);
   }
 
   @override
   String toString() {
-    return 'VaccineSearchState(loading: $loading, availedVaccines: $availedVaccines, vaccineDeliveryDoseTasks: $vaccineDeliveryDoseTasks, ageIndex: $ageIndex, vaccineDoseList: $vaccineDoseList, vaccinesByAgeIndex: $vaccinesByAgeIndex, eligibleVaccinesByAgeIndex: $eligibleVaccinesByAgeIndex)';
+    return 'VaccineSearchState(loading: $loading, vaccineDeliveryDoseTasks: $vaccineDeliveryDoseTasks, availedVaccineDoseCodes: $availedVaccineDoseCodes, allEligibleVaccineDoseCodes: $allEligibleVaccineDoseCodes, allVaccinesDoseCodeByAgeIndex: $allVaccinesDoseCodeByAgeIndex, eligibleVaccinesDoseCodeByAgeIndex: $eligibleVaccinesDoseCodeByAgeIndex)';
   }
 
   @override
@@ -798,30 +688,30 @@ class _$VaccineSearchStateImpl implements _VaccineSearchState {
         (other.runtimeType == runtimeType &&
             other is _$VaccineSearchStateImpl &&
             (identical(other.loading, loading) || other.loading == loading) &&
-            const DeepCollectionEquality()
-                .equals(other._availedVaccines, _availedVaccines) &&
             const DeepCollectionEquality().equals(
                 other._vaccineDeliveryDoseTasks, _vaccineDeliveryDoseTasks) &&
-            const DeepCollectionEquality().equals(other._ageIndex, _ageIndex) &&
-            const DeepCollectionEquality()
-                .equals(other._vaccineDoseList, _vaccineDoseList) &&
-            const DeepCollectionEquality()
-                .equals(other._vaccinesByAgeIndex, _vaccinesByAgeIndex) &&
             const DeepCollectionEquality().equals(
-                other._eligibleVaccinesByAgeIndex,
-                _eligibleVaccinesByAgeIndex));
+                other._availedVaccineDoseCodes, _availedVaccineDoseCodes) &&
+            const DeepCollectionEquality().equals(
+                other._allEligibleVaccineDoseCodes,
+                _allEligibleVaccineDoseCodes) &&
+            const DeepCollectionEquality().equals(
+                other._allVaccinesDoseCodeByAgeIndex,
+                _allVaccinesDoseCodeByAgeIndex) &&
+            const DeepCollectionEquality().equals(
+                other._eligibleVaccinesDoseCodeByAgeIndex,
+                _eligibleVaccinesDoseCodeByAgeIndex));
   }
 
   @override
   int get hashCode => Object.hash(
       runtimeType,
       loading,
-      const DeepCollectionEquality().hash(_availedVaccines),
       const DeepCollectionEquality().hash(_vaccineDeliveryDoseTasks),
-      const DeepCollectionEquality().hash(_ageIndex),
-      const DeepCollectionEquality().hash(_vaccineDoseList),
-      const DeepCollectionEquality().hash(_vaccinesByAgeIndex),
-      const DeepCollectionEquality().hash(_eligibleVaccinesByAgeIndex));
+      const DeepCollectionEquality().hash(_availedVaccineDoseCodes),
+      const DeepCollectionEquality().hash(_allEligibleVaccineDoseCodes),
+      const DeepCollectionEquality().hash(_allVaccinesDoseCodeByAgeIndex),
+      const DeepCollectionEquality().hash(_eligibleVaccinesDoseCodeByAgeIndex));
 
   @JsonKey(ignore: true)
   @override
@@ -834,28 +724,25 @@ class _$VaccineSearchStateImpl implements _VaccineSearchState {
 abstract class _VaccineSearchState implements VaccineSearchState {
   const factory _VaccineSearchState(
           {final bool loading,
-          final List<String>? availedVaccines,
           final List<TaskModel>? vaccineDeliveryDoseTasks,
-          final List<int>? ageIndex,
-          final Map<int, Set<String>>? vaccineDoseList,
-          final Map<int, Set<String>>? vaccinesByAgeIndex,
-          final Map<int, Set<String>>? eligibleVaccinesByAgeIndex}) =
+          final List<String>? availedVaccineDoseCodes,
+          final List<String>? allEligibleVaccineDoseCodes,
+          final Map<int, Set<String>>? allVaccinesDoseCodeByAgeIndex,
+          final Map<int, Set<String>>? eligibleVaccinesDoseCodeByAgeIndex}) =
       _$VaccineSearchStateImpl;
 
   @override
   bool get loading;
   @override
-  List<String>? get availedVaccines;
-  @override
   List<TaskModel>? get vaccineDeliveryDoseTasks;
   @override
-  List<int>? get ageIndex;
+  List<String>? get availedVaccineDoseCodes;
   @override
-  Map<int, Set<String>>? get vaccineDoseList;
+  List<String>? get allEligibleVaccineDoseCodes;
   @override
-  Map<int, Set<String>>? get vaccinesByAgeIndex;
+  Map<int, Set<String>>? get allVaccinesDoseCodeByAgeIndex;
   @override
-  Map<int, Set<String>>? get eligibleVaccinesByAgeIndex;
+  Map<int, Set<String>>? get eligibleVaccinesDoseCodeByAgeIndex;
   @override
   @JsonKey(ignore: true)
   _$$VaccineSearchStateImplCopyWith<_$VaccineSearchStateImpl> get copyWith =>

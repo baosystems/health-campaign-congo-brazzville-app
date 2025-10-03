@@ -27,6 +27,8 @@ enum AdditionalFieldsType {
   dateOfAdministration,
   @MappableValue("dateOfDelivery")
   dateOfDelivery,
+  @MappableValue("nextDateOfDelivery")
+  nextDateOfDelivery,
   @MappableValue("referralComments")
   referralComments,
   @MappableValue("cycle")
@@ -71,7 +73,5 @@ enum AdditionalFieldsType {
   individualClientReferenceId,
   @MappableValue("uniqueBeneficiaryId")
   uniqueBeneficiaryId,
-  @MappableValue("availedVaccines")
-  availedVaccines,
   ;
 }

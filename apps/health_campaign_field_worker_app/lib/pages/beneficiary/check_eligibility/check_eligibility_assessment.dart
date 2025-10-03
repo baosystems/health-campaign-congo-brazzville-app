@@ -14,6 +14,7 @@ import 'package:registration_delivery/blocs/search_households/search_households.
 import 'package:survey_form/survey_form.dart';
 import 'package:digit_data_model/data_model.dart';
 import 'package:registration_delivery/models/entities/task.dart';
+import '../../../blocs/vaccine/vaccine_search.dart';
 import '../../../models/entities/additional_fields_type.dart';
 import '../../../models/entities/roles_type.dart';
 import '../../../router/app_router.dart';
@@ -70,7 +71,7 @@ class _EligibilityChecklistViewPage
   final String test_unavailable = "TEST_UNAVAILABLE";
   bool triggerLocalization = false;
 
-  Set notApplicableVaccines = {};
+  Set<String> notApplicableVaccines = {};
 
   @override
   void initState() {
@@ -534,6 +535,11 @@ class _EligibilityChecklistViewPage
                                       ));
                                     }
                                   } else {
+                                    context.read<VaccineSearchBloc>().add(
+                                        VaccineSearchEvent.handleTaskSearch(
+                                            projectBeneficiaryClientReferenceId:
+                                                widget.projectBeneficiaryClientReferenceId ??
+                                                    ""));
                                     final router = context.router;
                                     router.push(VaccineDeliveryRoute(
                                       doseStatusTask: widget.doseStatusTask,

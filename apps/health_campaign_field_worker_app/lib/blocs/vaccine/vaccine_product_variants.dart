@@ -49,18 +49,18 @@ class VaccineProductVariantBloc
       ),
     );
 
-    List<VaccineDoseData> vaccineData = event.vaccineDataList ?? [];
+    List<VaccineDoseData> vaccineDataList = event.vaccineDataList ?? [];
     Set allVaccineCodes = {};
-    for (var v in vaccineData) {
+    for (var v in vaccineDataList) {
       allVaccineCodes.add(v.code);
     }
-    Map<String, dynamic> vaccineDoseDataVariation = {};
+    Map<String, VaccineDoseVariant> vaccineDoseDataVariation = {};
     for (var code in allVaccineCodes) {
       String productVariationId = productVariants
               .firstWhereOrNull((element) => element.sku == code)
               ?.id ??
           '';
-      List<String> vaccineDoseKeys = vaccineData
+      List<String> vaccineDoseKeys = vaccineDataList
           .where((element) => element.code == code)
           .map((e) => e.doseCode)
           .toList();
@@ -72,7 +72,7 @@ class VaccineProductVariantBloc
     emit(state.copyWith(
       loading: false,
       productVariants: productVariants,
-      vaccineData: vaccineData,
+      vaccineDataList: vaccineDataList,
       vaccineDoseDataVariation: vaccineDoseDataVariation,
     ));
   }
@@ -94,7 +94,7 @@ class VaccineProductVariantState with _$VaccineProductVariantState {
   const factory VaccineProductVariantState({
     bool? loading,
     List<ProductVariantModel>? productVariants,
-    List<VaccineDoseData>? vaccineData,
-    Map<String, dynamic>? vaccineDoseDataVariation,
+    List<VaccineDoseData>? vaccineDataList,
+    Map<String, VaccineDoseVariant>? vaccineDoseDataVariation,
   }) = _VaccineProductVariantState;
 }

@@ -37,7 +37,7 @@ import '../pages/beneficiary/check_eligibility/custom_household_acknowledgement.
 import '../pages/beneficiary/check_eligibility/household_acknowledgement_smc.dart';
 import '../pages/beneficiary/check_eligibility/inventory_facility_selection_smc.dart';
 import '../pages/beneficiary/check_eligibility/refer_beneficiary_smc.dart';
-import '../pages/beneficiary/check_eligibility/vaccine_selection_page.dart';
+import '../pages/beneficiary/check_eligibility/vaccine_selection.dart';
 import '../pages/registration_delivery/custom_complaints_details.dart';
 import '../pages/boundary_selection.dart';
 import '../pages/home.dart';
@@ -88,7 +88,7 @@ import '../pages/checklist/custom_survey_form_preview.dart';
 import '../pages/checklist/custom_survey_form_boundary_view.dart';
 import '../pages/checklist/custom_survey_form_acknowledgement.dart';
 import '../pages/checklist/custom_survey_form_wrapper.dart';
-import '../pages/beneficiary/check_eligibility/vaccine_selection_page.dart';
+import '../pages/beneficiary/check_eligibility/vaccine_selection.dart';
 import '../pages/beneficiary/check_eligibility/zero_dose_check.dart';
 import 'package:closed_household/closed_household.dart';
 import 'package:closed_household/router/closed_household_router.gm.dart';

@@ -11,6 +11,8 @@ enum AdditionalFieldsType {
   selectedVaccines,
   @MappableValue("noSelectedVaccines")
   noSelectedVaccines,
+  @MappableValue("vaccineDoseList")
+  vaccineDoseList,
   @MappableValue("hasSideEffects")
   hasSideEffects,
   @MappableValue("deliveryStrategy")
@@ -69,5 +71,7 @@ enum AdditionalFieldsType {
   individualClientReferenceId,
   @MappableValue("uniqueBeneficiaryId")
   uniqueBeneficiaryId,
+  @MappableValue("availedVaccines")
+  availedVaccines,
   ;
 }

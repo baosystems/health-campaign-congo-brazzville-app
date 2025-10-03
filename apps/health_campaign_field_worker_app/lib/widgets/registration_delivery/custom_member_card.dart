@@ -20,10 +20,13 @@ import 'package:registration_delivery/models/entities/task.dart';
 import 'package:registration_delivery/router/registration_delivery_router.gm.dart';
 import 'package:registration_delivery/utils/i18_key_constants.dart' as i18;
 import '../../blocs/localization/app_localization.dart';
+import '../../blocs/vaccine/vaccine_product_variants.dart';
+import '../../blocs/vaccine/vaccine_search.dart';
 import '../../models/entities/additional_fields_type.dart';
 import '../../models/entities/identifier_types.dart';
 // import '../../utils/registration_delivery/utils_smc.dart';
 import 'package:registration_delivery/utils/utils.dart';
+import '../../models/entities/vaccine/vaccine_dose_variant.dart';
 import '../../pages/beneficiary/check_eligibility/check_eligibility_assessment.dart';
 import '../../router/app_router.dart';
 import '../../utils/app_enums.dart';
@@ -282,6 +285,7 @@ class CustomMemberCard extends StatelessWidget {
                 .parse(individual.dateOfBirth!))
         : digits.DigitDateUtils.calculateAge(DateTime.now());
     final ageInMonths = age.years * 12 + age.months;
+    final ageInDays = (age.years * 12 * 30) + (age.months * 30) + age.days;
     Gender? gender = individual.gender;
 
     List<TaskModel>? smcTasks = _getSMCStatusData(context);
@@ -310,67 +314,56 @@ class CustomMemberCard extends StatelessWidget {
             isSideEffect ||
             isBeneficiaryReferred
         ? const Offstage()
-        : Column(
-            children: [
-              if (doseStatusTasks == null || doseStatusTasks.isEmpty)
-                DigitElevatedButton(
-                  child: Center(
-                    child: Text(
-                      localizations.translate(
-                        i18_local.householdOverView
-                            .householdOverViewZeroDoseActionText,
-                      ),
-                      style: textTheme.headingM.copyWith(color: Colors.white),
-                    ),
-                  ),
-                  onPressed: () async {
-                    final bloc = context.read<HouseholdOverviewBloc>();
-                    bloc.add(
-                      HouseholdOverviewEvent.selectedIndividual(
-                        individualModel: individual,
-                      ),
-                    );
-                    // if ((smcTasks ?? []).isEmpty) {
-                    context.router.push(
-                      ZeroDoseCheckRoute(
-                        eligibilityAssessmentType:
-                            EligibilityAssessmentType.smc,
-                        isAdministration: false,
-                        isChecklistAssessmentDone: false,
-                        projectBeneficiaryClientReferenceId:
-                            projectBeneficiaryClientReferenceId,
-                        individual: individual,
-                      ),
-                    );
-                    // }
-                  },
-                ),
-              if (doseStatusTasks != null && doseStatusTasks.isNotEmpty)
-                Builder(builder: (context) {
-                  if (!context.isHealthFacilitySupervisor) {
-                    return DigitElevatedButton(
+        : BlocBuilder<VaccineProductVariantBloc, VaccineProductVariantState>(
+            builder: (context, vaccineVariantState) {
+              return Column(
+                children: [
+                  if (doseStatusTasks == null || doseStatusTasks.isEmpty)
+                    DigitElevatedButton(
                       child: Center(
                         child: Text(
                           localizations.translate(
                             i18_local.householdOverView
-                                .householdOverViewVaccinationStatusActionText,
+                                .householdOverViewZeroDoseActionText,
                           ),
                           style:
                               textTheme.headingM.copyWith(color: Colors.white),
                         ),
                       ),
                       onPressed: () async {
-                        context.router.push(ViewVaccinationStatusRoute(
-                          task: doseStatusTasks.first,
-                        ));
+                        final bloc = context.read<HouseholdOverviewBloc>();
+                        bloc.add(
+                          HouseholdOverviewEvent.selectedIndividual(
+                            individualModel: individual,
+                          ),
+                        );
+                        context.read<VaccineSearchBloc>().add(
+                              VaccineSearchEvent.handleSearch(
+                                projectBeneficiaryClientReferenceId:
+                                    projectBeneficiaryClientReferenceId!,
+                                ageInDays: ageInDays,
+                                vaccineDataList:
+                                    vaccineVariantState.vaccineData,
+                              ),
+                            );
+                        context.router.push(
+                          ZeroDoseCheckRoute(
+                            eligibilityAssessmentType:
+                                EligibilityAssessmentType.smc,
+                            isAdministration: false,
+                            isChecklistAssessmentDone: false,
+                            projectBeneficiaryClientReferenceId:
+                                projectBeneficiaryClientReferenceId,
+                            individual: individual,
+                          ),
+                        );
+                        // }
                       },
-                    );
-                  } else if (isZeroDose ||
-                      isUnderVaccinated ||
-                      isFullyVaccinated) {
-                    return Column(
-                      children: [
-                        DigitElevatedButton(
+                    ),
+                  if (doseStatusTasks != null && doseStatusTasks.isNotEmpty)
+                    Builder(builder: (context) {
+                      if (!context.isHealthFacilitySupervisor) {
+                        return DigitElevatedButton(
                           child: Center(
                             child: Text(
                               localizations.translate(
@@ -386,52 +379,77 @@ class CustomMemberCard extends StatelessWidget {
                               task: doseStatusTasks.first,
                             ));
                           },
-                        ),
-                        if (isZeroDose || isUnderVaccinated)
-                          DigitElevatedButton(
-                            child: Center(
-                              child: Text(
-                                localizations.translate(
-                                  i18_local.householdOverView
-                                      .householdOverViewChildVaccineActionText,
+                        );
+                      } else if (isZeroDose ||
+                          isUnderVaccinated ||
+                          isFullyVaccinated) {
+                        return Column(
+                          children: [
+                            DigitElevatedButton(
+                              child: Center(
+                                child: Text(
+                                  localizations.translate(
+                                    i18_local.householdOverView
+                                        .householdOverViewVaccinationStatusActionText,
+                                  ),
+                                  style: textTheme.headingM
+                                      .copyWith(color: Colors.white),
                                 ),
-                                style: textTheme.headingM
-                                    .copyWith(color: Colors.white),
                               ),
+                              onPressed: () async {
+                                context.router.push(ViewVaccinationStatusRoute(
+                                  task: doseStatusTasks.first,
+                                ));
+                              },
                             ),
-                            onPressed: () async {
-                              context.router.push(EligibilityChecklistViewRoute(
-                                eligibilityAssessmentType:
-                                    EligibilityAssessmentType.vaccine,
-                                projectBeneficiaryClientReferenceId:
-                                    projectBeneficiaryClientReferenceId,
-                                individual: individual,
-                                doseStatusTask: doseStatusTasks.firstOrNull,
-                                isHPVEligible: isHPVEligible,
-                              ));
-                            },
-                          ),
-                      ],
-                    );
-                  } else {
-                    return Offstage();
-                  }
-                }),
-              if (context.isHealthFacilitySupervisor && !isFullyVaccinated)
-                DigitButton(
-                  label: localizations.translate(
-                    i18.memberCard.unableToDeliverLabel,
-                  ),
-                  isDisabled:
-                      (projectBeneficiaries ?? []).isEmpty ? true : false,
-                  type: DigitButtonType.secondary,
-                  size: DigitButtonSize.large,
-                  mainAxisSize: MainAxisSize.max,
-                  onPressed: () async {
-                    unableToDeliverPopUp(context);
-                  },
-                ),
-            ],
+                            if (isZeroDose || isUnderVaccinated)
+                              DigitElevatedButton(
+                                child: Center(
+                                  child: Text(
+                                    localizations.translate(
+                                      i18_local.householdOverView
+                                          .householdOverViewChildVaccineActionText,
+                                    ),
+                                    style: textTheme.headingM
+                                        .copyWith(color: Colors.white),
+                                  ),
+                                ),
+                                onPressed: () async {
+                                  context.router
+                                      .push(EligibilityChecklistViewRoute(
+                                    eligibilityAssessmentType:
+                                        EligibilityAssessmentType.vaccine,
+                                    projectBeneficiaryClientReferenceId:
+                                        projectBeneficiaryClientReferenceId,
+                                    individual: individual,
+                                    doseStatusTask: doseStatusTasks.firstOrNull,
+                                    isHPVEligible: isHPVEligible,
+                                  ));
+                                },
+                              ),
+                          ],
+                        );
+                      } else {
+                        return Offstage();
+                      }
+                    }),
+                  if (context.isHealthFacilitySupervisor && !isFullyVaccinated)
+                    DigitButton(
+                      label: localizations.translate(
+                        i18.memberCard.unableToDeliverLabel,
+                      ),
+                      isDisabled:
+                          (projectBeneficiaries ?? []).isEmpty ? true : false,
+                      type: DigitButtonType.secondary,
+                      size: DigitButtonSize.large,
+                      mainAxisSize: MainAxisSize.max,
+                      onPressed: () async {
+                        unableToDeliverPopUp(context);
+                      },
+                    ),
+                ],
+              );
+            },
           );
   }
 

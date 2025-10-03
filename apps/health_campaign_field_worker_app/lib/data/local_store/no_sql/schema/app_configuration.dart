@@ -81,6 +81,9 @@ class AppConfiguration {
   @Name('vaccination-data')
   late List<VaccineData>? vaccinationData;
 
+  @Name('VACCINATION-DOSE-DATA')
+  late List<VaccineDoseData>? vaccinationDoseData;
+
   late List<ReferralReasons>? referralReasons;
   late List<HouseStructureTypes>? houseStructureTypes;
   late List<RefusalReasons>? refusalReasons;
@@ -114,6 +117,15 @@ class IdTypeOptions {
 @embedded
 class VaccineData {
   late String code;
+  late String name;
+  late int ageInDays;
+  late bool active;
+}
+
+@embedded
+class VaccineDoseData {
+  late String code;
+  late String doseCode;
   late String name;
   late int ageInDays;
   late bool active;

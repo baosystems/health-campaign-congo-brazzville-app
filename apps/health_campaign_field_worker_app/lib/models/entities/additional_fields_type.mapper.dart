@@ -31,6 +31,8 @@ class AdditionalFieldsTypeMapper extends EnumMapper<AdditionalFieldsType> {
         return AdditionalFieldsType.selectedVaccines;
       case "noSelectedVaccines":
         return AdditionalFieldsType.noSelectedVaccines;
+      case "vaccineDoseList":
+        return AdditionalFieldsType.vaccineDoseList;
       case "hasSideEffects":
         return AdditionalFieldsType.hasSideEffects;
       case "deliveryStrategy":
@@ -89,6 +91,8 @@ class AdditionalFieldsTypeMapper extends EnumMapper<AdditionalFieldsType> {
         return AdditionalFieldsType.individualClientReferenceId;
       case "uniqueBeneficiaryId":
         return AdditionalFieldsType.uniqueBeneficiaryId;
+      case "availedVaccines":
+        return AdditionalFieldsType.availedVaccines;
       default:
         throw MapperException.unknownEnumValue(value);
     }
@@ -103,6 +107,8 @@ class AdditionalFieldsTypeMapper extends EnumMapper<AdditionalFieldsType> {
         return "selectedVaccines";
       case AdditionalFieldsType.noSelectedVaccines:
         return "noSelectedVaccines";
+      case AdditionalFieldsType.vaccineDoseList:
+        return "vaccineDoseList";
       case AdditionalFieldsType.hasSideEffects:
         return "hasSideEffects";
       case AdditionalFieldsType.deliveryStrategy:
@@ -161,6 +167,8 @@ class AdditionalFieldsTypeMapper extends EnumMapper<AdditionalFieldsType> {
         return "individualClientReferenceId";
       case AdditionalFieldsType.uniqueBeneficiaryId:
         return "uniqueBeneficiaryId";
+      case AdditionalFieldsType.availedVaccines:
+        return "availedVaccines";
     }
   }
 }

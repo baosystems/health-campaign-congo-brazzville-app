@@ -153,6 +153,19 @@ class Constants {
   static RegExp mobileNumberRegExp =
       RegExp(r'^(?=.{10}$)[+]*[(]{0,1}[0-9]{1,4}[)]{0,1}[-\s\./0-9]*$');
 
+  static List<String> allVaccineCodes = [
+    "VIT-A",
+    "MEN-A",
+    "VAA",
+    "BCG",
+    "PENTA",
+    "VPO",
+    "ROTA",
+    "PNEUMO",
+    "RR",
+    "VPI",
+  ];
+
   static List<LocalRepository> getLocalRepositories(
     LocalSqlDataStore sql,
     Isar isar,

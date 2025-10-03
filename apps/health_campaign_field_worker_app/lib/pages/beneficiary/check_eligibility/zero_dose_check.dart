@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'dart:math';
 
 import 'package:collection/collection.dart';
@@ -32,7 +33,8 @@ import 'package:registration_delivery/widgets/localized.dart';
 import 'package:survey_form/survey_form.dart';
 
 import '../../../blocs/app_initialization/app_initialization.dart';
-import '../../../blocs/delivery_intervention/vaccine_search.dart';
+import '../../../blocs/vaccine/vaccine_product_variants.dart';
+import '../../../blocs/vaccine/vaccine_search.dart';
 import '../../../data/local_store/no_sql/schema/app_configuration.dart';
 import '../../../models/entities/additional_fields_type.dart'
     as additional_fields_local;
@@ -103,6 +105,7 @@ class ZeroDoseCheckPageState extends LocalizedState<ZeroDoseCheckPage> {
   final String yes = "YES";
   final String no = "NO";
   List<String> allVaccineCodes = [];
+  List<String?> ineligibilityReasons = [];
 
   // List of controllers for form elements
   final List _controllers = [];
@@ -119,6 +122,64 @@ class ZeroDoseCheckPageState extends LocalizedState<ZeroDoseCheckPage> {
     super.initState();
     // context.read<LocationBloc>().add(const LoadLocationEvent());
     // super.initState();
+  }
+
+  TaskModel _getDoseTasks(Map<int, Set<String>> vaccineDoseList) {
+    final clientReferenceId = IdGen.i.identifier;
+    List<String> availedVaccines = [];
+    return TaskModel(
+      projectBeneficiaryClientReferenceId:
+          widget.projectBeneficiaryClientReferenceId,
+      clientReferenceId: clientReferenceId,
+      tenantId: envConfig.variables.tenantId,
+      rowVersion: 1,
+      auditDetails: AuditDetails(
+        createdBy: context.loggedInUserUuid,
+        createdTime: context.millisecondsSinceEpoch(),
+      ),
+      projectId: context.projectId,
+      status: status_local.Status.beneficiaryInEligible.toValue(),
+      clientAuditDetails: ClientAuditDetails(
+        createdBy: context.loggedInUserUuid,
+        createdTime: context.millisecondsSinceEpoch(),
+        lastModifiedBy: context.loggedInUserUuid,
+        lastModifiedTime: context.millisecondsSinceEpoch(),
+      ),
+      additionalFields: TaskAdditionalFields(
+        version: 1,
+        fields: [
+          AdditionalField(
+            AdditionalFieldsType.cycleIndex.toValue(),
+            "0${context.selectedCycle?.id}",
+          ),
+          if (availedVaccines.isNotEmpty)
+            AdditionalField(
+              AdditionalFieldsType.availedVaccines.toValue(),
+              json.encode(availedVaccines),
+            ),
+          if (vaccineDoseList.isNotEmpty)
+            AdditionalField(AdditionalFieldsType.vaccineDoseList.toValue(),
+                json.encode(vaccineDoseList)),
+          if (ineligibilityReasons.isNotEmpty)
+            AdditionalField(
+              AdditionalFieldsType.ineligibleReasons.toValue(),
+              ineligibilityReasons.join(","),
+            ),
+          AdditionalField(
+            additional_fields_local.AdditionalFieldsType.deliveryType.toValue(),
+            EligibilityAssessmentStatus.smcDone.name,
+          ),
+          AdditionalField(
+              additional_fields_local.AdditionalFieldsType.doseStatus.toValue(),
+              DoseStatus.zeroDose.name),
+          ...getIndividualAdditionalFields(widget.individual)
+        ],
+      ),
+      address: widget.individual?.address?.first.copyWith(
+        relatedClientReferenceId: clientReferenceId,
+        id: null,
+      ),
+    );
   }
 
   @override
@@ -138,6 +199,13 @@ class ZeroDoseCheckPageState extends LocalizedState<ZeroDoseCheckPage> {
     final ageInDays =
         date_utils_local.DigitDateUtils.calculateAgeInDaysFromDob(dobStr ?? '');
 
+    if (ageInDays < 180) {
+      ineligibilityReasons.add(Constants.ineligibleForRota);
+    }
+    if (ageInDays < 360) {
+      ineligibilityReasons.add(Constants.ineligibleForRota);
+    }
+
     return WillPopScope(
       onWillPop: () async {
         bool shouldPop = await _onBackPressed(context);
@@ -150,22 +218,22 @@ class ZeroDoseCheckPageState extends LocalizedState<ZeroDoseCheckPage> {
       child: Scaffold(
         body: BlocBuilder<location.LocationBloc, location.LocationState>(
           builder: (context, locationState) {
-            return BlocBuilder<AppInitializationBloc, AppInitializationState>(
-              builder: (context, appInitState) {
-                List<VaccineData> vaccineDataList = [];
-                if (appInitState is AppInitialized) {
-                  vaccineDataList =
-                      appInitState.appConfiguration.vaccinationData ?? [];
-                  allVaccineCodes = [for (final v in vaccineDataList) v.code];
-                }
-                context
-                    .read<VaccineSearchBloc>()
-                    .add(VaccineSearchEvent.eligibleVaccines(
-                      ageInDays: ageInDays,
-                      vaccineDataList: vaccineDataList,
-                    ));
+            return BlocBuilder<VaccineProductVariantBloc,
+                VaccineProductVariantState>(
+              builder: (context, vaccineDoseState) {
+                List<VaccineDoseData> vaccineDataList =
+                    vaccineDoseState.vaccineData ?? [];
+                allVaccineCodes = [for (final v in vaccineDataList) v.code];
+                context.read<VaccineSearchBloc>().add(
+                    VaccineSearchEvent.eligibleVaccinesSearch(
+                        ageInDays: ageInDays,
+                        vaccineDataList: vaccineDataList,
+                        vaccineDoseDataVariation:
+                            vaccineDoseState.vaccineDoseDataVariation));
                 return BlocBuilder<VaccineSearchBloc, VaccineSearchState>(
                   builder: (context, vaccineSearchState) {
+                    Map<int, Set<String>>? vaccineDoseList =
+                        vaccineSearchState.vaccineDoseList;
                     return BlocBuilder<HouseholdOverviewBloc,
                         HouseholdOverviewState>(
                       builder: (context, householdOverviewState) {
@@ -223,751 +291,94 @@ class ZeroDoseCheckPageState extends LocalizedState<ZeroDoseCheckPage> {
                                         if (!isValid!) {
                                           return;
                                         }
-                                        final itemsAttributes =
-                                            initialAttributes;
-
-                                        for (int i = 0;
-                                            i < controller.length;
-                                            i++) {
-                                          if (i == 0 &&
-                                              controller[i].text == 'YES') {
-                                            break;
-                                          }
-                                          if (itemsAttributes?[i].required ==
-                                                  true &&
-                                              itemsAttributes?[i].dataType ==
-                                                  'SingleValueList' &&
-                                              visibleChecklistIndexes
-                                                  .contains(i) &&
-                                              controller[i].text.isEmpty) {
-                                            return;
-                                          }
-                                        }
-                                        for (int i = 0;
-                                            i < controller.length;
-                                            i++) {
-                                          var attributeCode =
-                                              '${initialAttributes?[i].code}';
-                                          var value = initialAttributes?[i]
-                                                      .dataType !=
-                                                  'SingleValueList'
-                                              ? controller[i]
-                                                      .text
-                                                      .toString()
-                                                      .trim()
-                                                      .isNotEmpty
-                                                  ? controller[i]
-                                                      .text
-                                                      .toString()
-                                                  : (initialAttributes?[i]
-                                                              .dataType !=
-                                                          'Number'
-                                                      ? ''
-                                                      : '0')
-                                              : visibleChecklistIndexes
-                                                      .contains(i)
-                                                  ? controller[i]
-                                                      .text
-                                                      .toString()
-                                                  : i18_local
-                                                      .checklist.notSelectedKey;
-                                          responses[attributeCode] = value;
-                                        }
-
-                                        bool showVaccineSelectionPage =
-                                            shouldShowVaccinePage(responses);
-                                        bool zeroDose = isZeroDose(responses);
-                                        bool underVaccinated =
-                                            isIncompletementVaccine(
-                                          responses,
-                                        );
 
                                         // TODO: Uncomment this block when the vaccine selection page is complete
 
-                                        if (showVaccineSelectionPage ||
-                                            (!zeroDose && !underVaccinated)) {
-                                          final referenceId =
-                                              IdGen.i.identifier;
-                                          List<ServiceAttributesModel>
-                                              attributes = [];
-                                          for (int i = 0;
-                                              i < controller.length;
-                                              i++) {
-                                            final attribute = initialAttributes;
+                                        final shouldSubmit =
+                                            await DigitDialog.show(
+                                          context,
+                                          options: DigitDialogOptions(
+                                            titleText: localizations.translate(
+                                              i18.deliverIntervention
+                                                  .dialogTitle,
+                                            ),
+                                            content: Text(localizations
+                                                .translate(
+                                                  i18.deliverIntervention
+                                                      .dialogContent,
+                                                )
+                                                .replaceFirst('{}', '')),
+                                            primaryAction: DigitDialogActions(
+                                              label: localizations.translate(
+                                                i18_local.checklist
+                                                    .checklistDialogPrimaryAction,
+                                              ),
+                                              action: (ctx) {
+                                                Navigator.of(
+                                                  context,
+                                                  rootNavigator: true,
+                                                ).pop(true);
+                                              },
+                                            ),
+                                            secondaryAction: DigitDialogActions(
+                                              label: localizations.translate(
+                                                i18_local.checklist
+                                                    .checklistDialogSecondaryAction,
+                                              ),
+                                              action: (context) {
+                                                Navigator.of(
+                                                  context,
+                                                  rootNavigator: true,
+                                                ).pop(false);
+                                              },
+                                            ),
+                                          ),
+                                        );
+                                        if (shouldSubmit ?? false) {
+                                          if (context.mounted) {
+                                            context
+                                                .read<DeliverInterventionBloc>()
+                                                .add(
+                                                  DeliverInterventionSubmitEvent(
+                                                    task: _getDoseTasks(
+                                                        vaccineSearchState
+                                                                .vaccineDoseList ??
+                                                            {}),
+                                                    isEditing: false,
+                                                    boundaryModel:
+                                                        context.boundary,
+                                                    navigateToSummary: false,
+                                                    householdMemberWrapper: context
+                                                        .read<
+                                                            HouseholdOverviewBloc>()
+                                                        .state
+                                                        .householdMemberWrapper,
+                                                  ),
+                                                );
+                                            final searchBloc = context
+                                                .read<SearchHouseholdsBloc>();
+                                            searchBloc.add(
+                                              const SearchHouseholdsClearEvent(),
+                                            );
+                                            final router = context.router;
+                                            router.popUntilRouteWithName(
+                                                BeneficiaryWrapperRoute.name);
 
-                                            attributes
-                                                .add(ServiceAttributesModel(
-                                              auditDetails: AuditDetails(
-                                                createdBy:
-                                                    context.loggedInUserUuid,
-                                                createdTime: context
-                                                    .millisecondsSinceEpoch(),
-                                              ),
-                                              attributeCode:
-                                                  '${attribute?[i].code}',
-                                              dataType: attribute?[i].dataType,
-                                              clientReferenceId:
-                                                  IdGen.i.identifier,
-                                              referenceId: referenceId,
-                                              value: attribute?[i].dataType !=
-                                                      'SingleValueList'
-                                                  ? controller[i]
-                                                          .text
-                                                          .toString()
-                                                          .trim()
-                                                          .isNotEmpty
-                                                      ? controller[i]
-                                                          .text
-                                                          .toString()
-                                                      : ''
-                                                  : visibleChecklistIndexes
-                                                          .contains(i)
-                                                      ? controller[i]
-                                                          .text
-                                                          .toString()
-                                                      : i18_local.checklist
-                                                          .notSelectedKey,
-                                              rowVersion: 1,
-                                              tenantId: attribute?[i].tenantId,
-                                              additionalFields:
-                                                  ServiceAttributesAdditionalFields(
-                                                version: 1,
-                                                // TODO: This needs to be done after adding locationbloc
-                                                fields: [
-                                                  AdditionalField(
-                                                    'latitude',
-                                                    latitude,
-                                                  ),
-                                                  AdditionalField(
-                                                    'longitude',
-                                                    longitude,
-                                                  ),
-                                                ],
-                                              ),
-                                            ));
+                                            router.push(
+                                              CustomHouseholdAcknowledgementRoute(
+                                                  enableViewHousehold: true,
+                                                  eligibilityAssessmentType: widget
+                                                      .eligibilityAssessmentType),
+                                            );
                                           }
 
+                                          submitTriggered = true;
                                           context.read<ServiceBloc>().add(
-                                                ServiceCreateEvent(
-                                                  serviceModel: ServiceModel(
-                                                      createdAt: DigitDateUtils
-                                                          .getDateFromTimestamp(
-                                                        DateTime.now()
-                                                            .toLocal()
-                                                            .millisecondsSinceEpoch,
-                                                        dateFormat: Constants
-                                                            .checklistViewDateFormat,
-                                                      ),
-                                                      tenantId:
-                                                          selectedServiceDefinition!
-                                                              .tenantId,
-                                                      clientId: referenceId,
-                                                      serviceDefId:
-                                                          selectedServiceDefinition
-                                                              ?.id,
-                                                      attributes: attributes,
-                                                      rowVersion: 1,
-                                                      accountId:
-                                                          context.projectId,
-                                                      auditDetails:
-                                                          AuditDetails(
-                                                        createdBy: context
-                                                            .loggedInUserUuid,
-                                                        createdTime: DateTime
-                                                                .now()
-                                                            .millisecondsSinceEpoch,
-                                                      ),
-                                                      clientAuditDetails:
-                                                          ClientAuditDetails(
-                                                        createdBy: context
-                                                            .loggedInUserUuid,
-                                                        createdTime: context
-                                                            .millisecondsSinceEpoch(),
-                                                        lastModifiedBy: context
-                                                            .loggedInUserUuid,
-                                                        lastModifiedTime: context
-                                                            .millisecondsSinceEpoch(),
-                                                      ),
-                                                      additionalFields:
-                                                          ServiceAdditionalFields(
-                                                        version: 1,
-                                                        fields: [
-                                                          AdditionalField(
-                                                              'boundaryCode',
-                                                              context.boundary
-                                                                  .code),
-                                                        ],
-                                                      )),
+                                                const ServiceSurveyFormEvent(
+                                                  value: '',
+                                                  submitTriggered: true,
                                                 ),
                                               );
-                                          final projectBeneficiaryClientReferenceId =
-                                              widget.projectBeneficiaryClientReferenceId ??
-                                                  relatedClientRefId ??
-                                                  '';
-                                          final currentCycle =
-                                              RegistrationDeliverySingleton()
-                                                  .projectType
-                                                  ?.cycles
-                                                  ?.firstWhereOrNull(
-                                                    (e) =>
-                                                        (e.startDate) <
-                                                            DateTime.now()
-                                                                .millisecondsSinceEpoch &&
-                                                        (e.endDate) >
-                                                            DateTime.now()
-                                                                .millisecondsSinceEpoch,
-                                                  );
-                                          final isZeroDoseAlreadyDone =
-                                              currentCycle!.id > 1;
-                                          context.router.push(VaccineSelectionRoute(
-                                              isAdministration:
-                                                  widget.isAdministration,
-                                              eligibilityAssessmentType: widget
-                                                  .eligibilityAssessmentType,
-                                              isChecklistAssessmentDone: widget
-                                                  .isChecklistAssessmentDone,
-                                              projectBeneficiaryClientReferenceId:
-                                                  projectBeneficiaryClientReferenceId,
-                                              individual: widget.individual,
-                                              task: widget.task,
-                                              hasSideEffects:
-                                                  widget.hasSideEffects!,
-                                              sideEffect: widget.sideEffect!,
-                                              isZeroDoseAlreadyDone:
-                                                  isZeroDoseAlreadyDone));
-                                        } else {
-                                          final shouldSubmit =
-                                              await DigitDialog.show(
-                                            context,
-                                            options: DigitDialogOptions(
-                                              titleText:
-                                                  localizations.translate(
-                                                i18.deliverIntervention
-                                                    .dialogTitle,
-                                              ),
-                                              content: Text(localizations
-                                                  .translate(
-                                                    i18.deliverIntervention
-                                                        .dialogContent,
-                                                  )
-                                                  .replaceFirst('{}', '')),
-                                              primaryAction: DigitDialogActions(
-                                                label: localizations.translate(
-                                                  i18_local.checklist
-                                                      .checklistDialogPrimaryAction,
-                                                ),
-                                                action: (ctx) {
-                                                  final referenceId =
-                                                      IdGen.i.identifier;
-                                                  List<ServiceAttributesModel>
-                                                      attributes = [];
-                                                  for (int i = 0;
-                                                      i < controller.length;
-                                                      i++) {
-                                                    final attribute =
-                                                        initialAttributes;
-
-                                                    attributes.add(
-                                                        ServiceAttributesModel(
-                                                      auditDetails:
-                                                          AuditDetails(
-                                                        createdBy: context
-                                                            .loggedInUserUuid,
-                                                        createdTime: context
-                                                            .millisecondsSinceEpoch(),
-                                                      ),
-                                                      attributeCode:
-                                                          '${attribute?[i].code}',
-                                                      dataType: attribute?[i]
-                                                          .dataType,
-                                                      clientReferenceId:
-                                                          IdGen.i.identifier,
-                                                      referenceId: referenceId,
-                                                      value: attribute?[i]
-                                                                  .dataType !=
-                                                              'SingleValueList'
-                                                          ? controller[i]
-                                                                  .text
-                                                                  .toString()
-                                                                  .trim()
-                                                                  .isNotEmpty
-                                                              ? controller[i]
-                                                                  .text
-                                                                  .toString()
-                                                              : ''
-                                                          : visibleChecklistIndexes
-                                                                  .contains(i)
-                                                              ? controller[i]
-                                                                  .text
-                                                                  .toString()
-                                                              : i18_local
-                                                                  .checklist
-                                                                  .notSelectedKey,
-                                                      rowVersion: 1,
-                                                      tenantId: attribute?[i]
-                                                          .tenantId,
-                                                      additionalFields:
-                                                          ServiceAttributesAdditionalFields(
-                                                        version: 1,
-                                                        // TODO: This needs to be done after adding locationbloc
-                                                        fields: [
-                                                          AdditionalField(
-                                                            'latitude',
-                                                            latitude,
-                                                          ),
-                                                          AdditionalField(
-                                                            'longitude',
-                                                            longitude,
-                                                          ),
-                                                        ],
-                                                      ),
-                                                    ));
-                                                  }
-
-                                                  context
-                                                      .read<ServiceBloc>()
-                                                      .add(
-                                                        ServiceCreateEvent(
-                                                          serviceModel:
-                                                              ServiceModel(
-                                                                  createdAt:
-                                                                      DigitDateUtils
-                                                                          .getDateFromTimestamp(
-                                                                    DateTime.now()
-                                                                        .toLocal()
-                                                                        .millisecondsSinceEpoch,
-                                                                    dateFormat:
-                                                                        Constants
-                                                                            .checklistViewDateFormat,
-                                                                  ),
-                                                                  tenantId:
-                                                                      selectedServiceDefinition!
-                                                                          .tenantId,
-                                                                  clientId:
-                                                                      referenceId,
-                                                                  serviceDefId:
-                                                                      selectedServiceDefinition
-                                                                          ?.id,
-                                                                  attributes:
-                                                                      attributes,
-                                                                  rowVersion: 1,
-                                                                  accountId: context
-                                                                      .projectId,
-                                                                  auditDetails:
-                                                                      AuditDetails(
-                                                                    createdBy:
-                                                                        context
-                                                                            .loggedInUserUuid,
-                                                                    createdTime:
-                                                                        DateTime.now()
-                                                                            .millisecondsSinceEpoch,
-                                                                  ),
-                                                                  clientAuditDetails:
-                                                                      ClientAuditDetails(
-                                                                    createdBy:
-                                                                        context
-                                                                            .loggedInUserUuid,
-                                                                    createdTime:
-                                                                        context
-                                                                            .millisecondsSinceEpoch(),
-                                                                    lastModifiedBy:
-                                                                        context
-                                                                            .loggedInUserUuid,
-                                                                    lastModifiedTime:
-                                                                        context
-                                                                            .millisecondsSinceEpoch(),
-                                                                  ),
-                                                                  additionalFields:
-                                                                      ServiceAdditionalFields(
-                                                                    version: 1,
-                                                                    fields: [
-                                                                      AdditionalField(
-                                                                          'boundaryCode',
-                                                                          context
-                                                                              .boundary
-                                                                              .code),
-                                                                    ],
-                                                                  )),
-                                                        ),
-                                                      );
-                                                  Navigator.of(
-                                                    context,
-                                                    rootNavigator: true,
-                                                  ).pop(true);
-                                                },
-                                              ),
-                                              secondaryAction:
-                                                  DigitDialogActions(
-                                                label: localizations.translate(
-                                                  i18_local.checklist
-                                                      .checklistDialogSecondaryAction,
-                                                ),
-                                                action: (context) {
-                                                  Navigator.of(
-                                                    context,
-                                                    rootNavigator: true,
-                                                  ).pop(false);
-                                                },
-                                              ),
-                                            ),
-                                          );
-                                          if (shouldSubmit ?? false) {
-                                            if (context.mounted) {
-                                              if (widget
-                                                      .isChecklistAssessmentDone ==
-                                                  true) {
-                                                final householdMember = context
-                                                    .read<
-                                                        HouseholdOverviewBloc>()
-                                                    .state
-                                                    .householdMemberWrapper;
-                                                final deliverState = context
-                                                    .read<
-                                                        DeliverInterventionBloc>()
-                                                    .state;
-
-                                                final oldTask =
-                                                    deliverState.oldTask ??
-                                                        widget.task;
-                                                final oldFields = oldTask
-                                                        .additionalFields
-                                                        ?.fields ??
-                                                    [];
-
-                                                final updatedFields = [
-                                                  ...oldFields,
-                                                  AdditionalField(
-                                                    additional_fields_local
-                                                        .AdditionalFieldsType
-                                                        .doseStatus
-                                                        .toValue(),
-                                                    zeroDose
-                                                        ? DoseStatus
-                                                            .zeroDose.name
-                                                        : underVaccinated
-                                                            ? DoseStatus
-                                                                .underVaccinated
-                                                                .name
-                                                            : DoseStatus
-                                                                .fullyVaccinated
-                                                                .name,
-                                                  ),
-                                                ];
-
-                                                final updatedTask =
-                                                    oldTask.copyWith(
-                                                  additionalFields:
-                                                      TaskAdditionalFields(
-                                                    version: 1,
-                                                    fields: updatedFields,
-                                                  ),
-                                                );
-
-                                                context
-                                                    .read<
-                                                        DeliverInterventionBloc>()
-                                                    .add(
-                                                      DeliverInterventionSubmitEvent(
-                                                        task: updatedTask,
-                                                        isEditing: (deliverState
-                                                                        .tasks ??
-                                                                    [])
-                                                                .isNotEmpty &&
-                                                            RegistrationDeliverySingleton()
-                                                                    .beneficiaryType ==
-                                                                BeneficiaryType
-                                                                    .household,
-                                                        boundaryModel:
-                                                            RegistrationDeliverySingleton()
-                                                                .boundary!,
-                                                      ),
-                                                    );
-
-                                                ProjectTypeModel? projectTypeModel = widget
-                                                            .eligibilityAssessmentType ==
-                                                        EligibilityAssessmentType
-                                                            .smc
-                                                    ? RegistrationDeliverySingleton()
-                                                        .selectedProject
-                                                        ?.additionalDetails
-                                                        ?.projectType
-                                                    : RegistrationDeliverySingleton()
-                                                        .selectedProject
-                                                        ?.additionalDetails
-                                                        ?.additionalProjectType;
-
-                                                if (widget.isAdministration ==
-                                                    true) {
-                                                  final router = context.router;
-                                                  router.popUntilRouteWithName(
-                                                      BeneficiaryWrapperRoute
-                                                          .name);
-                                                  if (deliverState
-                                                              .futureDeliveries !=
-                                                          null &&
-                                                      deliverState
-                                                          .futureDeliveries!
-                                                          .isNotEmpty &&
-                                                      projectTypeModel?.cycles
-                                                              ?.isNotEmpty ==
-                                                          true) {
-                                                    router.push(
-                                                      CustomSplashAcknowledgementRoute(
-                                                          enableBackToSearch:
-                                                              false,
-                                                          eligibilityAssessmentType:
-                                                              widget
-                                                                  .eligibilityAssessmentType),
-                                                    );
-                                                  } else {
-                                                    final reloadState =
-                                                        context.read<
-                                                            HouseholdOverviewBloc>();
-
-                                                    reloadState.add(
-                                                      HouseholdOverviewReloadEvent(
-                                                        projectId:
-                                                            RegistrationDeliverySingleton()
-                                                                .projectId!,
-                                                        projectBeneficiaryType:
-                                                            RegistrationDeliverySingleton()
-                                                                .beneficiaryType!,
-                                                      ),
-                                                    );
-                                                    context.router.popAndPush(
-                                                      CustomHouseholdAcknowledgementRoute(
-                                                        enableViewHousehold:
-                                                            true,
-                                                        eligibilityAssessmentType:
-                                                            widget
-                                                                .eligibilityAssessmentType,
-                                                      ),
-                                                    );
-                                                  }
-                                                } else {
-                                                  final router = context.router;
-                                                  final searchBloc = context.read<
-                                                      SearchHouseholdsBloc>();
-                                                  searchBloc.add(
-                                                    const SearchHouseholdsClearEvent(),
-                                                  );
-                                                  router.popUntilRouteWithName(
-                                                      BeneficiaryWrapperRoute
-                                                          .name);
-                                                  router.push(
-                                                    CustomHouseholdAcknowledgementRoute(
-                                                        enableViewHousehold:
-                                                            true,
-                                                        eligibilityAssessmentType:
-                                                            widget
-                                                                .eligibilityAssessmentType),
-                                                  );
-                                                }
-                                              } else {
-                                                if (widget.hasSideEffects ==
-                                                    true) {
-                                                  context
-                                                      .read<SideEffectsBloc>()
-                                                      .add(
-                                                        SideEffectsSubmitEvent(
-                                                          widget.sideEffect!,
-                                                          false,
-                                                        ),
-                                                      );
-                                                }
-                                                final clientReferenceId =
-                                                    IdGen.i.identifier;
-                                                List<String?>
-                                                    ineligibilityReasons = [];
-                                                ineligibilityReasons.add(
-                                                    "CHILD_AGE_LESS_THAN_3_MONTHS");
-                                                context
-                                                    .read<
-                                                        DeliverInterventionBloc>()
-                                                    .add(
-                                                      DeliverInterventionSubmitEvent(
-                                                        task: TaskModel(
-                                                          projectBeneficiaryClientReferenceId:
-                                                              widget
-                                                                  .projectBeneficiaryClientReferenceId,
-                                                          clientReferenceId:
-                                                              clientReferenceId,
-                                                          tenantId: envConfig
-                                                              .variables
-                                                              .tenantId,
-                                                          rowVersion: 1,
-                                                          auditDetails:
-                                                              AuditDetails(
-                                                            createdBy: context
-                                                                .loggedInUserUuid,
-                                                            createdTime: context
-                                                                .millisecondsSinceEpoch(),
-                                                          ),
-                                                          projectId:
-                                                              context.projectId,
-                                                          status:
-                                                              // (widget.hasSideEffects ??
-                                                              //         false)
-                                                              //     ? Status.inComplete
-                                                              //         .toValue()
-                                                              //     :
-                                                              status_local
-                                                                  .Status
-                                                                  .beneficiaryInEligible
-                                                                  .toValue(),
-                                                          clientAuditDetails:
-                                                              ClientAuditDetails(
-                                                            createdBy: context
-                                                                .loggedInUserUuid,
-                                                            createdTime: context
-                                                                .millisecondsSinceEpoch(),
-                                                            lastModifiedBy: context
-                                                                .loggedInUserUuid,
-                                                            lastModifiedTime:
-                                                                context
-                                                                    .millisecondsSinceEpoch(),
-                                                          ),
-                                                          additionalFields:
-                                                              TaskAdditionalFields(
-                                                            version: 1,
-                                                            fields: [
-                                                              AdditionalField(
-                                                                AdditionalFieldsType
-                                                                    .cycleIndex
-                                                                    .toValue(),
-                                                                "0${context.selectedCycle?.id}",
-                                                              ),
-                                                              AdditionalField(
-                                                                AdditionalFieldsType
-                                                                    .selectedVaccines
-                                                                    .toValue(),
-                                                                "",
-                                                              ),
-                                                              AdditionalField(
-                                                                AdditionalFieldsType
-                                                                    .noSelectedVaccines
-                                                                    .toValue(),
-                                                                vaccineSearchState
-                                                                    .allVaccineCodes
-                                                                    ?.join("."),
-                                                              ),
-                                                              if (widget
-                                                                      .hasSideEffects ??
-                                                                  false ==
-                                                                      false) ...[
-                                                                AdditionalField(
-                                                                  'ineligibleReasons',
-                                                                  ineligibilityReasons
-                                                                      .join(
-                                                                          ","),
-                                                                ),
-                                                              ] else ...[
-                                                                AdditionalField(
-                                                                    'ineligibleReasons',
-                                                                    [
-                                                                      "SIDE_EFFECTS"
-                                                                    ].join(
-                                                                        ",")),
-                                                                AdditionalField(
-                                                                    additional_fields_local
-                                                                        .AdditionalFieldsType
-                                                                        .hasSideEffects
-                                                                        .toValue(),
-                                                                    true.toString()),
-                                                              ],
-                                                              AdditionalField(
-                                                                additional_fields_local
-                                                                    .AdditionalFieldsType
-                                                                    .deliveryType
-                                                                    .toValue(),
-                                                                EligibilityAssessmentStatus
-                                                                    .smcDone
-                                                                    .name,
-                                                              ),
-                                                              AdditionalField(
-                                                                additional_fields_local
-                                                                    .AdditionalFieldsType
-                                                                    .doseStatus
-                                                                    .toValue(),
-                                                                zeroDose
-                                                                    ? DoseStatus
-                                                                        .zeroDose
-                                                                        .name
-                                                                    : underVaccinated
-                                                                        ? DoseStatus
-                                                                            .underVaccinated
-                                                                            .name
-                                                                        : DoseStatus
-                                                                            .fullyVaccinated
-                                                                            .name,
-                                                              ),
-                                                              ...getIndividualAdditionalFields(
-                                                                  widget
-                                                                      .individual)
-                                                            ],
-                                                          ),
-                                                          address: widget
-                                                              .individual
-                                                              ?.address
-                                                              ?.first
-                                                              .copyWith(
-                                                            relatedClientReferenceId:
-                                                                clientReferenceId,
-                                                            id: null,
-                                                          ),
-                                                        ),
-                                                        isEditing: false,
-                                                        boundaryModel:
-                                                            context.boundary,
-                                                        navigateToSummary:
-                                                            false,
-                                                        householdMemberWrapper: context
-                                                            .read<
-                                                                HouseholdOverviewBloc>()
-                                                            .state
-                                                            .householdMemberWrapper,
-                                                      ),
-                                                    );
-                                                final searchBloc = context.read<
-                                                    SearchHouseholdsBloc>();
-                                                searchBloc.add(
-                                                  const SearchHouseholdsClearEvent(),
-                                                );
-                                                final router = context.router;
-                                                router.popUntilRouteWithName(
-                                                    BeneficiaryWrapperRoute
-                                                        .name);
-                                                if (widget.isAdministration ==
-                                                    true) {
-                                                  router.push(
-                                                    CustomSplashAcknowledgementRoute(
-                                                        enableBackToSearch:
-                                                            false,
-                                                        eligibilityAssessmentType:
-                                                            widget
-                                                                .eligibilityAssessmentType),
-                                                  );
-                                                } else {
-                                                  router.push(
-                                                    CustomHouseholdAcknowledgementRoute(
-                                                        enableViewHousehold:
-                                                            true,
-                                                        eligibilityAssessmentType:
-                                                            widget
-                                                                .eligibilityAssessmentType),
-                                                  );
-                                                }
-                                              }
-                                            }
-
-                                            submitTriggered = true;
-                                            context.read<ServiceBloc>().add(
-                                                  const ServiceSurveyFormEvent(
-                                                    value: '',
-                                                    submitTriggered: true,
-                                                  ),
-                                                );
-                                          }
                                         }
                                       },
                                       child: Text(
@@ -1640,58 +1051,5 @@ class ZeroDoseCheckPageState extends LocalizedState<ZeroDoseCheckPage> {
     );
 
     return shouldNavigateBack ?? false;
-  }
-
-  bool shouldShowVaccinePage(
-    Map<String?, String> responses,
-  ) {
-    var showVaccinePage = false;
-    var q1Key = "ZDAQ1";
-
-    if (responses.isNotEmpty) {
-      if (!showVaccinePage &&
-          (responses.containsKey(q1Key) && responses[q1Key]!.isNotEmpty)) {
-        showVaccinePage = responses[q1Key] == yes ? true : false;
-      }
-    }
-
-    return showVaccinePage;
-  }
-
-  bool isZeroDose(
-    Map<String?, String> responses,
-  ) {
-    var isZeroDose = false;
-    var q2Key = "ZDAQ1.NO.Q2A";
-    var q3Key = "ZDAQ1.NO.Q2A.YES.Q2AA";
-
-    if (responses.isNotEmpty) {
-      if (!isZeroDose &&
-          (responses.containsKey(q2Key) && responses[q2Key]!.isNotEmpty)) {
-        isZeroDose = responses[q2Key] == no ? true : false;
-      }
-      if (!isZeroDose &&
-          (responses.containsKey(q3Key) && responses[q3Key]!.isNotEmpty)) {
-        isZeroDose = responses[q3Key] == no ? true : false;
-      }
-    }
-
-    return isZeroDose;
-  }
-
-  bool isIncompletementVaccine(
-    Map<String?, String> responses,
-  ) {
-    var isIncomplete = false;
-    var q3Key = "ZDAQ1.NO.Q2A.YES.Q2AA";
-
-    if (responses.isNotEmpty) {
-      if (!isIncomplete &&
-          (responses.containsKey(q3Key) && responses[q3Key]!.isNotEmpty)) {
-        isIncomplete = responses[q3Key] == yes ? true : false;
-      }
-    }
-
-    return isIncomplete;
   }
 }

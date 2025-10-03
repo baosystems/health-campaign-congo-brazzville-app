@@ -16,20 +16,26 @@ final _privateConstructorUsedError = UnsupportedError(
 
 /// @nodoc
 mixin _$VaccineProductVariantEvent {
-  ProjectResourceSearchModel get query => throw _privateConstructorUsedError;
+  String get projectId => throw _privateConstructorUsedError;
+  List<VaccineDoseData>? get vaccineDataList =>
+      throw _privateConstructorUsedError;
   @optionalTypeArgs
   TResult when<TResult extends Object?>({
-    required TResult Function(ProjectResourceSearchModel query) load,
+    required TResult Function(
+            String projectId, List<VaccineDoseData>? vaccineDataList)
+        load,
   }) =>
       throw _privateConstructorUsedError;
   @optionalTypeArgs
   TResult? whenOrNull<TResult extends Object?>({
-    TResult? Function(ProjectResourceSearchModel query)? load,
+    TResult? Function(String projectId, List<VaccineDoseData>? vaccineDataList)?
+        load,
   }) =>
       throw _privateConstructorUsedError;
   @optionalTypeArgs
   TResult maybeWhen<TResult extends Object?>({
-    TResult Function(ProjectResourceSearchModel query)? load,
+    TResult Function(String projectId, List<VaccineDoseData>? vaccineDataList)?
+        load,
     required TResult orElse(),
   }) =>
       throw _privateConstructorUsedError;
@@ -62,7 +68,7 @@ abstract class $VaccineProductVariantEventCopyWith<$Res> {
       _$VaccineProductVariantEventCopyWithImpl<$Res,
           VaccineProductVariantEvent>;
   @useResult
-  $Res call({ProjectResourceSearchModel query});
+  $Res call({String projectId, List<VaccineDoseData>? vaccineDataList});
 }
 
 /// @nodoc
@@ -79,13 +85,18 @@ class _$VaccineProductVariantEventCopyWithImpl<$Res,
   @pragma('vm:prefer-inline')
   @override
   $Res call({
-    Object? query = null,
+    Object? projectId = null,
+    Object? vaccineDataList = freezed,
   }) {
     return _then(_value.copyWith(
-      query: null == query
-          ? _value.query
-          : query // ignore: cast_nullable_to_non_nullable
-              as ProjectResourceSearchModel,
+      projectId: null == projectId
+          ? _value.projectId
+          : projectId // ignore: cast_nullable_to_non_nullable
+              as String,
+      vaccineDataList: freezed == vaccineDataList
+          ? _value.vaccineDataList
+          : vaccineDataList // ignore: cast_nullable_to_non_nullable
+              as List<VaccineDoseData>?,
     ) as $Val);
   }
 }
@@ -99,7 +110,7 @@ abstract class _$$VaccineProductVariantLoadEventImplCopyWith<$Res>
       __$$VaccineProductVariantLoadEventImplCopyWithImpl<$Res>;
   @override
   @useResult
-  $Res call({ProjectResourceSearchModel query});
+  $Res call({String projectId, List<VaccineDoseData>? vaccineDataList});
 }
 
 /// @nodoc
@@ -115,13 +126,18 @@ class __$$VaccineProductVariantLoadEventImplCopyWithImpl<$Res>
   @pragma('vm:prefer-inline')
   @override
   $Res call({
-    Object? query = null,
+    Object? projectId = null,
+    Object? vaccineDataList = freezed,
   }) {
     return _then(_$VaccineProductVariantLoadEventImpl(
-      query: null == query
-          ? _value.query
-          : query // ignore: cast_nullable_to_non_nullable
-              as ProjectResourceSearchModel,
+      projectId: null == projectId
+          ? _value.projectId
+          : projectId // ignore: cast_nullable_to_non_nullable
+              as String,
+      vaccineDataList: freezed == vaccineDataList
+          ? _value._vaccineDataList
+          : vaccineDataList // ignore: cast_nullable_to_non_nullable
+              as List<VaccineDoseData>?,
     ));
   }
 }
@@ -130,14 +146,26 @@ class __$$VaccineProductVariantLoadEventImplCopyWithImpl<$Res>
 
 class _$VaccineProductVariantLoadEventImpl
     implements VaccineProductVariantLoadEvent {
-  const _$VaccineProductVariantLoadEventImpl({required this.query});
+  const _$VaccineProductVariantLoadEventImpl(
+      {required this.projectId,
+      required final List<VaccineDoseData>? vaccineDataList})
+      : _vaccineDataList = vaccineDataList;
 
   @override
-  final ProjectResourceSearchModel query;
+  final String projectId;
+  final List<VaccineDoseData>? _vaccineDataList;
+  @override
+  List<VaccineDoseData>? get vaccineDataList {
+    final value = _vaccineDataList;
+    if (value == null) return null;
+    if (_vaccineDataList is EqualUnmodifiableListView) return _vaccineDataList;
+    // ignore: implicit_dynamic_type
+    return EqualUnmodifiableListView(value);
+  }
 
   @override
   String toString() {
-    return 'VaccineProductVariantEvent.load(query: $query)';
+    return 'VaccineProductVariantEvent.load(projectId: $projectId, vaccineDataList: $vaccineDataList)';
   }
 
   @override
@@ -145,11 +173,15 @@ class _$VaccineProductVariantLoadEventImpl
     return identical(this, other) ||
         (other.runtimeType == runtimeType &&
             other is _$VaccineProductVariantLoadEventImpl &&
-            (identical(other.query, query) || other.query == query));
+            (identical(other.projectId, projectId) ||
+                other.projectId == projectId) &&
+            const DeepCollectionEquality()
+                .equals(other._vaccineDataList, _vaccineDataList));
   }
 
   @override
-  int get hashCode => Object.hash(runtimeType, query);
+  int get hashCode => Object.hash(runtimeType, projectId,
+      const DeepCollectionEquality().hash(_vaccineDataList));
 
   @JsonKey(ignore: true)
   @override
@@ -162,27 +194,31 @@ class _$VaccineProductVariantLoadEventImpl
   @override
   @optionalTypeArgs
   TResult when<TResult extends Object?>({
-    required TResult Function(ProjectResourceSearchModel query) load,
+    required TResult Function(
+            String projectId, List<VaccineDoseData>? vaccineDataList)
+        load,
   }) {
-    return load(query);
+    return load(projectId, vaccineDataList);
   }
 
   @override
   @optionalTypeArgs
   TResult? whenOrNull<TResult extends Object?>({
-    TResult? Function(ProjectResourceSearchModel query)? load,
+    TResult? Function(String projectId, List<VaccineDoseData>? vaccineDataList)?
+        load,
   }) {
-    return load?.call(query);
+    return load?.call(projectId, vaccineDataList);
   }
 
   @override
   @optionalTypeArgs
   TResult maybeWhen<TResult extends Object?>({
-    TResult Function(ProjectResourceSearchModel query)? load,
+    TResult Function(String projectId, List<VaccineDoseData>? vaccineDataList)?
+        load,
     required TResult orElse(),
   }) {
     if (load != null) {
-      return load(query);
+      return load(projectId, vaccineDataList);
     }
     return orElse();
   }
@@ -219,11 +255,14 @@ class _$VaccineProductVariantLoadEventImpl
 abstract class VaccineProductVariantLoadEvent
     implements VaccineProductVariantEvent {
   const factory VaccineProductVariantLoadEvent(
-          {required final ProjectResourceSearchModel query}) =
+          {required final String projectId,
+          required final List<VaccineDoseData>? vaccineDataList}) =
       _$VaccineProductVariantLoadEventImpl;
 
   @override
-  ProjectResourceSearchModel get query;
+  String get projectId;
+  @override
+  List<VaccineDoseData>? get vaccineDataList;
   @override
   @JsonKey(ignore: true)
   _$$VaccineProductVariantLoadEventImplCopyWith<
@@ -233,51 +272,16 @@ abstract class VaccineProductVariantLoadEvent
 
 /// @nodoc
 mixin _$VaccineProductVariantState {
-  @optionalTypeArgs
-  TResult when<TResult extends Object?>({
-    required TResult Function() loading,
-    required TResult Function() empty,
-    required TResult Function(List<ProductVariantModel> productVariants)
-        fetched,
-  }) =>
+  bool? get loading => throw _privateConstructorUsedError;
+  List<ProductVariantModel>? get productVariants =>
       throw _privateConstructorUsedError;
-  @optionalTypeArgs
-  TResult? whenOrNull<TResult extends Object?>({
-    TResult? Function()? loading,
-    TResult? Function()? empty,
-    TResult? Function(List<ProductVariantModel> productVariants)? fetched,
-  }) =>
+  List<VaccineDoseData>? get vaccineData => throw _privateConstructorUsedError;
+  Map<String, dynamic>? get vaccineDoseDataVariation =>
       throw _privateConstructorUsedError;
-  @optionalTypeArgs
-  TResult maybeWhen<TResult extends Object?>({
-    TResult Function()? loading,
-    TResult Function()? empty,
-    TResult Function(List<ProductVariantModel> productVariants)? fetched,
-    required TResult orElse(),
-  }) =>
-      throw _privateConstructorUsedError;
-  @optionalTypeArgs
-  TResult map<TResult extends Object?>({
-    required TResult Function(VaccineProductVariantLoadingState value) loading,
-    required TResult Function(VaccineProductVariantEmptyState value) empty,
-    required TResult Function(VaccineProductVariantFetchedState value) fetched,
-  }) =>
-      throw _privateConstructorUsedError;
-  @optionalTypeArgs
-  TResult? mapOrNull<TResult extends Object?>({
-    TResult? Function(VaccineProductVariantLoadingState value)? loading,
-    TResult? Function(VaccineProductVariantEmptyState value)? empty,
-    TResult? Function(VaccineProductVariantFetchedState value)? fetched,
-  }) =>
-      throw _privateConstructorUsedError;
-  @optionalTypeArgs
-  TResult maybeMap<TResult extends Object?>({
-    TResult Function(VaccineProductVariantLoadingState value)? loading,
-    TResult Function(VaccineProductVariantEmptyState value)? empty,
-    TResult Function(VaccineProductVariantFetchedState value)? fetched,
-    required TResult orElse(),
-  }) =>
-      throw _privateConstructorUsedError;
+
+  @JsonKey(ignore: true)
+  $VaccineProductVariantStateCopyWith<VaccineProductVariantState>
+      get copyWith => throw _privateConstructorUsedError;
 }
 
 /// @nodoc
@@ -286,6 +290,12 @@ abstract class $VaccineProductVariantStateCopyWith<$Res> {
           $Res Function(VaccineProductVariantState) then) =
       _$VaccineProductVariantStateCopyWithImpl<$Res,
           VaccineProductVariantState>;
+  @useResult
+  $Res call(
+      {bool? loading,
+      List<ProductVariantModel>? productVariants,
+      List<VaccineDoseData>? vaccineData,
+      Map<String, dynamic>? vaccineDoseDataVariation});
 }
 
 /// @nodoc
@@ -298,395 +308,190 @@ class _$VaccineProductVariantStateCopyWithImpl<$Res,
   final $Val _value;
   // ignore: unused_field
   final $Res Function($Val) _then;
+
+  @pragma('vm:prefer-inline')
+  @override
+  $Res call({
+    Object? loading = freezed,
+    Object? productVariants = freezed,
+    Object? vaccineData = freezed,
+    Object? vaccineDoseDataVariation = freezed,
+  }) {
+    return _then(_value.copyWith(
+      loading: freezed == loading
+          ? _value.loading
+          : loading // ignore: cast_nullable_to_non_nullable
+              as bool?,
+      productVariants: freezed == productVariants
+          ? _value.productVariants
+          : productVariants // ignore: cast_nullable_to_non_nullable
+              as List<ProductVariantModel>?,
+      vaccineData: freezed == vaccineData
+          ? _value.vaccineData
+          : vaccineData // ignore: cast_nullable_to_non_nullable
+              as List<VaccineDoseData>?,
+      vaccineDoseDataVariation: freezed == vaccineDoseDataVariation
+          ? _value.vaccineDoseDataVariation
+          : vaccineDoseDataVariation // ignore: cast_nullable_to_non_nullable
+              as Map<String, dynamic>?,
+    ) as $Val);
+  }
 }
 
 /// @nodoc
-abstract class _$$VaccineProductVariantLoadingStateImplCopyWith<$Res> {
-  factory _$$VaccineProductVariantLoadingStateImplCopyWith(
-          _$VaccineProductVariantLoadingStateImpl value,
-          $Res Function(_$VaccineProductVariantLoadingStateImpl) then) =
-      __$$VaccineProductVariantLoadingStateImplCopyWithImpl<$Res>;
-}
-
-/// @nodoc
-class __$$VaccineProductVariantLoadingStateImplCopyWithImpl<$Res>
-    extends _$VaccineProductVariantStateCopyWithImpl<$Res,
-        _$VaccineProductVariantLoadingStateImpl>
-    implements _$$VaccineProductVariantLoadingStateImplCopyWith<$Res> {
-  __$$VaccineProductVariantLoadingStateImplCopyWithImpl(
-      _$VaccineProductVariantLoadingStateImpl _value,
-      $Res Function(_$VaccineProductVariantLoadingStateImpl) _then)
-      : super(_value, _then);
-}
-
-/// @nodoc
-
-class _$VaccineProductVariantLoadingStateImpl
-    implements VaccineProductVariantLoadingState {
-  const _$VaccineProductVariantLoadingStateImpl();
-
+abstract class _$$VaccineProductVariantStateImplCopyWith<$Res>
+    implements $VaccineProductVariantStateCopyWith<$Res> {
+  factory _$$VaccineProductVariantStateImplCopyWith(
+          _$VaccineProductVariantStateImpl value,
+          $Res Function(_$VaccineProductVariantStateImpl) then) =
+      __$$VaccineProductVariantStateImplCopyWithImpl<$Res>;
   @override
-  String toString() {
-    return 'VaccineProductVariantState.loading()';
-  }
-
-  @override
-  bool operator ==(Object other) {
-    return identical(this, other) ||
-        (other.runtimeType == runtimeType &&
-            other is _$VaccineProductVariantLoadingStateImpl);
-  }
-
-  @override
-  int get hashCode => runtimeType.hashCode;
-
-  @override
-  @optionalTypeArgs
-  TResult when<TResult extends Object?>({
-    required TResult Function() loading,
-    required TResult Function() empty,
-    required TResult Function(List<ProductVariantModel> productVariants)
-        fetched,
-  }) {
-    return loading();
-  }
-
-  @override
-  @optionalTypeArgs
-  TResult? whenOrNull<TResult extends Object?>({
-    TResult? Function()? loading,
-    TResult? Function()? empty,
-    TResult? Function(List<ProductVariantModel> productVariants)? fetched,
-  }) {
-    return loading?.call();
-  }
-
-  @override
-  @optionalTypeArgs
-  TResult maybeWhen<TResult extends Object?>({
-    TResult Function()? loading,
-    TResult Function()? empty,
-    TResult Function(List<ProductVariantModel> productVariants)? fetched,
-    required TResult orElse(),
-  }) {
-    if (loading != null) {
-      return loading();
-    }
-    return orElse();
-  }
-
-  @override
-  @optionalTypeArgs
-  TResult map<TResult extends Object?>({
-    required TResult Function(VaccineProductVariantLoadingState value) loading,
-    required TResult Function(VaccineProductVariantEmptyState value) empty,
-    required TResult Function(VaccineProductVariantFetchedState value) fetched,
-  }) {
-    return loading(this);
-  }
-
-  @override
-  @optionalTypeArgs
-  TResult? mapOrNull<TResult extends Object?>({
-    TResult? Function(VaccineProductVariantLoadingState value)? loading,
-    TResult? Function(VaccineProductVariantEmptyState value)? empty,
-    TResult? Function(VaccineProductVariantFetchedState value)? fetched,
-  }) {
-    return loading?.call(this);
-  }
-
-  @override
-  @optionalTypeArgs
-  TResult maybeMap<TResult extends Object?>({
-    TResult Function(VaccineProductVariantLoadingState value)? loading,
-    TResult Function(VaccineProductVariantEmptyState value)? empty,
-    TResult Function(VaccineProductVariantFetchedState value)? fetched,
-    required TResult orElse(),
-  }) {
-    if (loading != null) {
-      return loading(this);
-    }
-    return orElse();
-  }
-}
-
-abstract class VaccineProductVariantLoadingState
-    implements VaccineProductVariantState {
-  const factory VaccineProductVariantLoadingState() =
-      _$VaccineProductVariantLoadingStateImpl;
-}
-
-/// @nodoc
-abstract class _$$VaccineProductVariantEmptyStateImplCopyWith<$Res> {
-  factory _$$VaccineProductVariantEmptyStateImplCopyWith(
-          _$VaccineProductVariantEmptyStateImpl value,
-          $Res Function(_$VaccineProductVariantEmptyStateImpl) then) =
-      __$$VaccineProductVariantEmptyStateImplCopyWithImpl<$Res>;
-}
-
-/// @nodoc
-class __$$VaccineProductVariantEmptyStateImplCopyWithImpl<$Res>
-    extends _$VaccineProductVariantStateCopyWithImpl<$Res,
-        _$VaccineProductVariantEmptyStateImpl>
-    implements _$$VaccineProductVariantEmptyStateImplCopyWith<$Res> {
-  __$$VaccineProductVariantEmptyStateImplCopyWithImpl(
-      _$VaccineProductVariantEmptyStateImpl _value,
-      $Res Function(_$VaccineProductVariantEmptyStateImpl) _then)
-      : super(_value, _then);
-}
-
-/// @nodoc
-
-class _$VaccineProductVariantEmptyStateImpl
-    implements VaccineProductVariantEmptyState {
-  const _$VaccineProductVariantEmptyStateImpl();
-
-  @override
-  String toString() {
-    return 'VaccineProductVariantState.empty()';
-  }
-
-  @override
-  bool operator ==(Object other) {
-    return identical(this, other) ||
-        (other.runtimeType == runtimeType &&
-            other is _$VaccineProductVariantEmptyStateImpl);
-  }
-
-  @override
-  int get hashCode => runtimeType.hashCode;
-
-  @override
-  @optionalTypeArgs
-  TResult when<TResult extends Object?>({
-    required TResult Function() loading,
-    required TResult Function() empty,
-    required TResult Function(List<ProductVariantModel> productVariants)
-        fetched,
-  }) {
-    return empty();
-  }
-
-  @override
-  @optionalTypeArgs
-  TResult? whenOrNull<TResult extends Object?>({
-    TResult? Function()? loading,
-    TResult? Function()? empty,
-    TResult? Function(List<ProductVariantModel> productVariants)? fetched,
-  }) {
-    return empty?.call();
-  }
-
-  @override
-  @optionalTypeArgs
-  TResult maybeWhen<TResult extends Object?>({
-    TResult Function()? loading,
-    TResult Function()? empty,
-    TResult Function(List<ProductVariantModel> productVariants)? fetched,
-    required TResult orElse(),
-  }) {
-    if (empty != null) {
-      return empty();
-    }
-    return orElse();
-  }
-
-  @override
-  @optionalTypeArgs
-  TResult map<TResult extends Object?>({
-    required TResult Function(VaccineProductVariantLoadingState value) loading,
-    required TResult Function(VaccineProductVariantEmptyState value) empty,
-    required TResult Function(VaccineProductVariantFetchedState value) fetched,
-  }) {
-    return empty(this);
-  }
-
-  @override
-  @optionalTypeArgs
-  TResult? mapOrNull<TResult extends Object?>({
-    TResult? Function(VaccineProductVariantLoadingState value)? loading,
-    TResult? Function(VaccineProductVariantEmptyState value)? empty,
-    TResult? Function(VaccineProductVariantFetchedState value)? fetched,
-  }) {
-    return empty?.call(this);
-  }
-
-  @override
-  @optionalTypeArgs
-  TResult maybeMap<TResult extends Object?>({
-    TResult Function(VaccineProductVariantLoadingState value)? loading,
-    TResult Function(VaccineProductVariantEmptyState value)? empty,
-    TResult Function(VaccineProductVariantFetchedState value)? fetched,
-    required TResult orElse(),
-  }) {
-    if (empty != null) {
-      return empty(this);
-    }
-    return orElse();
-  }
-}
-
-abstract class VaccineProductVariantEmptyState
-    implements VaccineProductVariantState {
-  const factory VaccineProductVariantEmptyState() =
-      _$VaccineProductVariantEmptyStateImpl;
-}
-
-/// @nodoc
-abstract class _$$VaccineProductVariantFetchedStateImplCopyWith<$Res> {
-  factory _$$VaccineProductVariantFetchedStateImplCopyWith(
-          _$VaccineProductVariantFetchedStateImpl value,
-          $Res Function(_$VaccineProductVariantFetchedStateImpl) then) =
-      __$$VaccineProductVariantFetchedStateImplCopyWithImpl<$Res>;
   @useResult
-  $Res call({List<ProductVariantModel> productVariants});
+  $Res call(
+      {bool? loading,
+      List<ProductVariantModel>? productVariants,
+      List<VaccineDoseData>? vaccineData,
+      Map<String, dynamic>? vaccineDoseDataVariation});
 }
 
 /// @nodoc
-class __$$VaccineProductVariantFetchedStateImplCopyWithImpl<$Res>
+class __$$VaccineProductVariantStateImplCopyWithImpl<$Res>
     extends _$VaccineProductVariantStateCopyWithImpl<$Res,
-        _$VaccineProductVariantFetchedStateImpl>
-    implements _$$VaccineProductVariantFetchedStateImplCopyWith<$Res> {
-  __$$VaccineProductVariantFetchedStateImplCopyWithImpl(
-      _$VaccineProductVariantFetchedStateImpl _value,
-      $Res Function(_$VaccineProductVariantFetchedStateImpl) _then)
+        _$VaccineProductVariantStateImpl>
+    implements _$$VaccineProductVariantStateImplCopyWith<$Res> {
+  __$$VaccineProductVariantStateImplCopyWithImpl(
+      _$VaccineProductVariantStateImpl _value,
+      $Res Function(_$VaccineProductVariantStateImpl) _then)
       : super(_value, _then);
 
   @pragma('vm:prefer-inline')
   @override
   $Res call({
-    Object? productVariants = null,
+    Object? loading = freezed,
+    Object? productVariants = freezed,
+    Object? vaccineData = freezed,
+    Object? vaccineDoseDataVariation = freezed,
   }) {
-    return _then(_$VaccineProductVariantFetchedStateImpl(
-      productVariants: null == productVariants
+    return _then(_$VaccineProductVariantStateImpl(
+      loading: freezed == loading
+          ? _value.loading
+          : loading // ignore: cast_nullable_to_non_nullable
+              as bool?,
+      productVariants: freezed == productVariants
           ? _value._productVariants
           : productVariants // ignore: cast_nullable_to_non_nullable
-              as List<ProductVariantModel>,
+              as List<ProductVariantModel>?,
+      vaccineData: freezed == vaccineData
+          ? _value._vaccineData
+          : vaccineData // ignore: cast_nullable_to_non_nullable
+              as List<VaccineDoseData>?,
+      vaccineDoseDataVariation: freezed == vaccineDoseDataVariation
+          ? _value._vaccineDoseDataVariation
+          : vaccineDoseDataVariation // ignore: cast_nullable_to_non_nullable
+              as Map<String, dynamic>?,
     ));
   }
 }
 
 /// @nodoc
 
-class _$VaccineProductVariantFetchedStateImpl
-    implements VaccineProductVariantFetchedState {
-  const _$VaccineProductVariantFetchedStateImpl(
-      {required final List<ProductVariantModel> productVariants})
-      : _productVariants = productVariants;
+class _$VaccineProductVariantStateImpl implements _VaccineProductVariantState {
+  const _$VaccineProductVariantStateImpl(
+      {this.loading,
+      final List<ProductVariantModel>? productVariants,
+      final List<VaccineDoseData>? vaccineData,
+      final Map<String, dynamic>? vaccineDoseDataVariation})
+      : _productVariants = productVariants,
+        _vaccineData = vaccineData,
+        _vaccineDoseDataVariation = vaccineDoseDataVariation;
 
-  final List<ProductVariantModel> _productVariants;
   @override
-  List<ProductVariantModel> get productVariants {
+  final bool? loading;
+  final List<ProductVariantModel>? _productVariants;
+  @override
+  List<ProductVariantModel>? get productVariants {
+    final value = _productVariants;
+    if (value == null) return null;
     if (_productVariants is EqualUnmodifiableListView) return _productVariants;
     // ignore: implicit_dynamic_type
-    return EqualUnmodifiableListView(_productVariants);
+    return EqualUnmodifiableListView(value);
+  }
+
+  final List<VaccineDoseData>? _vaccineData;
+  @override
+  List<VaccineDoseData>? get vaccineData {
+    final value = _vaccineData;
+    if (value == null) return null;
+    if (_vaccineData is EqualUnmodifiableListView) return _vaccineData;
+    // ignore: implicit_dynamic_type
+    return EqualUnmodifiableListView(value);
+  }
+
+  final Map<String, dynamic>? _vaccineDoseDataVariation;
+  @override
+  Map<String, dynamic>? get vaccineDoseDataVariation {
+    final value = _vaccineDoseDataVariation;
+    if (value == null) return null;
+    if (_vaccineDoseDataVariation is EqualUnmodifiableMapView)
+      return _vaccineDoseDataVariation;
+    // ignore: implicit_dynamic_type
+    return EqualUnmodifiableMapView(value);
   }
 
   @override
   String toString() {
-    return 'VaccineProductVariantState.fetched(productVariants: $productVariants)';
+    return 'VaccineProductVariantState(loading: $loading, productVariants: $productVariants, vaccineData: $vaccineData, vaccineDoseDataVariation: $vaccineDoseDataVariation)';
   }
 
   @override
   bool operator ==(Object other) {
     return identical(this, other) ||
         (other.runtimeType == runtimeType &&
-            other is _$VaccineProductVariantFetchedStateImpl &&
+            other is _$VaccineProductVariantStateImpl &&
+            (identical(other.loading, loading) || other.loading == loading) &&
             const DeepCollectionEquality()
-                .equals(other._productVariants, _productVariants));
+                .equals(other._productVariants, _productVariants) &&
+            const DeepCollectionEquality()
+                .equals(other._vaccineData, _vaccineData) &&
+            const DeepCollectionEquality().equals(
+                other._vaccineDoseDataVariation, _vaccineDoseDataVariation));
   }
 
   @override
   int get hashCode => Object.hash(
-      runtimeType, const DeepCollectionEquality().hash(_productVariants));
+      runtimeType,
+      loading,
+      const DeepCollectionEquality().hash(_productVariants),
+      const DeepCollectionEquality().hash(_vaccineData),
+      const DeepCollectionEquality().hash(_vaccineDoseDataVariation));
 
   @JsonKey(ignore: true)
   @override
   @pragma('vm:prefer-inline')
-  _$$VaccineProductVariantFetchedStateImplCopyWith<
-          _$VaccineProductVariantFetchedStateImpl>
-      get copyWith => __$$VaccineProductVariantFetchedStateImplCopyWithImpl<
-          _$VaccineProductVariantFetchedStateImpl>(this, _$identity);
-
-  @override
-  @optionalTypeArgs
-  TResult when<TResult extends Object?>({
-    required TResult Function() loading,
-    required TResult Function() empty,
-    required TResult Function(List<ProductVariantModel> productVariants)
-        fetched,
-  }) {
-    return fetched(productVariants);
-  }
-
-  @override
-  @optionalTypeArgs
-  TResult? whenOrNull<TResult extends Object?>({
-    TResult? Function()? loading,
-    TResult? Function()? empty,
-    TResult? Function(List<ProductVariantModel> productVariants)? fetched,
-  }) {
-    return fetched?.call(productVariants);
-  }
-
-  @override
-  @optionalTypeArgs
-  TResult maybeWhen<TResult extends Object?>({
-    TResult Function()? loading,
-    TResult Function()? empty,
-    TResult Function(List<ProductVariantModel> productVariants)? fetched,
-    required TResult orElse(),
-  }) {
-    if (fetched != null) {
-      return fetched(productVariants);
-    }
-    return orElse();
-  }
-
-  @override
-  @optionalTypeArgs
-  TResult map<TResult extends Object?>({
-    required TResult Function(VaccineProductVariantLoadingState value) loading,
-    required TResult Function(VaccineProductVariantEmptyState value) empty,
-    required TResult Function(VaccineProductVariantFetchedState value) fetched,
-  }) {
-    return fetched(this);
-  }
-
-  @override
-  @optionalTypeArgs
-  TResult? mapOrNull<TResult extends Object?>({
-    TResult? Function(VaccineProductVariantLoadingState value)? loading,
-    TResult? Function(VaccineProductVariantEmptyState value)? empty,
-    TResult? Function(VaccineProductVariantFetchedState value)? fetched,
-  }) {
-    return fetched?.call(this);
-  }
-
-  @override
-  @optionalTypeArgs
-  TResult maybeMap<TResult extends Object?>({
-    TResult Function(VaccineProductVariantLoadingState value)? loading,
-    TResult Function(VaccineProductVariantEmptyState value)? empty,
-    TResult Function(VaccineProductVariantFetchedState value)? fetched,
-    required TResult orElse(),
-  }) {
-    if (fetched != null) {
-      return fetched(this);
-    }
-    return orElse();
-  }
+  _$$VaccineProductVariantStateImplCopyWith<_$VaccineProductVariantStateImpl>
+      get copyWith => __$$VaccineProductVariantStateImplCopyWithImpl<
+          _$VaccineProductVariantStateImpl>(this, _$identity);
 }
 
-abstract class VaccineProductVariantFetchedState
+abstract class _VaccineProductVariantState
     implements VaccineProductVariantState {
-  const factory VaccineProductVariantFetchedState(
-          {required final List<ProductVariantModel> productVariants}) =
-      _$VaccineProductVariantFetchedStateImpl;
+  const factory _VaccineProductVariantState(
+          {final bool? loading,
+          final List<ProductVariantModel>? productVariants,
+          final List<VaccineDoseData>? vaccineData,
+          final Map<String, dynamic>? vaccineDoseDataVariation}) =
+      _$VaccineProductVariantStateImpl;
 
-  List<ProductVariantModel> get productVariants;
+  @override
+  bool? get loading;
+  @override
+  List<ProductVariantModel>? get productVariants;
+  @override
+  List<VaccineDoseData>? get vaccineData;
+  @override
+  Map<String, dynamic>? get vaccineDoseDataVariation;
+  @override
   @JsonKey(ignore: true)
-  _$$VaccineProductVariantFetchedStateImplCopyWith<
-          _$VaccineProductVariantFetchedStateImpl>
+  _$$VaccineProductVariantStateImplCopyWith<_$VaccineProductVariantStateImpl>
       get copyWith => throw _privateConstructorUsedError;
 }

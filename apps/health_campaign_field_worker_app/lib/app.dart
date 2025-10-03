@@ -20,8 +20,9 @@ import 'package:survey_form/survey_form.dart';
 
 import 'blocs/app_initialization/app_initialization.dart';
 import 'blocs/auth/auth.dart';
-import 'blocs/delivery_intervention/vaccine_delivery.dart';
-import 'blocs/delivery_intervention/vaccine_search.dart';
+import 'blocs/vaccine/vaccine_delivery.dart';
+import 'blocs/vaccine/vaccine_product_variants.dart';
+import 'blocs/vaccine/vaccine_search.dart';
 import 'blocs/inventory_management/custom_summary_report_bloc.dart';
 import 'blocs/inventory_management/stock_bloc.dart';
 import 'blocs/localization/localization.dart';
@@ -457,6 +458,17 @@ class MainApplicationState extends State<MainApplication>
                             const VaccineSearchState(),
                             taskRepository: context
                                 .repository<TaskModel, TaskSearchModel>(),
+                          ),
+                        ),
+                        BlocProvider(
+                          create: (context) => VaccineProductVariantBloc(
+                            const VaccineProductVariantState(),
+                            projectResourceDataRepository: context.repository<
+                                ProjectResourceModel,
+                                ProjectResourceSearchModel>(),
+                            productVariantDataRepository: context.repository<
+                                ProductVariantModel,
+                                ProductVariantSearchModel>(),
                           ),
                         ),
                         BlocProvider(

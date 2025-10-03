@@ -50,6 +50,7 @@ import 'package:sync_service/blocs/sync/sync.dart';
 import '../blocs/app_initialization/app_initialization.dart';
 import '../blocs/auth/auth.dart';
 import '../blocs/localization/localization.dart';
+import '../blocs/vaccine/vaccine_product_variants.dart';
 import '../data/local_store/app_shared_preferences.dart';
 import '../data/local_store/no_sql/schema/app_configuration.dart';
 import '../data/local_store/no_sql/schema/service_registry.dart';
@@ -356,13 +357,29 @@ class _HomePageState extends LocalizedState<HomePage> {
       ),
       i18.home.beneficiaryLabel:
           homeShowcaseData.distributorBeneficiaries.buildWith(
-        child: HomeItemCard(
-          icon: Icons.family_restroom_rounded,
-          label: i18.home.beneficiaryLabel,
-          onPressed: () async {
-            RegistrationDeliverySingleton()
-                .setHouseholdType(HouseholdType.family);
-            context.router.push(const CustomRegistrationDeliveryWrapperRoute());
+        child: BlocBuilder<AppInitializationBloc, AppInitializationState>(
+          builder: (context, appInitState) {
+            List<VaccineDoseData> vaccineDataList = [];
+            if (appInitState is AppInitialized) {
+              vaccineDataList =
+                  appInitState.appConfiguration.vaccinationDoseData ?? [];
+            }
+            return HomeItemCard(
+              icon: Icons.family_restroom_rounded,
+              label: i18.home.beneficiaryLabel,
+              onPressed: () async {
+                RegistrationDeliverySingleton()
+                    .setHouseholdType(HouseholdType.family);
+                context.read<VaccineProductVariantBloc>().add(
+                      VaccineProductVariantEvent.load(
+                        projectId: context.projectId,
+                        vaccineDataList: vaccineDataList,
+                      ),
+                    );
+                context.router
+                    .push(const CustomRegistrationDeliveryWrapperRoute());
+              },
+            );
           },
         ),
       ),

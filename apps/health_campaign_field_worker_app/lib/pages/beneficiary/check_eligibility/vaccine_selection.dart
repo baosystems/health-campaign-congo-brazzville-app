@@ -1,6 +1,7 @@
 // import 'dart:math';
 
 import 'dart:async';
+import 'dart:convert';
 import 'dart:ffi';
 import 'dart:math';
 
@@ -1388,6 +1389,14 @@ class _VaccineSelectionPageState extends LocalizedState<VaccineSelectionPage> {
                                                     .toValue(),
                                                 noSelectedCodes.join('.'),
                                               ),
+                                              if (selectedVaccines.isNotEmpty)
+                                                AdditionalField(
+                                                  AdditionalFieldsType
+                                                      .availedVaccines
+                                                      .toValue(),
+                                                  json.encode(selectedVaccines
+                                                      .toList()),
+                                                ),
                                               ...getIndividualAdditionalFields(
                                                   widget.individual)
                                             ],

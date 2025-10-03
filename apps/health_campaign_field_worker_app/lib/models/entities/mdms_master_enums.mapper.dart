@@ -53,6 +53,8 @@ class MasterEnumsMapper extends EnumMapper<MasterEnums> {
         return MasterEnums.deliveryComments;
       case "vaccination-data":
         return MasterEnums.vaccinationData;
+      case "VACCINATION-DOSE-DATA":
+        return MasterEnums.vaccinationDoseData;
       case "BACKEND_INTERFACE":
         return MasterEnums.backendInterface;
       case "CALL_SUPPORT":
@@ -113,6 +115,8 @@ class MasterEnumsMapper extends EnumMapper<MasterEnums> {
         return "DELIVERY_COMMENT_OPTIONS_POPULATOR";
       case MasterEnums.vaccinationData:
         return "vaccination-data";
+      case MasterEnums.vaccinationDoseData:
+        return "VACCINATION-DOSE-DATA";
       case MasterEnums.backendInterface:
         return "BACKEND_INTERFACE";
       case MasterEnums.callSupport:

@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:convert';
 
 import 'package:collection/collection.dart';
+import 'package:digit_data_model/data/local_store/sql_store/tables/package_tables/task.dart';
 import 'package:digit_data_model/data_model.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
@@ -65,6 +66,26 @@ class VaccineSearchBloc extends Bloc<VaccineSearchEvent, VaccineSearchState> {
       },
     ).toList();
 
+    List<TaskModel> vaccineFutureDeliveryDoseTasks = tasksData
+        .where((task) => task.status == Status.delivered.toValue())
+        .toList();
+
+    int currentDose = 0;
+
+    for (var task in vaccineFutureDeliveryDoseTasks) {
+      int tempCurrentDose = int.parse(task.additionalFields?.fields
+              .firstWhereOrNull(
+                  (e) => e.key == AdditionalFieldsType.doseIndex.toValue())
+              ?.value ??
+          "0");
+      if (tempCurrentDose > currentDose) {
+        currentDose = tempCurrentDose;
+      }
+    }
+
+    bool isNextDeliveryAvailable = await _checkIfFutureTaskPresent(
+        currentDose, vaccineFutureDeliveryDoseTasks);
+
     String availedVaccineCodesMap = vaccineIdentificationTasks
             .first.additionalFields?.fields
             .firstWhereOrNull(
@@ -78,6 +99,9 @@ class VaccineSearchBloc extends Bloc<VaccineSearchEvent, VaccineSearchState> {
       loading: false,
       vaccineDeliveryDoseTasks: vaccineDeliveryDoseTasks,
       availedVaccineDoseCodes: availedVaccineDoseCodes,
+      vaccineFutureDeliveryDoseTasks: vaccineFutureDeliveryDoseTasks,
+      isNextDeliveryAvailable: isNextDeliveryAvailable,
+      currentDose: currentDose,
     ));
   }
 
@@ -98,7 +122,7 @@ class VaccineSearchBloc extends Bloc<VaccineSearchEvent, VaccineSearchState> {
     Map<int, Set<String>> eligibleVaccinesCodeByAgeIndex = {};
     for (var age in ageIndex) {
       allVaccinesCodeByAgeIndex[age] = ageToVaccineCodes[age]?.toSet() ?? {};
-      if (age < event.ageInMonths * 30) {
+      if (age < event.ageInDays) {
         eligibleVaccinesCodeByAgeIndex[age] =
             ageToVaccineCodes[age]?.toSet() ?? {};
       }
@@ -119,38 +143,36 @@ class VaccineSearchBloc extends Bloc<VaccineSearchEvent, VaccineSearchState> {
     ));
   }
 
-  Map<int, Set<String>> _getVaccineDoseListByIndex(
-      Map<int, Set<String>> eligibleVaccinesByAgeIndex,
-      List<VaccineDoseData> vaccineData) {
-    Map<int, Set<String>> vaccineDoseList = {};
-    final allEligibleVaccineDoseCodes = eligibleVaccinesByAgeIndex.values
-        .fold<Set<String>>({}, (previousValue, element) {
-      previousValue.addAll(element);
-      return previousValue;
+  Future<bool> _checkIfFutureTaskPresent(
+      int currentDose, List<TaskModel> futureTasks) async {
+    if (futureTasks.isEmpty) {
+      return false;
+    }
+
+    List<TaskModel> filteredFutureTasks = futureTasks.where((task) {
+      int taskDoseIndex = int.parse(task.additionalFields?.fields
+              .firstWhereOrNull(
+                  (e) => e.key == AdditionalFieldsType.doseIndex.toValue())
+              ?.value ??
+          "0");
+      return taskDoseIndex == currentDose;
     }).toList();
-    Map<String, List<String>> allEligibleVaccineCodes = {};
-    for (var doseCode in allEligibleVaccineDoseCodes) {
-      String code = vaccineData
-              .firstWhereOrNull((element) => element.doseCode == doseCode)
-              ?.code ??
-          '';
-      allEligibleVaccineCodes.putIfAbsent(code, () => []);
-      allEligibleVaccineCodes[code]!.add(doseCode);
+
+    String? timeStamp = filteredFutureTasks.first.additionalFields?.fields
+        .firstWhereOrNull(
+            (e) => e.key == AdditionalFieldsType.nextDateOfDelivery.toValue())
+        ?.value;
+    if (timeStamp == null) {
+      return false;
     }
-    int maxLength = 0;
-    for (var codes in allEligibleVaccineCodes.values) {
-      if (codes.length > maxLength) {
-        maxLength = codes.length;
-      }
+
+    DateTime nextDeliveryDate =
+        DateTime.fromMillisecondsSinceEpoch(int.parse(timeStamp));
+
+    if (nextDeliveryDate.isBefore(DateTime.now())) {
+      return true;
     }
-    for (var i = 0; i < maxLength; i++) {
-      Set<String> currentDoseList = {};
-      for (List<String> element in allEligibleVaccineCodes.values) {
-        if (i < element.length) currentDoseList.add(element[i]);
-      }
-      vaccineDoseList[i + 1] = currentDoseList;
-    }
-    return vaccineDoseList;
+    return false;
   }
 }
 
@@ -160,7 +182,7 @@ class VaccineSearchEvent with _$VaccineSearchEvent {
     required String projectBeneficiaryClientReferenceId,
   }) = VaccineTaskSearchEvent;
   const factory VaccineSearchEvent.eligibleVaccinesSearch(
-          {required int ageInMonths,
+          {required int ageInDays,
           required List<VaccineDoseData> vaccineDataList,
           required Map<String, dynamic> vaccineDoseDataVariation}) =
       VaccineSearchEligibleVaccinesEvent;
@@ -171,6 +193,9 @@ class VaccineSearchState with _$VaccineSearchState {
   const factory VaccineSearchState({
     @Default(false) bool loading,
     List<TaskModel>? vaccineDeliveryDoseTasks,
+    List<TaskModel>? vaccineFutureDeliveryDoseTasks,
+    @Default(false) bool isNextDeliveryAvailable,
+    @Default(0) int currentDose,
     List<String>? availedVaccineDoseCodes,
     List<String>? allEligibleVaccineDoseCodes,
     Map<int, Set<String>>? allVaccinesDoseCodeByAgeIndex,

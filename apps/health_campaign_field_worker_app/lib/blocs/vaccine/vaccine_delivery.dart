@@ -34,21 +34,9 @@ class VaccineDeliveryBloc
     // Update loading state to indicate an operation is in progress
     emit(state.copyWith(loading: true));
     try {
-      TaskModel updatedTask = event.task.copyWith(
-        clientAuditDetails: (event.task.clientAuditDetails?.createdBy != null &&
-                event.task.clientAuditDetails?.createdTime != null)
-            ? ClientAuditDetails(
-                createdBy: event.task.clientAuditDetails!.createdBy,
-                createdTime: event.task.clientAuditDetails!.createdTime,
-                lastModifiedBy: event.task.auditDetails?.lastModifiedBy ??
-                    event.task.clientAuditDetails!.createdBy,
-                lastModifiedTime: DateTime.now().millisecondsSinceEpoch,
-              )
-            : null,
-      );
-      await taskRepository.update(updatedTask);
+      await taskRepository.update(event.task);
       if (event.currentDoseTask != null) {
-        await taskRepository.update(event.currentDoseTask!);
+        await taskRepository.create(event.currentDoseTask!);
       }
       emit(state.copyWith(loading: false));
     } catch (error) {

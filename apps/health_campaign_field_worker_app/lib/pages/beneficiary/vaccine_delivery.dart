@@ -85,6 +85,8 @@ class _VaccineDeliveryPageState extends LocalizedState<VaccineDeliveryPage> {
   List<VaccineDeliveryDetails> currentVaccineDoseData = [];
   Set<VaccineDeliveryDetails> currentVaccineDoseDataSelected = {};
 
+  List<String> nextVaccineDoseCodes = [];
+
   FormGroup _form(BuildContext context) {
     DateTime now = DateTime.now();
 
@@ -107,15 +109,16 @@ class _VaccineDeliveryPageState extends LocalizedState<VaccineDeliveryPage> {
   TaskModel _getTaskModel(
     BuildContext context, {
     required FormGroup form,
-    TaskModel? oldTask,
-    int? cycle,
-    int? dose,
-    String? projectBeneficiaryClientReferenceId,
-    AddressModel? address,
-    double? latitude,
-    double? longitude,
-    IndividualModel? selectedIndividual,
-    List<String>? notDeliveredVaccineDoseCodes,
+    required TaskModel? oldTask,
+    required int? cycle,
+    required int? dose,
+    required String? projectBeneficiaryClientReferenceId,
+    required AddressModel? address,
+    required double? latitude,
+    required double? longitude,
+    required IndividualModel? selectedIndividual,
+    required List<String> updatedAvailedVaccineDoseCodes,
+    required List<String> notDeliveredVaccineDoseCodes,
   }) {
     // Assumption here productVariantDelivered will always have one item
 
@@ -172,11 +175,6 @@ class _VaccineDeliveryPageState extends LocalizedState<VaccineDeliveryPage> {
             .toList() ??
         [];
 
-    DoseStatus doseStatus = getDoseStatus(
-      availedVaccineDoseCodes.toList(),
-      (notDeliveredVaccineDoseCodes ?? []),
-    );
-
     // Update the task with information from the form and other context
     task = task.copyWith(
       projectId: RegistrationDeliverySingleton().projectId,
@@ -191,16 +189,18 @@ class _VaccineDeliveryPageState extends LocalizedState<VaccineDeliveryPage> {
           ...filteredAdditionalFields,
           AdditionalField(
             AdditionalFieldsType.doseStatus.toValue(),
-            doseStatus.name,
+            DoseStatus.fullyVaccinated.name,
           ),
-          AdditionalField(
-            AdditionalFieldsType.selectedVaccines.toValue(),
-            availedVaccineDoseCodes.join("."),
-          ),
-          AdditionalField(
-            AdditionalFieldsType.noSelectedVaccines.toValue(),
-            (notDeliveredVaccineDoseCodes ?? []).join("."),
-          ),
+          if (updatedAvailedVaccineDoseCodes.isNotEmpty)
+            AdditionalField(
+              AdditionalFieldsType.selectedVaccines.toValue(),
+              updatedAvailedVaccineDoseCodes.join("."),
+            ),
+          if (notDeliveredVaccineDoseCodes.isNotEmpty)
+            AdditionalField(
+              AdditionalFieldsType.noSelectedVaccines.toValue(),
+              notDeliveredVaccineDoseCodes.join("."),
+            ),
           AdditionalField(
             AdditionalFieldsType.cycleIndex.toValue(),
             "0${cycle ?? 1}",
@@ -254,14 +254,13 @@ class _VaccineDeliveryPageState extends LocalizedState<VaccineDeliveryPage> {
   TaskModel _getCurrentDoseTaskModel(
     BuildContext context, {
     required FormGroup form,
-    int? cycle,
-    int? dose,
-    String? projectBeneficiaryClientReferenceId,
-    AddressModel? address,
-    double? latitude,
-    double? longitude,
-    IndividualModel? selectedIndividual,
-    List<String>? notDeliveredVaccineDoseCodes,
+    required int? cycle,
+    required int? dose,
+    required String? projectBeneficiaryClientReferenceId,
+    required AddressModel? address,
+    required double? latitude,
+    required double? longitude,
+    required IndividualModel? selectedIndividual,
   }) {
     var clientReferenceId = IdGen.i.identifier;
     final currentMonth = form.control(_currentMonthKey).value as String?;
@@ -270,16 +269,11 @@ class _VaccineDeliveryPageState extends LocalizedState<VaccineDeliveryPage> {
     final doseAdministeredBy =
         form.control(_doseAdministeredByKey).value as String?;
     final deliveryComment = form.control(_deliveryCommentKey).value as String?;
-    DoseStatus doseStatus = getDoseStatus(
-      availedVaccineDoseCodes.toList(),
-      (notDeliveredVaccineDoseCodes ?? []),
-    );
-    DateTime nextDateOfDelivery = DateTime(
-        DateTime.now().year,
-        DateTime.now().month,
-        DateTime.now().day,
-        DateTime.now().hour,
-        DateTime.now().minute + 5);
+
+    DateTime? nextDateOfDelivery = nextVaccineDoseCodes.isEmpty
+        ? null
+        : DateTime(DateTime.now().year, DateTime.now().month,
+            DateTime.now().day, DateTime.now().hour, DateTime.now().minute + 5);
     TaskModel task = TaskModel(
       projectBeneficiaryClientReferenceId: projectBeneficiaryClientReferenceId,
       clientReferenceId: clientReferenceId,
@@ -321,7 +315,7 @@ class _VaccineDeliveryPageState extends LocalizedState<VaccineDeliveryPage> {
                 ),
               ))
           .toList(),
-      status: Status.administeredSuccess.toValue(),
+      status: Status.delivered.toValue(),
       additionalFields: TaskAdditionalFields(
         version: 1,
         fields: [
@@ -329,21 +323,14 @@ class _VaccineDeliveryPageState extends LocalizedState<VaccineDeliveryPage> {
             AdditionalFieldsType.dateOfDelivery.toValue(),
             DateTime.now().millisecondsSinceEpoch.toString(),
           ),
-          AdditionalField(
-            AdditionalFieldsType.nextDateOfDelivery.toValue(),
-            nextDateOfDelivery.millisecondsSinceEpoch.toString(),
-          ),
+          if (nextDateOfDelivery != null)
+            AdditionalField(
+              AdditionalFieldsType.nextDateOfDelivery.toValue(),
+              nextDateOfDelivery.millisecondsSinceEpoch.toString(),
+            ),
           AdditionalField(
             AdditionalFieldsType.doseStatus.toValue(),
-            doseStatus.name,
-          ),
-          AdditionalField(
-            AdditionalFieldsType.selectedVaccines.toValue(),
-            availedVaccineDoseCodes.join("."),
-          ),
-          AdditionalField(
-            AdditionalFieldsType.noSelectedVaccines.toValue(),
-            (notDeliveredVaccineDoseCodes ?? []).join("."),
+            DoseStatus.fullyVaccinated.name,
           ),
           AdditionalField(
             AdditionalFieldsType.cycleIndex.toValue(),
@@ -463,6 +450,8 @@ class _VaccineDeliveryPageState extends LocalizedState<VaccineDeliveryPage> {
                         (deliveryState.availedVaccineDoseCodes ?? []).toSet();
                     currentVaccineDoseData =
                         deliveryState.currentVaccineDoseData ?? [];
+                    nextVaccineDoseCodes =
+                        deliveryState.nextVaccineDoseData ?? [];
                     return ReactiveFormBuilder(
                         form: () => _form(context),
                         builder: (context, form, child) {
@@ -495,10 +484,6 @@ class _VaccineDeliveryPageState extends LocalizedState<VaccineDeliveryPage> {
                                         );
                                         return;
                                       }
-                                      availedVaccineDoseCodes.addAll(
-                                        currentVaccineDoseDataSelected
-                                            .map((e) => e.vaccineCode),
-                                      );
                                       List<String>
                                           notDeliveredVaccineDoseCodes =
                                           allEligibleVaccineDoseCodes
@@ -506,6 +491,8 @@ class _VaccineDeliveryPageState extends LocalizedState<VaccineDeliveryPage> {
                                                   availedVaccineDoseCodes
                                                       .contains(code))
                                               .toList();
+                                      int currentDose =
+                                          vaccineSearchState.currentDose;
                                       final submit = await showCustomPopup(
                                         context: context,
                                         builder: (popupContext) => Popup(
@@ -561,6 +548,8 @@ class _VaccineDeliveryPageState extends LocalizedState<VaccineDeliveryPage> {
                                           context,
                                           form,
                                           widget.individual,
+                                          currentDose,
+                                          availedVaccineDoseCodes.toList(),
                                           notDeliveredVaccineDoseCodes,
                                         );
                                       }
@@ -675,13 +664,15 @@ class _VaccineDeliveryPageState extends LocalizedState<VaccineDeliveryPage> {
                                                 currentVaccineDoseData[i],
                                             onVaccineDetailsChanged:
                                                 (vaccineDetails) {
-                                              currentVaccineDoseDataSelected
-                                                  .add(vaccineDetails);
                                               if (vaccineDetails.numberOfDose >
                                                   0) {
+                                                currentVaccineDoseDataSelected
+                                                    .add(vaccineDetails);
                                                 availedVaccineDoseCodes.add(
                                                     vaccineDetails.vaccineCode);
                                               } else {
+                                                currentVaccineDoseDataSelected
+                                                    .remove(vaccineDetails);
                                                 availedVaccineDoseCodes.remove(
                                                     vaccineDetails.vaccineCode);
                                               }
@@ -762,25 +753,6 @@ class _VaccineDeliveryPageState extends LocalizedState<VaccineDeliveryPage> {
     );
   }
 
-  DoseStatus getDoseStatus(
-      List<String> selectedCodes, List<String> noSelectedCodes) {
-    if (selectedCodes.isEmpty && noSelectedCodes.isEmpty) {
-      return DoseStatus.none;
-    } else if ((selectedCodes.isEmpty && noSelectedCodes.isNotEmpty) ||
-        (selectedCodes.isNotEmpty &&
-            noSelectedCodes.isNotEmpty &&
-            noSelectedCodes.contains(Constants.penta1))) {
-      return DoseStatus.zeroDose;
-    } else if (selectedCodes.isNotEmpty &&
-        noSelectedCodes.isNotEmpty &&
-        selectedCodes.contains(Constants.penta1)) {
-      return DoseStatus.underVaccinated;
-    } else if (selectedCodes.isNotEmpty && noSelectedCodes.isEmpty) {
-      return DoseStatus.fullyVaccinated;
-    }
-    return DoseStatus.zeroDose;
-  }
-
   int getIndividualAge(IndividualModel individualModel) {
     DateTime dateOfBirth =
         DateFormat("dd/MM/yyyy").parse(individualModel.dateOfBirth ?? '');
@@ -803,6 +775,8 @@ class _VaccineDeliveryPageState extends LocalizedState<VaccineDeliveryPage> {
     BuildContext context,
     FormGroup form,
     IndividualModel? selectedIndividual,
+    int currentDose,
+    List<String> updatedAvailedVaccineDoseCodes,
     List<String> notDeliveredVaccineDoseCodes,
   ) {
     if (context.mounted) {
@@ -815,8 +789,15 @@ class _VaccineDeliveryPageState extends LocalizedState<VaccineDeliveryPage> {
       Future.delayed(const Duration(seconds: 0), () {
         // After delay, hide the initial dialog
         DigitComponentsUtils.hideDialog(context);
-        handleCapturedLocationState(locationState, context, form,
-            selectedIndividual, notDeliveredVaccineDoseCodes);
+        handleCapturedLocationState(
+          locationState,
+          context,
+          form,
+          selectedIndividual,
+          currentDose,
+          updatedAvailedVaccineDoseCodes,
+          notDeliveredVaccineDoseCodes,
+        );
       });
     }
   }
@@ -826,6 +807,8 @@ class _VaccineDeliveryPageState extends LocalizedState<VaccineDeliveryPage> {
     BuildContext context,
     FormGroup form,
     IndividualModel? selectedIndividual,
+    int currentDose,
+    List<String> updatedAvailedVaccineDoseCodes,
     List<String> notDeliveredVaccineDoseCodes,
   ) async {
     final lat = locationState.latitude;
@@ -835,34 +818,29 @@ class _VaccineDeliveryPageState extends LocalizedState<VaccineDeliveryPage> {
       context,
       form: form,
       cycle: context.selectedCycle?.id,
-      dose: 1,
+      dose: currentDose + 1,
+      address: widget.doseStatusTask?.address,
       oldTask: widget.doseStatusTask,
       projectBeneficiaryClientReferenceId:
           widget.projectBeneficiaryClientReferenceId,
       latitude: lat,
       longitude: long,
       selectedIndividual: selectedIndividual,
+      updatedAvailedVaccineDoseCodes: updatedAvailedVaccineDoseCodes,
       notDeliveredVaccineDoseCodes: notDeliveredVaccineDoseCodes,
     );
-
-    int currentDoseIndex = int.parse(updatedTask.additionalFields?.fields
-            .firstWhereOrNull(
-                (e) => e.key == AdditionalFieldsType.doseIndex.toValue())
-            ?.value ??
-        "1");
 
     TaskModel currentDoseTask = _getCurrentDoseTaskModel(
       context,
       form: form,
       cycle: context.selectedCycle?.id,
-      dose: currentDoseIndex,
+      dose: currentDose + 1,
       address: updatedTask.address,
       projectBeneficiaryClientReferenceId:
           widget.projectBeneficiaryClientReferenceId,
       latitude: lat,
       longitude: long,
       selectedIndividual: selectedIndividual,
-      notDeliveredVaccineDoseCodes: notDeliveredVaccineDoseCodes,
     );
 
     context.read<VaccineDeliveryBloc>().add(

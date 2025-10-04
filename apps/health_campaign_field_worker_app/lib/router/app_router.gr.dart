@@ -878,7 +878,8 @@ abstract class _$AppRouter extends RootStackRouter {
       );
     },
     ViewVaccinationStatusRoute.name: (routeData) {
-      final args = routeData.argsAs<ViewVaccinationStatusRouteArgs>();
+      final args = routeData.argsAs<ViewVaccinationStatusRouteArgs>(
+          orElse: () => const ViewVaccinationStatusRouteArgs());
       return AutoRoutePage<dynamic>(
         routeData: routeData,
         child: ViewVaccinationStatusPage(
@@ -886,7 +887,6 @@ abstract class _$AppRouter extends RootStackRouter {
           appLocalizations: args.appLocalizations,
           projectBeneficiaryClientReferenceId:
               args.projectBeneficiaryClientReferenceId,
-          task: args.task,
         ),
       );
     },
@@ -4125,7 +4125,6 @@ class ViewVaccinationStatusRoute
     Key? key,
     AppLocalizations? appLocalizations,
     String? projectBeneficiaryClientReferenceId,
-    required TaskModel task,
     List<PageRouteInfo>? children,
   }) : super(
           ViewVaccinationStatusRoute.name,
@@ -4134,7 +4133,6 @@ class ViewVaccinationStatusRoute
             appLocalizations: appLocalizations,
             projectBeneficiaryClientReferenceId:
                 projectBeneficiaryClientReferenceId,
-            task: task,
           ),
           initialChildren: children,
         );
@@ -4150,7 +4148,6 @@ class ViewVaccinationStatusRouteArgs {
     this.key,
     this.appLocalizations,
     this.projectBeneficiaryClientReferenceId,
-    required this.task,
   });
 
   final Key? key;
@@ -4159,11 +4156,9 @@ class ViewVaccinationStatusRouteArgs {
 
   final String? projectBeneficiaryClientReferenceId;
 
-  final TaskModel task;
-
   @override
   String toString() {
-    return 'ViewVaccinationStatusRouteArgs{key: $key, appLocalizations: $appLocalizations, projectBeneficiaryClientReferenceId: $projectBeneficiaryClientReferenceId, task: $task}';
+    return 'ViewVaccinationStatusRouteArgs{key: $key, appLocalizations: $appLocalizations, projectBeneficiaryClientReferenceId: $projectBeneficiaryClientReferenceId}';
   }
 }
 

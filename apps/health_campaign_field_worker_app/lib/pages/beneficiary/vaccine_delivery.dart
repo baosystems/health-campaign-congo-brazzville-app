@@ -261,6 +261,7 @@ class _VaccineDeliveryPageState extends LocalizedState<VaccineDeliveryPage> {
     required double? latitude,
     required double? longitude,
     required IndividualModel? selectedIndividual,
+    required List<String> notDeliveredVaccineDoseCodes,
   }) {
     var clientReferenceId = IdGen.i.identifier;
     final currentMonth = form.control(_currentMonthKey).value as String?;
@@ -270,7 +271,7 @@ class _VaccineDeliveryPageState extends LocalizedState<VaccineDeliveryPage> {
         form.control(_doseAdministeredByKey).value as String?;
     final deliveryComment = form.control(_deliveryCommentKey).value as String?;
 
-    DateTime? nextDateOfDelivery = nextVaccineDoseCodes.isEmpty
+    DateTime? nextDateOfDelivery = notDeliveredVaccineDoseCodes.isEmpty
         ? null
         : DateTime(DateTime.now().year, DateTime.now().month,
             DateTime.now().day, DateTime.now().hour, DateTime.now().minute + 5);
@@ -830,18 +831,17 @@ class _VaccineDeliveryPageState extends LocalizedState<VaccineDeliveryPage> {
       notDeliveredVaccineDoseCodes: notDeliveredVaccineDoseCodes,
     );
 
-    TaskModel currentDoseTask = _getCurrentDoseTaskModel(
-      context,
-      form: form,
-      cycle: context.selectedCycle?.id,
-      dose: currentDose + 1,
-      address: updatedTask.address,
-      projectBeneficiaryClientReferenceId:
-          widget.projectBeneficiaryClientReferenceId,
-      latitude: lat,
-      longitude: long,
-      selectedIndividual: selectedIndividual,
-    );
+    TaskModel currentDoseTask = _getCurrentDoseTaskModel(context,
+        form: form,
+        cycle: context.selectedCycle?.id,
+        dose: currentDose + 1,
+        address: updatedTask.address,
+        projectBeneficiaryClientReferenceId:
+            widget.projectBeneficiaryClientReferenceId,
+        latitude: lat,
+        longitude: long,
+        selectedIndividual: selectedIndividual,
+        notDeliveredVaccineDoseCodes: notDeliveredVaccineDoseCodes);
 
     context.read<VaccineDeliveryBloc>().add(
           VaccineDeliverySubmitEvent(

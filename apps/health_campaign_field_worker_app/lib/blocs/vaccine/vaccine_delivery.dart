@@ -23,7 +23,7 @@ class VaccineDeliveryBloc
     required this.taskRepository,
   }) {
     on(_handleSubmit);
-    on(_handleVaccineSelection);
+    on(_handleCurrentVaccineDose);
   }
 
   // Event handler for submitting a task
@@ -46,25 +46,39 @@ class VaccineDeliveryBloc
     }
   }
 
-  FutureOr<void> _handleVaccineSelection(
+  FutureOr<void> _handleCurrentVaccineDose(
     VaccineDeliveryVaccineSelectionEvent event,
     VaccineDeliveryEmitter emit,
   ) {
+    emit(state.copyWith(loading: true));
+
+    // Get all eligible vaccine codes by age index from the provided map
     List<String> eligibleVaccinesCode =
         _getEligibleVaccineDoseCodes(event.eligibleVaccinesCodeByAgeIndex);
 
+    // Filter out vaccines that have already been availed
     List<String> deliverableVaccineCodes = eligibleVaccinesCode
         .whereNot((e) => event.availedVaccineDoseCodes.contains(e))
         .toList();
 
-    List<VaccineDeliveryDetails> currentVaccineDoseData =
+    // Determine the current vaccine dose codes that can be administered according to the availed vaccines
+    List<String> currentVaccineDoseDataCodes =
         deliverableVaccineCodes.where((vaccineCode) {
+      //Only allow if previous dose was availed (for versioned vaccines)
       return _isVaccineAllowed(
         vaccineCode: vaccineCode,
         availedVaccineCodes: event.availedVaccineDoseCodes,
         allVaccineCodes: eligibleVaccinesCode,
       );
-    }).map((vaccineCode) {
+    }).toList();
+
+    // Determine the next vaccine dose codes that can be administered
+    List<String> nextVaccineDoseDataCodes = deliverableVaccineCodes
+        .whereNot((e) => currentVaccineDoseDataCodes.contains(e))
+        .toList();
+
+    List<VaccineDeliveryDetails> currentVaccineDoseData =
+        currentVaccineDoseDataCodes.map((vaccineCode) {
       String productVariationId = event.productVariants
               .firstWhereOrNull(
                   (element) => vaccineCode.contains(element.sku ?? ""))
@@ -76,20 +90,11 @@ class VaccineDeliveryBloc
       );
     }).toList();
 
-    List<String> nextVaccineDoseData = deliverableVaccineCodes.whereNot((e) {
-      for (VaccineDeliveryDetails element in currentVaccineDoseData) {
-        if (element.vaccineCode == e) {
-          return true;
-        }
-      }
-      return false;
-    }).toList();
-
     emit(state.copyWith(
       loading: false,
       availedVaccineDoseCodes: event.availedVaccineDoseCodes,
       currentVaccineDoseData: currentVaccineDoseData,
-      nextVaccineDoseData: nextVaccineDoseData,
+      nextVaccineDoseData: nextVaccineDoseDataCodes,
     ));
   }
 

@@ -68,7 +68,7 @@ class VaccineDeliveryBloc
       return _isVaccineAllowed(
         vaccineCode: vaccineCode,
         availedVaccineCodes: event.availedVaccineDoseCodes,
-        allVaccineCodes: eligibleVaccinesCode,
+        allVaccineCodes: event.allVaccineDoseCodes,
       );
     }).toList();
 
@@ -152,6 +152,7 @@ class VaccineDeliveryEvent with _$VaccineDeliveryEvent {
     required Map<int, Set<String>> eligibleVaccinesCodeByAgeIndex,
     required List<String> availedVaccineDoseCodes,
     required Set<String> filterVaccineDoseCodes,
+    required List<String> allVaccineDoseCodes,
   }) = VaccineDeliveryVaccineSelectionEvent;
 }
 

@@ -442,6 +442,8 @@ class _VaccineDeliveryPageState extends LocalizedState<VaccineDeliveryPage> {
                       eligibleVaccinesCodeByAgeIndex: vaccineSearchState
                               .eligibleVaccinesDoseCodeByAgeIndex ??
                           {},
+                      allVaccineDoseCodes:
+                          vaccineSearchState.allEligibleVaccineDoseCodes ?? [],
                     ));
                 allEligibleVaccineDoseCodes =
                     vaccineSearchState.allEligibleVaccineDoseCodes ?? [];

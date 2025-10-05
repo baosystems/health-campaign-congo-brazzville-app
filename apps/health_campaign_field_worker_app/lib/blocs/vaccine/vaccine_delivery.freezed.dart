@@ -24,7 +24,8 @@ mixin _$VaccineDeliveryEvent {
             List<ProductVariantModel> productVariants,
             Map<int, Set<String>> eligibleVaccinesCodeByAgeIndex,
             List<String> availedVaccineDoseCodes,
-            Set<String> filterVaccineDoseCodes)
+            Set<String> filterVaccineDoseCodes,
+            List<String> allVaccineDoseCodes)
         vaccineSelection,
   }) =>
       throw _privateConstructorUsedError;
@@ -35,7 +36,8 @@ mixin _$VaccineDeliveryEvent {
             List<ProductVariantModel> productVariants,
             Map<int, Set<String>> eligibleVaccinesCodeByAgeIndex,
             List<String> availedVaccineDoseCodes,
-            Set<String> filterVaccineDoseCodes)?
+            Set<String> filterVaccineDoseCodes,
+            List<String> allVaccineDoseCodes)?
         vaccineSelection,
   }) =>
       throw _privateConstructorUsedError;
@@ -46,7 +48,8 @@ mixin _$VaccineDeliveryEvent {
             List<ProductVariantModel> productVariants,
             Map<int, Set<String>> eligibleVaccinesCodeByAgeIndex,
             List<String> availedVaccineDoseCodes,
-            Set<String> filterVaccineDoseCodes)?
+            Set<String> filterVaccineDoseCodes,
+            List<String> allVaccineDoseCodes)?
         vaccineSelection,
     required TResult orElse(),
   }) =>
@@ -178,7 +181,8 @@ class _$VaccineDeliverySubmitEventImpl implements VaccineDeliverySubmitEvent {
             List<ProductVariantModel> productVariants,
             Map<int, Set<String>> eligibleVaccinesCodeByAgeIndex,
             List<String> availedVaccineDoseCodes,
-            Set<String> filterVaccineDoseCodes)
+            Set<String> filterVaccineDoseCodes,
+            List<String> allVaccineDoseCodes)
         vaccineSelection,
   }) {
     return submit(task, currentDoseTask);
@@ -192,7 +196,8 @@ class _$VaccineDeliverySubmitEventImpl implements VaccineDeliverySubmitEvent {
             List<ProductVariantModel> productVariants,
             Map<int, Set<String>> eligibleVaccinesCodeByAgeIndex,
             List<String> availedVaccineDoseCodes,
-            Set<String> filterVaccineDoseCodes)?
+            Set<String> filterVaccineDoseCodes,
+            List<String> allVaccineDoseCodes)?
         vaccineSelection,
   }) {
     return submit?.call(task, currentDoseTask);
@@ -206,7 +211,8 @@ class _$VaccineDeliverySubmitEventImpl implements VaccineDeliverySubmitEvent {
             List<ProductVariantModel> productVariants,
             Map<int, Set<String>> eligibleVaccinesCodeByAgeIndex,
             List<String> availedVaccineDoseCodes,
-            Set<String> filterVaccineDoseCodes)?
+            Set<String> filterVaccineDoseCodes,
+            List<String> allVaccineDoseCodes)?
         vaccineSelection,
     required TResult orElse(),
   }) {
@@ -274,7 +280,8 @@ abstract class _$$VaccineDeliveryVaccineSelectionEventImplCopyWith<$Res> {
       {List<ProductVariantModel> productVariants,
       Map<int, Set<String>> eligibleVaccinesCodeByAgeIndex,
       List<String> availedVaccineDoseCodes,
-      Set<String> filterVaccineDoseCodes});
+      Set<String> filterVaccineDoseCodes,
+      List<String> allVaccineDoseCodes});
 }
 
 /// @nodoc
@@ -294,6 +301,7 @@ class __$$VaccineDeliveryVaccineSelectionEventImplCopyWithImpl<$Res>
     Object? eligibleVaccinesCodeByAgeIndex = null,
     Object? availedVaccineDoseCodes = null,
     Object? filterVaccineDoseCodes = null,
+    Object? allVaccineDoseCodes = null,
   }) {
     return _then(_$VaccineDeliveryVaccineSelectionEventImpl(
       productVariants: null == productVariants
@@ -312,6 +320,10 @@ class __$$VaccineDeliveryVaccineSelectionEventImplCopyWithImpl<$Res>
           ? _value._filterVaccineDoseCodes
           : filterVaccineDoseCodes // ignore: cast_nullable_to_non_nullable
               as Set<String>,
+      allVaccineDoseCodes: null == allVaccineDoseCodes
+          ? _value._allVaccineDoseCodes
+          : allVaccineDoseCodes // ignore: cast_nullable_to_non_nullable
+              as List<String>,
     ));
   }
 }
@@ -324,11 +336,13 @@ class _$VaccineDeliveryVaccineSelectionEventImpl
       {required final List<ProductVariantModel> productVariants,
       required final Map<int, Set<String>> eligibleVaccinesCodeByAgeIndex,
       required final List<String> availedVaccineDoseCodes,
-      required final Set<String> filterVaccineDoseCodes})
+      required final Set<String> filterVaccineDoseCodes,
+      required final List<String> allVaccineDoseCodes})
       : _productVariants = productVariants,
         _eligibleVaccinesCodeByAgeIndex = eligibleVaccinesCodeByAgeIndex,
         _availedVaccineDoseCodes = availedVaccineDoseCodes,
-        _filterVaccineDoseCodes = filterVaccineDoseCodes;
+        _filterVaccineDoseCodes = filterVaccineDoseCodes,
+        _allVaccineDoseCodes = allVaccineDoseCodes;
 
   final List<ProductVariantModel> _productVariants;
   @override
@@ -365,9 +379,18 @@ class _$VaccineDeliveryVaccineSelectionEventImpl
     return EqualUnmodifiableSetView(_filterVaccineDoseCodes);
   }
 
+  final List<String> _allVaccineDoseCodes;
+  @override
+  List<String> get allVaccineDoseCodes {
+    if (_allVaccineDoseCodes is EqualUnmodifiableListView)
+      return _allVaccineDoseCodes;
+    // ignore: implicit_dynamic_type
+    return EqualUnmodifiableListView(_allVaccineDoseCodes);
+  }
+
   @override
   String toString() {
-    return 'VaccineDeliveryEvent.vaccineSelection(productVariants: $productVariants, eligibleVaccinesCodeByAgeIndex: $eligibleVaccinesCodeByAgeIndex, availedVaccineDoseCodes: $availedVaccineDoseCodes, filterVaccineDoseCodes: $filterVaccineDoseCodes)';
+    return 'VaccineDeliveryEvent.vaccineSelection(productVariants: $productVariants, eligibleVaccinesCodeByAgeIndex: $eligibleVaccinesCodeByAgeIndex, availedVaccineDoseCodes: $availedVaccineDoseCodes, filterVaccineDoseCodes: $filterVaccineDoseCodes, allVaccineDoseCodes: $allVaccineDoseCodes)';
   }
 
   @override
@@ -383,7 +406,9 @@ class _$VaccineDeliveryVaccineSelectionEventImpl
             const DeepCollectionEquality().equals(
                 other._availedVaccineDoseCodes, _availedVaccineDoseCodes) &&
             const DeepCollectionEquality().equals(
-                other._filterVaccineDoseCodes, _filterVaccineDoseCodes));
+                other._filterVaccineDoseCodes, _filterVaccineDoseCodes) &&
+            const DeepCollectionEquality()
+                .equals(other._allVaccineDoseCodes, _allVaccineDoseCodes));
   }
 
   @override
@@ -392,7 +417,8 @@ class _$VaccineDeliveryVaccineSelectionEventImpl
       const DeepCollectionEquality().hash(_productVariants),
       const DeepCollectionEquality().hash(_eligibleVaccinesCodeByAgeIndex),
       const DeepCollectionEquality().hash(_availedVaccineDoseCodes),
-      const DeepCollectionEquality().hash(_filterVaccineDoseCodes));
+      const DeepCollectionEquality().hash(_filterVaccineDoseCodes),
+      const DeepCollectionEquality().hash(_allVaccineDoseCodes));
 
   @JsonKey(ignore: true)
   @override
@@ -411,11 +437,12 @@ class _$VaccineDeliveryVaccineSelectionEventImpl
             List<ProductVariantModel> productVariants,
             Map<int, Set<String>> eligibleVaccinesCodeByAgeIndex,
             List<String> availedVaccineDoseCodes,
-            Set<String> filterVaccineDoseCodes)
+            Set<String> filterVaccineDoseCodes,
+            List<String> allVaccineDoseCodes)
         vaccineSelection,
   }) {
     return vaccineSelection(productVariants, eligibleVaccinesCodeByAgeIndex,
-        availedVaccineDoseCodes, filterVaccineDoseCodes);
+        availedVaccineDoseCodes, filterVaccineDoseCodes, allVaccineDoseCodes);
   }
 
   @override
@@ -426,14 +453,16 @@ class _$VaccineDeliveryVaccineSelectionEventImpl
             List<ProductVariantModel> productVariants,
             Map<int, Set<String>> eligibleVaccinesCodeByAgeIndex,
             List<String> availedVaccineDoseCodes,
-            Set<String> filterVaccineDoseCodes)?
+            Set<String> filterVaccineDoseCodes,
+            List<String> allVaccineDoseCodes)?
         vaccineSelection,
   }) {
     return vaccineSelection?.call(
         productVariants,
         eligibleVaccinesCodeByAgeIndex,
         availedVaccineDoseCodes,
-        filterVaccineDoseCodes);
+        filterVaccineDoseCodes,
+        allVaccineDoseCodes);
   }
 
   @override
@@ -444,13 +473,14 @@ class _$VaccineDeliveryVaccineSelectionEventImpl
             List<ProductVariantModel> productVariants,
             Map<int, Set<String>> eligibleVaccinesCodeByAgeIndex,
             List<String> availedVaccineDoseCodes,
-            Set<String> filterVaccineDoseCodes)?
+            Set<String> filterVaccineDoseCodes,
+            List<String> allVaccineDoseCodes)?
         vaccineSelection,
     required TResult orElse(),
   }) {
     if (vaccineSelection != null) {
       return vaccineSelection(productVariants, eligibleVaccinesCodeByAgeIndex,
-          availedVaccineDoseCodes, filterVaccineDoseCodes);
+          availedVaccineDoseCodes, filterVaccineDoseCodes, allVaccineDoseCodes);
     }
     return orElse();
   }
@@ -496,13 +526,15 @@ abstract class VaccineDeliveryVaccineSelectionEvent
           {required final List<ProductVariantModel> productVariants,
           required final Map<int, Set<String>> eligibleVaccinesCodeByAgeIndex,
           required final List<String> availedVaccineDoseCodes,
-          required final Set<String> filterVaccineDoseCodes}) =
+          required final Set<String> filterVaccineDoseCodes,
+          required final List<String> allVaccineDoseCodes}) =
       _$VaccineDeliveryVaccineSelectionEventImpl;
 
   List<ProductVariantModel> get productVariants;
   Map<int, Set<String>> get eligibleVaccinesCodeByAgeIndex;
   List<String> get availedVaccineDoseCodes;
   Set<String> get filterVaccineDoseCodes;
+  List<String> get allVaccineDoseCodes;
   @JsonKey(ignore: true)
   _$$VaccineDeliveryVaccineSelectionEventImplCopyWith<
           _$VaccineDeliveryVaccineSelectionEventImpl>

@@ -296,111 +296,8 @@ class _VaccineSelectionPageState extends LocalizedState<VaccineSelectionPage> {
                 widget.projectBeneficiaryClientReferenceId,
           ),
         ));
-    // if (!widget.isZeroDoseAlreadyDone) {
-    //   context.read<ServiceBloc>().add(ServiceSurveyFormEvent(
-    //         value: Random().nextInt(100).toString(),
-    //         submitTriggered: true,
-    //       ));
-    // } else {
-    //   context.read<ServiceBloc>().add(ServiceSearchEvent(
-    //         serviceSearchModel: ServiceSearchModel(
-    //           relatedClientReferenceId:
-    //               widget.projectBeneficiaryClientReferenceId,
-    //         ),
-    //       ));
-    // }
-    // fetchTasksData();
     super.initState();
   }
-
-  // Future<void> fetchTasksData() async {
-  //   final taskDataRepository =
-  //       context.read<LocalRepository<TaskModel, TaskSearchModel>>()
-  //           as CustomTaskLocalRepository;
-
-  //   List<TaskModel> tasksData = await taskDataRepository.search(
-  //     TaskSearchModel(
-  //       projectBeneficiaryClientReferenceId:
-  //           widget.projectBeneficiaryClientReferenceId != null
-  //               ? [widget.projectBeneficiaryClientReferenceId!]
-  //               : null,
-  //     ),
-  //   );
-
-  //   List<TaskModel> lastVaccinationTask = tasksData.where(
-  //     (task) {
-  //       final fields = task.additionalFields?.fields;
-  //       if (fields == null) return false;
-
-  //       final hasZeroDoseStatus = fields.any(
-  //         (e) => e.key == AdditionalFieldsType.doseStatus.toValue(),
-  //       );
-  //       final hasSelectedVaccines = fields.any(
-  //         (e) => e.key == AdditionalFieldsType.selectedVaccines.toValue(),
-  //       );
-  //       final hasNoSelectedVaccines = fields.any(
-  //         (e) => e.key == AdditionalFieldsType.noSelectedVaccines.toValue(),
-  //       );
-  //       return hasZeroDoseStatus &&
-  //           (hasSelectedVaccines || hasNoSelectedVaccines);
-  //     },
-  //   ).toList();
-
-  //   if (lastVaccinationTask.isNotEmpty) {
-  //     lastVaccinationTask.sort((a, b) {
-  //       final aCycle = a.additionalFields?.fields
-  //           .firstWhereOrNull(
-  //             (e) => e.key == AdditionalFieldsType.cycleIndex.toValue(),
-  //           )
-  //           ?.value;
-  //       final bCycle = b.additionalFields?.fields
-  //           .firstWhereOrNull(
-  //             (e) => e.key == AdditionalFieldsType.cycleIndex.toValue(),
-  //           )
-  //           ?.value;
-
-  //       if (aCycle == bCycle) {
-  //         final aCreatedTime = a.auditDetails?.createdTime;
-  //         final bCreatedTime = b.auditDetails?.createdTime;
-  //         return (aCreatedTime != null && bCreatedTime != null)
-  //             ? aCreatedTime.compareTo(bCreatedTime)
-  //             : 0;
-  //       }
-  //       return (int.tryParse(aCycle ?? '0') ?? 0) -
-  //           (int.tryParse(bCycle ?? '0') ?? 0);
-  //     });
-
-  //     List<String> yesSelectedVaccines = [];
-  //     List<String> noSelectedVaccines = [];
-  //     // ignore: avoid_dynamic_calls
-  //     yesSelectedVaccines = ((lastVaccinationTask.last.additionalFields!.fields
-  //                 .firstWhereOrNull((e) =>
-  //                     e.key == AdditionalFieldsType.selectedVaccines.toValue())
-  //                 ?.value as String?) ??
-  //             '')
-  //         .split('.')
-  //         // ignore: avoid_dynamic_calls
-  //         .where((e) => e.isNotEmpty)
-  //         .toList();
-
-  //     // ignore: avoid_dynamic_calls
-  //     noSelectedVaccines = ((lastVaccinationTask.last.additionalFields!.fields
-  //                 .firstWhereOrNull((e) =>
-  //                     e.key ==
-  //                     AdditionalFieldsType.noSelectedVaccines.toValue())
-  //                 ?.value as String?) ??
-  //             '')
-  //         .split('.')
-  //         // ignore: avoid_dynamic_calls
-  //         .where((e) => e.isNotEmpty)
-  //         .toList();
-
-  //     setState(() {
-  //       selectedCodes = yesSelectedVaccines;
-  //       noSelectedCodes = noSelectedVaccines;
-  //     });
-  //   }
-  // }
 
   bool _isVaccineAllowedToShow({
     required String vaccineCode,
@@ -769,14 +666,28 @@ class _VaccineSelectionPageState extends LocalizedState<VaccineSelectionPage> {
 
             // Always clamp currentIndex before indexing
             final int safeIndex = currentIndex.clamp(0, lastIndex);
+            final int nextSafeIndex = (currentIndex + 1).clamp(0, lastIndex);
             final int bucketAge = ageList[safeIndex];
+            final int nextBucketAge = ageList[nextSafeIndex];
 
             // Build current bucket codes (filtering dose dependencies)
-            final List<String> rawCodes = List<String>.from(
+            final List<String> rowCodes = List<String>.from(
               ageToVaccineCodes[bucketAge] ?? const <String>[],
             );
+            final List<String> nextRowCodes = List<String>.from(
+              ageToVaccineCodes[nextBucketAge] ?? const <String>[],
+            );
             final List<String> currentVaccineCodes = [
-              for (final code in rawCodes)
+              for (final code in rowCodes)
+                if (_isVaccineAllowedToShow(
+                  vaccineCode: code,
+                  allVaccineCodes: allVaccineCodes,
+                ))
+                  code
+            ];
+
+            final List<String> nexRowVaccineDoseCodes = [
+              for (final code in nextRowCodes)
                 if (_isVaccineAllowedToShow(
                   vaccineCode: code,
                   allVaccineCodes: allVaccineCodes,
@@ -801,6 +712,11 @@ class _VaccineSelectionPageState extends LocalizedState<VaccineSelectionPage> {
                 }
               });
               return const SizedBox.shrink();
+            }
+
+            // If next bucket ends up empty, treat current as last
+            if (nexRowVaccineDoseCodes.isEmpty) {
+              lastIndex = currentIndex;
             }
 
             // Pre-fill responses (so validators don’t trip)

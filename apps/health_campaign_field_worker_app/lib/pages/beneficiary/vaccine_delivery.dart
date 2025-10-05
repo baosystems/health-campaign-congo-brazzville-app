@@ -487,11 +487,19 @@ class _VaccineDeliveryPageState extends LocalizedState<VaccineDeliveryPage> {
                                         );
                                         return;
                                       }
+
+                                      Set<String>
+                                          currentAvailedVaccineDoseCodes = {};
+                                      currentAvailedVaccineDoseCodes
+                                          .addAll(availedVaccineDoseCodes);
+                                      currentAvailedVaccineDoseCodes.addAll(
+                                          currentVaccineDoseDataSelected
+                                              .map((e) => e.vaccineCode));
                                       List<String>
                                           notDeliveredVaccineDoseCodes =
                                           allEligibleVaccineDoseCodes
                                               .whereNot((code) =>
-                                                  availedVaccineDoseCodes
+                                                  currentAvailedVaccineDoseCodes
                                                       .contains(code))
                                               .toList();
                                       int currentDose =
@@ -552,7 +560,8 @@ class _VaccineDeliveryPageState extends LocalizedState<VaccineDeliveryPage> {
                                           form,
                                           widget.individual,
                                           currentDose,
-                                          availedVaccineDoseCodes.toList(),
+                                          currentAvailedVaccineDoseCodes
+                                              .toList(),
                                           notDeliveredVaccineDoseCodes,
                                         );
                                       }
@@ -671,13 +680,9 @@ class _VaccineDeliveryPageState extends LocalizedState<VaccineDeliveryPage> {
                                                   0) {
                                                 currentVaccineDoseDataSelected
                                                     .add(vaccineDetails);
-                                                availedVaccineDoseCodes.add(
-                                                    vaccineDetails.vaccineCode);
                                               } else {
                                                 currentVaccineDoseDataSelected
                                                     .remove(vaccineDetails);
-                                                availedVaccineDoseCodes.remove(
-                                                    vaccineDetails.vaccineCode);
                                               }
                                             },
                                           ),

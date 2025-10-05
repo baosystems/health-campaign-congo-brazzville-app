@@ -71,14 +71,15 @@ class VaccineSearchBloc extends Bloc<VaccineSearchEvent, VaccineSearchState> {
         .where((task) => task.status == Status.delivered.toValue())
         .toList();
 
-    String? availedVaccineCodesMap = tasksData
-        .firstOrNull?.additionalFields?.fields
-        .firstWhereOrNull(
-            (e) => e.key == AdditionalFieldsType.selectedVaccines.toValue())
-        ?.value;
+    String availedVaccineCodesMap = tasksData
+            .firstOrNull?.additionalFields?.fields
+            .firstWhereOrNull(
+                (e) => e.key == AdditionalFieldsType.selectedVaccines.toValue())
+            ?.value ??
+        "";
 
     List<String> availedVaccineDoseCodes =
-        availedVaccineCodesMap == null ? [] : availedVaccineCodesMap.split(".");
+        availedVaccineCodesMap == "" ? [] : availedVaccineCodesMap.split(".");
 
     int currentDose = 0;
 

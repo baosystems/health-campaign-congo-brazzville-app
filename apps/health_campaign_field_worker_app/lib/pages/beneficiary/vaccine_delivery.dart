@@ -492,7 +492,7 @@ class _VaccineDeliveryPageState extends LocalizedState<VaccineDeliveryPage> {
                                                       .contains(code))
                                               .toList();
                                       int currentDose =
-                                          vaccineSearchState.currentDose;
+                                          vaccineSearchState.currentDose ?? 0;
                                       final submit = await showCustomPopup(
                                         context: context,
                                         builder: (popupContext) => Popup(

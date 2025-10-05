@@ -337,6 +337,12 @@ class CustomMemberCard extends StatelessWidget {
                           projectBeneficiaryClientReferenceId!,
                     ),
                   );
+              context.read<VaccineSearchBloc>().add(
+                    VaccineSearchEvent.handleDeliveredTaskSearch(
+                      projectBeneficiaryClientReferenceId:
+                          projectBeneficiaryClientReferenceId!,
+                    ),
+                  );
               context
                   .read<VaccineSearchBloc>()
                   .add(VaccineSearchEvent.eligibleVaccinesSearch(
@@ -349,7 +355,7 @@ class CustomMemberCard extends StatelessWidget {
               return BlocBuilder<VaccineSearchBloc, VaccineSearchState>(
                 builder: (context, vaccineSearchState) {
                   bool isNextDeliveryAvailable =
-                      _checkIfFutureTaskPresent(context);
+                      vaccineSearchState.isNextDeliveryAvailable ?? false;
                   return Column(
                     children: [
                       if (doseStatusTasks == null || doseStatusTasks.isEmpty)

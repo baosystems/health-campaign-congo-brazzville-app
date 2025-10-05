@@ -25,6 +25,7 @@ class VaccineSearchBloc extends Bloc<VaccineSearchEvent, VaccineSearchState> {
     required this.taskRepository,
   }) {
     on(_handleTaskSearch);
+    on(_handleDeliveredTaskSearch);
     on(_handleVaccineEligibilitySearch);
   }
 
@@ -32,6 +33,7 @@ class VaccineSearchBloc extends Bloc<VaccineSearchEvent, VaccineSearchState> {
     VaccineTaskSearchEvent event,
     VaccineSearchEmitter emit,
   ) async {
+    emit(state.copyWith(loading: true));
     List<TaskModel> tasksData = await taskRepository.search(
       TaskSearchModel(projectBeneficiaryClientReferenceId: [
         event.projectBeneficiaryClientReferenceId
@@ -70,6 +72,37 @@ class VaccineSearchBloc extends Bloc<VaccineSearchEvent, VaccineSearchState> {
         .where((task) => task.status == Status.delivered.toValue())
         .toList();
 
+    String availedVaccineCodesMap = vaccineIdentificationTasks
+            .first.additionalFields?.fields
+            .firstWhereOrNull(
+                (e) => e.key == AdditionalFieldsType.selectedVaccines.toValue())
+            ?.value ??
+        "";
+
+    List<String> availedVaccineDoseCodes = availedVaccineCodesMap.split(".");
+
+    emit(state.copyWith(
+      loading: false,
+      vaccineDeliveryDoseTasks: vaccineDeliveryDoseTasks,
+      availedVaccineDoseCodes: availedVaccineDoseCodes,
+      vaccineFutureDeliveryDoseTasks: vaccineFutureDeliveryDoseTasks,
+    ));
+  }
+
+  FutureOr<void> _handleDeliveredTaskSearch(
+    VaccineDeliveredTaskSearchEvent event,
+    VaccineSearchEmitter emit,
+  ) async {
+    emit(state.copyWith(loading: true));
+    List<TaskModel> tasksData = await taskRepository.search(
+      TaskSearchModel(projectBeneficiaryClientReferenceId: [
+        event.projectBeneficiaryClientReferenceId
+      ]),
+    );
+    List<TaskModel> vaccineFutureDeliveryDoseTasks = tasksData
+        .where((task) => task.status == Status.delivered.toValue())
+        .toList();
+
     int currentDose = 0;
 
     for (var task in vaccineFutureDeliveryDoseTasks) {
@@ -86,20 +119,8 @@ class VaccineSearchBloc extends Bloc<VaccineSearchEvent, VaccineSearchState> {
     bool isNextDeliveryAvailable = await _checkIfFutureTaskPresent(
         currentDose, vaccineFutureDeliveryDoseTasks);
 
-    String availedVaccineCodesMap = vaccineIdentificationTasks
-            .first.additionalFields?.fields
-            .firstWhereOrNull(
-                (e) => e.key == AdditionalFieldsType.selectedVaccines.toValue())
-            ?.value ??
-        "";
-
-    List<String> availedVaccineDoseCodes = availedVaccineCodesMap.split(".");
-
     emit(state.copyWith(
       loading: false,
-      vaccineDeliveryDoseTasks: vaccineDeliveryDoseTasks,
-      availedVaccineDoseCodes: availedVaccineDoseCodes,
-      vaccineFutureDeliveryDoseTasks: vaccineFutureDeliveryDoseTasks,
       isNextDeliveryAvailable: isNextDeliveryAvailable,
       currentDose: currentDose,
     ));
@@ -181,6 +202,9 @@ class VaccineSearchEvent with _$VaccineSearchEvent {
   const factory VaccineSearchEvent.handleTaskSearch({
     required String projectBeneficiaryClientReferenceId,
   }) = VaccineTaskSearchEvent;
+  const factory VaccineSearchEvent.handleDeliveredTaskSearch({
+    required String projectBeneficiaryClientReferenceId,
+  }) = VaccineDeliveredTaskSearchEvent;
   const factory VaccineSearchEvent.eligibleVaccinesSearch(
           {required int ageInDays,
           required List<VaccineDoseData> vaccineDataList,
@@ -194,8 +218,8 @@ class VaccineSearchState with _$VaccineSearchState {
     @Default(false) bool loading,
     List<TaskModel>? vaccineDeliveryDoseTasks,
     List<TaskModel>? vaccineFutureDeliveryDoseTasks,
-    @Default(false) bool isNextDeliveryAvailable,
-    @Default(0) int currentDose,
+    bool? isNextDeliveryAvailable,
+    int? currentDose,
     List<String>? availedVaccineDoseCodes,
     List<String>? allEligibleVaccineDoseCodes,
     Map<int, Set<String>>? allVaccinesDoseCodeByAgeIndex,

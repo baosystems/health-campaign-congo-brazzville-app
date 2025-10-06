@@ -928,6 +928,12 @@ class _VaccineDetailsCardState extends LocalizedState<VaccineDetailsCard> {
         ReactiveFormBuilder(
             form: () => _form(),
             builder: (context, form, child) {
+              form.control(_selectVaccineKey).value = localizations
+                  .translate(widget.vaccineDeliveryDetails.vaccineCode);
+              form.control(_enterBatchNumberKey).value =
+                  widget.vaccineDeliveryDetails.batchNumber;
+              form.control(_numberOfDoseKey).value =
+                  widget.vaccineDeliveryDetails.numberOfDose;
               return Column(
                 children: [
                   ReactiveWrapperField(

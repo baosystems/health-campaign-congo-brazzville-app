@@ -672,6 +672,9 @@ class _VaccineDeliveryPageState extends LocalizedState<VaccineDeliveryPage> {
                                             i < currentVaccineDoseData.length;
                                             i++)
                                           VaccineDetailsCard(
+                                            key: ValueKey(
+                                                currentVaccineDoseData[i]
+                                                    .productVariationId),
                                             vaccineDeliveryDetails:
                                                 currentVaccineDoseData[i],
                                             onVaccineDetailsChanged:
@@ -900,8 +903,6 @@ class _VaccineDetailsCardState extends LocalizedState<VaccineDetailsCard> {
   static const _enterBatchNumberKey = 'enterBatchNumber';
   static const _numberOfDoseKey = 'numberOfDose';
 
-  late VaccineDeliveryDetails vaccineDeliveryDetails;
-
   FormGroup _form() {
     return fb.group({
       _selectVaccineKey: FormControl<String>(
@@ -917,12 +918,6 @@ class _VaccineDetailsCardState extends LocalizedState<VaccineDetailsCard> {
         validators: [Validators.required],
       ),
     });
-  }
-
-  @override
-  void initState() {
-    vaccineDeliveryDetails = widget.vaccineDeliveryDetails;
-    super.initState();
   }
 
   @override
@@ -963,9 +958,9 @@ class _VaccineDetailsCardState extends LocalizedState<VaccineDetailsCard> {
                           errorMessage: field.errorText,
                           onChange: (val) {
                             field.control.value = val;
-                            vaccineDeliveryDetails.batchNumber = val;
+                            widget.vaccineDeliveryDetails.batchNumber = val;
                             widget.onVaccineDetailsChanged(
-                                vaccineDeliveryDetails);
+                                widget.vaccineDeliveryDetails);
                           },
                         );
                       }),
@@ -981,10 +976,10 @@ class _VaccineDetailsCardState extends LocalizedState<VaccineDetailsCard> {
                         initialValue: "0",
                         onChange: (value) {
                           field.control.value = int.parse(value);
-                          vaccineDeliveryDetails.numberOfDose =
+                          widget.vaccineDeliveryDetails.numberOfDose =
                               int.parse(value);
-                          widget
-                              .onVaccineDetailsChanged(vaccineDeliveryDetails);
+                          widget.onVaccineDetailsChanged(
+                              widget.vaccineDeliveryDetails);
                         },
                       ),
                     ),

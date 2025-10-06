@@ -32,7 +32,14 @@ class VaccineSearchBloc extends Bloc<VaccineSearchEvent, VaccineSearchState> {
     VaccineTaskSearchEvent event,
     VaccineSearchEmitter emit,
   ) async {
-    emit(state.copyWith(loading: true));
+    emit(state.copyWith(
+      loading: true,
+      vaccineDeliveryDoseTasks: null,
+      availedVaccineDoseCodes: null,
+      vaccineFutureDeliveryDoseTasks: null,
+      isNextDeliveryAvailable: null,
+      currentDose: null,
+    ));
     List<TaskModel> tasksData = await taskRepository.search(
       TaskSearchModel(projectBeneficiaryClientReferenceId: [
         event.projectBeneficiaryClientReferenceId

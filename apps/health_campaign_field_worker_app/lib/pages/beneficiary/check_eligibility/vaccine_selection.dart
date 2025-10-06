@@ -715,9 +715,9 @@ class _VaccineSelectionPageState extends LocalizedState<VaccineSelectionPage> {
             }
 
             // If next bucket ends up empty, treat current as last
-            if (nexRowVaccineDoseCodes.isEmpty) {
-              lastIndex = currentIndex;
-            }
+            // if (nexRowVaccineDoseCodes.isEmpty) {
+            //   lastIndex = currentIndex;
+            // }
 
             // Pre-fill responses (so validators don’t trip)
             final Map<String, String?> currentResponses = {};

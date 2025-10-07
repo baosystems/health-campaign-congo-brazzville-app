@@ -83,6 +83,14 @@ class _VaccineDeliveryPageState extends LocalizedState<VaccineDeliveryPage> {
 
   Set<String> nextVaccineDoseCodes = {};
 
+  bool isCommentsRequired(){
+    bool result = currentVaccineDoseDataSelected.isEmpty || 
+      currentVaccineDoseDataSelected.length < currentVaccineDoseData.length ||
+      currentVaccineDoseDataSelected.any((vaccineData) => vaccineData.numberOfDose == 0);
+    
+    return result;
+  }
+
   FormGroup _form(BuildContext context) {
     DateTime now = DateTime.now();
 
@@ -670,6 +678,12 @@ class _VaccineDeliveryPageState extends LocalizedState<VaccineDeliveryPage> {
                                                 currentVaccineDoseDataSelected
                                                     .remove(vaccineDetails);
                                               }
+                                              if(isCommentsRequired()){
+                                                form.control(_deliveryCommentKey).setValidators([Validators.required],autoValidate: true);
+                                              }else{
+                                                form.control(_deliveryCommentKey).setValidators([],autoValidate: true);
+                                              }
+                                              
                                             },
                                           ),
                                       ],
@@ -698,7 +712,7 @@ class _VaccineDeliveryPageState extends LocalizedState<VaccineDeliveryPage> {
                                                 i18_local.deliverIntervention
                                                     .deliveryComment,
                                               ),
-                                              isRequired: true,
+                                              isRequired: isCommentsRequired(),
                                               child:
                                                   DigitReactiveSearchDropdown<
                                                       String>(

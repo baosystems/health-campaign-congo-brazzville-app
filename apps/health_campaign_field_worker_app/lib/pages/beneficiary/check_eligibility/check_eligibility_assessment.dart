@@ -549,12 +549,14 @@ class _EligibilityChecklistViewPage
                                           .calculateAgeInDaysFromDob(
                                               dateOfBirth ?? '');
                                     } catch (_) {}
-                                    if (ageInDays > 180) {
+                                    if (ageInDays >
+                                        (6 * Constants.monthsInDays)) {
                                       notApplicableVaccines
                                           .add(Constants.rota1Vaccine);
                                       notApplicableVaccines
                                           .add(Constants.rota2Vaccine);
-                                    } else if (ageInDays > 360) {
+                                    }
+                                    if (ageInDays > Constants.yearsInDays) {
                                       notApplicableVaccines
                                           .add(Constants.bcgVaccine);
                                     }
@@ -562,7 +564,7 @@ class _EligibilityChecklistViewPage
                                             VaccineDeliveryEvent
                                                 .additionalVaccineDose(
                                           filterVaccineDoseCodes:
-                                              notApplicableVaccines.toList(),
+                                              notApplicableVaccines,
                                         ));
                                     final router = context.router;
                                     router.push(VaccineDeliveryRoute(

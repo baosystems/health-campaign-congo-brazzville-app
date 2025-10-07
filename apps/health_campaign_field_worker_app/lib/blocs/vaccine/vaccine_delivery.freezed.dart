@@ -26,8 +26,8 @@ mixin _$VaccineDeliveryEvent {
             List<String> availedVaccineDoseCodes,
             List<String> allVaccineDoseCodes)
         vaccineSelection,
-    required TResult Function(List<String>? filterVaccineDoseCodes,
-            List<String>? additionalVaccineDoseCodes)
+    required TResult Function(Set<String>? filterVaccineDoseCodes,
+            Set<String>? additionalVaccineDoseCodes)
         additionalVaccineDose,
   }) =>
       throw _privateConstructorUsedError;
@@ -40,8 +40,8 @@ mixin _$VaccineDeliveryEvent {
             List<String> availedVaccineDoseCodes,
             List<String> allVaccineDoseCodes)?
         vaccineSelection,
-    TResult? Function(List<String>? filterVaccineDoseCodes,
-            List<String>? additionalVaccineDoseCodes)?
+    TResult? Function(Set<String>? filterVaccineDoseCodes,
+            Set<String>? additionalVaccineDoseCodes)?
         additionalVaccineDose,
   }) =>
       throw _privateConstructorUsedError;
@@ -54,8 +54,8 @@ mixin _$VaccineDeliveryEvent {
             List<String> availedVaccineDoseCodes,
             List<String> allVaccineDoseCodes)?
         vaccineSelection,
-    TResult Function(List<String>? filterVaccineDoseCodes,
-            List<String>? additionalVaccineDoseCodes)?
+    TResult Function(Set<String>? filterVaccineDoseCodes,
+            Set<String>? additionalVaccineDoseCodes)?
         additionalVaccineDose,
     required TResult orElse(),
   }) =>
@@ -195,8 +195,8 @@ class _$VaccineDeliverySubmitEventImpl implements VaccineDeliverySubmitEvent {
             List<String> availedVaccineDoseCodes,
             List<String> allVaccineDoseCodes)
         vaccineSelection,
-    required TResult Function(List<String>? filterVaccineDoseCodes,
-            List<String>? additionalVaccineDoseCodes)
+    required TResult Function(Set<String>? filterVaccineDoseCodes,
+            Set<String>? additionalVaccineDoseCodes)
         additionalVaccineDose,
   }) {
     return submit(task, currentDoseTask);
@@ -212,8 +212,8 @@ class _$VaccineDeliverySubmitEventImpl implements VaccineDeliverySubmitEvent {
             List<String> availedVaccineDoseCodes,
             List<String> allVaccineDoseCodes)?
         vaccineSelection,
-    TResult? Function(List<String>? filterVaccineDoseCodes,
-            List<String>? additionalVaccineDoseCodes)?
+    TResult? Function(Set<String>? filterVaccineDoseCodes,
+            Set<String>? additionalVaccineDoseCodes)?
         additionalVaccineDose,
   }) {
     return submit?.call(task, currentDoseTask);
@@ -229,8 +229,8 @@ class _$VaccineDeliverySubmitEventImpl implements VaccineDeliverySubmitEvent {
             List<String> availedVaccineDoseCodes,
             List<String> allVaccineDoseCodes)?
         vaccineSelection,
-    TResult Function(List<String>? filterVaccineDoseCodes,
-            List<String>? additionalVaccineDoseCodes)?
+    TResult Function(Set<String>? filterVaccineDoseCodes,
+            Set<String>? additionalVaccineDoseCodes)?
         additionalVaccineDose,
     required TResult orElse(),
   }) {
@@ -443,8 +443,8 @@ class _$VaccineDeliveryVaccineSelectionEventImpl
             List<String> availedVaccineDoseCodes,
             List<String> allVaccineDoseCodes)
         vaccineSelection,
-    required TResult Function(List<String>? filterVaccineDoseCodes,
-            List<String>? additionalVaccineDoseCodes)
+    required TResult Function(Set<String>? filterVaccineDoseCodes,
+            Set<String>? additionalVaccineDoseCodes)
         additionalVaccineDose,
   }) {
     return vaccineSelection(productVariants, eligibleVaccinesCodeByAgeIndex,
@@ -461,8 +461,8 @@ class _$VaccineDeliveryVaccineSelectionEventImpl
             List<String> availedVaccineDoseCodes,
             List<String> allVaccineDoseCodes)?
         vaccineSelection,
-    TResult? Function(List<String>? filterVaccineDoseCodes,
-            List<String>? additionalVaccineDoseCodes)?
+    TResult? Function(Set<String>? filterVaccineDoseCodes,
+            Set<String>? additionalVaccineDoseCodes)?
         additionalVaccineDose,
   }) {
     return vaccineSelection?.call(
@@ -482,8 +482,8 @@ class _$VaccineDeliveryVaccineSelectionEventImpl
             List<String> availedVaccineDoseCodes,
             List<String> allVaccineDoseCodes)?
         vaccineSelection,
-    TResult Function(List<String>? filterVaccineDoseCodes,
-            List<String>? additionalVaccineDoseCodes)?
+    TResult Function(Set<String>? filterVaccineDoseCodes,
+            Set<String>? additionalVaccineDoseCodes)?
         additionalVaccineDose,
     required TResult orElse(),
   }) {
@@ -562,8 +562,8 @@ abstract class _$$VaccineDeliveryAdditionalVaccineDoseEventImplCopyWith<$Res> {
       __$$VaccineDeliveryAdditionalVaccineDoseEventImplCopyWithImpl<$Res>;
   @useResult
   $Res call(
-      {List<String>? filterVaccineDoseCodes,
-      List<String>? additionalVaccineDoseCodes});
+      {Set<String>? filterVaccineDoseCodes,
+      Set<String>? additionalVaccineDoseCodes});
 }
 
 /// @nodoc
@@ -586,11 +586,11 @@ class __$$VaccineDeliveryAdditionalVaccineDoseEventImplCopyWithImpl<$Res>
       filterVaccineDoseCodes: freezed == filterVaccineDoseCodes
           ? _value._filterVaccineDoseCodes
           : filterVaccineDoseCodes // ignore: cast_nullable_to_non_nullable
-              as List<String>?,
+              as Set<String>?,
       additionalVaccineDoseCodes: freezed == additionalVaccineDoseCodes
           ? _value._additionalVaccineDoseCodes
           : additionalVaccineDoseCodes // ignore: cast_nullable_to_non_nullable
-              as List<String>?,
+              as Set<String>?,
     ));
   }
 }
@@ -600,31 +600,31 @@ class __$$VaccineDeliveryAdditionalVaccineDoseEventImplCopyWithImpl<$Res>
 class _$VaccineDeliveryAdditionalVaccineDoseEventImpl
     implements VaccineDeliveryAdditionalVaccineDoseEvent {
   const _$VaccineDeliveryAdditionalVaccineDoseEventImpl(
-      {final List<String>? filterVaccineDoseCodes,
-      final List<String>? additionalVaccineDoseCodes})
+      {final Set<String>? filterVaccineDoseCodes,
+      final Set<String>? additionalVaccineDoseCodes})
       : _filterVaccineDoseCodes = filterVaccineDoseCodes,
         _additionalVaccineDoseCodes = additionalVaccineDoseCodes;
 
-  final List<String>? _filterVaccineDoseCodes;
+  final Set<String>? _filterVaccineDoseCodes;
   @override
-  List<String>? get filterVaccineDoseCodes {
+  Set<String>? get filterVaccineDoseCodes {
     final value = _filterVaccineDoseCodes;
     if (value == null) return null;
-    if (_filterVaccineDoseCodes is EqualUnmodifiableListView)
+    if (_filterVaccineDoseCodes is EqualUnmodifiableSetView)
       return _filterVaccineDoseCodes;
     // ignore: implicit_dynamic_type
-    return EqualUnmodifiableListView(value);
+    return EqualUnmodifiableSetView(value);
   }
 
-  final List<String>? _additionalVaccineDoseCodes;
+  final Set<String>? _additionalVaccineDoseCodes;
   @override
-  List<String>? get additionalVaccineDoseCodes {
+  Set<String>? get additionalVaccineDoseCodes {
     final value = _additionalVaccineDoseCodes;
     if (value == null) return null;
-    if (_additionalVaccineDoseCodes is EqualUnmodifiableListView)
+    if (_additionalVaccineDoseCodes is EqualUnmodifiableSetView)
       return _additionalVaccineDoseCodes;
     // ignore: implicit_dynamic_type
-    return EqualUnmodifiableListView(value);
+    return EqualUnmodifiableSetView(value);
   }
 
   @override
@@ -671,8 +671,8 @@ class _$VaccineDeliveryAdditionalVaccineDoseEventImpl
             List<String> availedVaccineDoseCodes,
             List<String> allVaccineDoseCodes)
         vaccineSelection,
-    required TResult Function(List<String>? filterVaccineDoseCodes,
-            List<String>? additionalVaccineDoseCodes)
+    required TResult Function(Set<String>? filterVaccineDoseCodes,
+            Set<String>? additionalVaccineDoseCodes)
         additionalVaccineDose,
   }) {
     return additionalVaccineDose(
@@ -689,8 +689,8 @@ class _$VaccineDeliveryAdditionalVaccineDoseEventImpl
             List<String> availedVaccineDoseCodes,
             List<String> allVaccineDoseCodes)?
         vaccineSelection,
-    TResult? Function(List<String>? filterVaccineDoseCodes,
-            List<String>? additionalVaccineDoseCodes)?
+    TResult? Function(Set<String>? filterVaccineDoseCodes,
+            Set<String>? additionalVaccineDoseCodes)?
         additionalVaccineDose,
   }) {
     return additionalVaccineDose?.call(
@@ -707,8 +707,8 @@ class _$VaccineDeliveryAdditionalVaccineDoseEventImpl
             List<String> availedVaccineDoseCodes,
             List<String> allVaccineDoseCodes)?
         vaccineSelection,
-    TResult Function(List<String>? filterVaccineDoseCodes,
-            List<String>? additionalVaccineDoseCodes)?
+    TResult Function(Set<String>? filterVaccineDoseCodes,
+            Set<String>? additionalVaccineDoseCodes)?
         additionalVaccineDose,
     required TResult orElse(),
   }) {
@@ -763,12 +763,12 @@ class _$VaccineDeliveryAdditionalVaccineDoseEventImpl
 abstract class VaccineDeliveryAdditionalVaccineDoseEvent
     implements VaccineDeliveryEvent {
   const factory VaccineDeliveryAdditionalVaccineDoseEvent(
-          {final List<String>? filterVaccineDoseCodes,
-          final List<String>? additionalVaccineDoseCodes}) =
+          {final Set<String>? filterVaccineDoseCodes,
+          final Set<String>? additionalVaccineDoseCodes}) =
       _$VaccineDeliveryAdditionalVaccineDoseEventImpl;
 
-  List<String>? get filterVaccineDoseCodes;
-  List<String>? get additionalVaccineDoseCodes;
+  Set<String>? get filterVaccineDoseCodes;
+  Set<String>? get additionalVaccineDoseCodes;
   @JsonKey(ignore: true)
   _$$VaccineDeliveryAdditionalVaccineDoseEventImplCopyWith<
           _$VaccineDeliveryAdditionalVaccineDoseEventImpl>
@@ -782,10 +782,9 @@ mixin _$VaccineDeliveryState {
       throw _privateConstructorUsedError;
   List<VaccineDeliveryDetails>? get currentVaccineDoseData =>
       throw _privateConstructorUsedError;
-  List<String>? get nextVaccineDoseData => throw _privateConstructorUsedError;
-  List<String>? get filterVaccineDoseCodes =>
-      throw _privateConstructorUsedError;
-  List<String>? get additionalVaccineDoseCodes =>
+  Set<String>? get nextVaccineDoseData => throw _privateConstructorUsedError;
+  Set<String>? get filterVaccineDoseCodes => throw _privateConstructorUsedError;
+  Set<String>? get additionalVaccineDoseCodes =>
       throw _privateConstructorUsedError;
 
   @JsonKey(ignore: true)
@@ -803,9 +802,9 @@ abstract class $VaccineDeliveryStateCopyWith<$Res> {
       {bool loading,
       List<String>? availedVaccineDoseCodes,
       List<VaccineDeliveryDetails>? currentVaccineDoseData,
-      List<String>? nextVaccineDoseData,
-      List<String>? filterVaccineDoseCodes,
-      List<String>? additionalVaccineDoseCodes});
+      Set<String>? nextVaccineDoseData,
+      Set<String>? filterVaccineDoseCodes,
+      Set<String>? additionalVaccineDoseCodes});
 }
 
 /// @nodoc
@@ -845,15 +844,15 @@ class _$VaccineDeliveryStateCopyWithImpl<$Res,
       nextVaccineDoseData: freezed == nextVaccineDoseData
           ? _value.nextVaccineDoseData
           : nextVaccineDoseData // ignore: cast_nullable_to_non_nullable
-              as List<String>?,
+              as Set<String>?,
       filterVaccineDoseCodes: freezed == filterVaccineDoseCodes
           ? _value.filterVaccineDoseCodes
           : filterVaccineDoseCodes // ignore: cast_nullable_to_non_nullable
-              as List<String>?,
+              as Set<String>?,
       additionalVaccineDoseCodes: freezed == additionalVaccineDoseCodes
           ? _value.additionalVaccineDoseCodes
           : additionalVaccineDoseCodes // ignore: cast_nullable_to_non_nullable
-              as List<String>?,
+              as Set<String>?,
     ) as $Val);
   }
 }
@@ -870,9 +869,9 @@ abstract class _$$VaccineDeliveryStateImplCopyWith<$Res>
       {bool loading,
       List<String>? availedVaccineDoseCodes,
       List<VaccineDeliveryDetails>? currentVaccineDoseData,
-      List<String>? nextVaccineDoseData,
-      List<String>? filterVaccineDoseCodes,
-      List<String>? additionalVaccineDoseCodes});
+      Set<String>? nextVaccineDoseData,
+      Set<String>? filterVaccineDoseCodes,
+      Set<String>? additionalVaccineDoseCodes});
 }
 
 /// @nodoc
@@ -909,15 +908,15 @@ class __$$VaccineDeliveryStateImplCopyWithImpl<$Res>
       nextVaccineDoseData: freezed == nextVaccineDoseData
           ? _value._nextVaccineDoseData
           : nextVaccineDoseData // ignore: cast_nullable_to_non_nullable
-              as List<String>?,
+              as Set<String>?,
       filterVaccineDoseCodes: freezed == filterVaccineDoseCodes
           ? _value._filterVaccineDoseCodes
           : filterVaccineDoseCodes // ignore: cast_nullable_to_non_nullable
-              as List<String>?,
+              as Set<String>?,
       additionalVaccineDoseCodes: freezed == additionalVaccineDoseCodes
           ? _value._additionalVaccineDoseCodes
           : additionalVaccineDoseCodes // ignore: cast_nullable_to_non_nullable
-              as List<String>?,
+              as Set<String>?,
     ));
   }
 }
@@ -929,9 +928,9 @@ class _$VaccineDeliveryStateImpl implements _VaccineDeliveryState {
       {this.loading = false,
       final List<String>? availedVaccineDoseCodes,
       final List<VaccineDeliveryDetails>? currentVaccineDoseData,
-      final List<String>? nextVaccineDoseData,
-      final List<String>? filterVaccineDoseCodes,
-      final List<String>? additionalVaccineDoseCodes})
+      final Set<String>? nextVaccineDoseData,
+      final Set<String>? filterVaccineDoseCodes,
+      final Set<String>? additionalVaccineDoseCodes})
       : _availedVaccineDoseCodes = availedVaccineDoseCodes,
         _currentVaccineDoseData = currentVaccineDoseData,
         _nextVaccineDoseData = nextVaccineDoseData,
@@ -963,37 +962,37 @@ class _$VaccineDeliveryStateImpl implements _VaccineDeliveryState {
     return EqualUnmodifiableListView(value);
   }
 
-  final List<String>? _nextVaccineDoseData;
+  final Set<String>? _nextVaccineDoseData;
   @override
-  List<String>? get nextVaccineDoseData {
+  Set<String>? get nextVaccineDoseData {
     final value = _nextVaccineDoseData;
     if (value == null) return null;
-    if (_nextVaccineDoseData is EqualUnmodifiableListView)
+    if (_nextVaccineDoseData is EqualUnmodifiableSetView)
       return _nextVaccineDoseData;
     // ignore: implicit_dynamic_type
-    return EqualUnmodifiableListView(value);
+    return EqualUnmodifiableSetView(value);
   }
 
-  final List<String>? _filterVaccineDoseCodes;
+  final Set<String>? _filterVaccineDoseCodes;
   @override
-  List<String>? get filterVaccineDoseCodes {
+  Set<String>? get filterVaccineDoseCodes {
     final value = _filterVaccineDoseCodes;
     if (value == null) return null;
-    if (_filterVaccineDoseCodes is EqualUnmodifiableListView)
+    if (_filterVaccineDoseCodes is EqualUnmodifiableSetView)
       return _filterVaccineDoseCodes;
     // ignore: implicit_dynamic_type
-    return EqualUnmodifiableListView(value);
+    return EqualUnmodifiableSetView(value);
   }
 
-  final List<String>? _additionalVaccineDoseCodes;
+  final Set<String>? _additionalVaccineDoseCodes;
   @override
-  List<String>? get additionalVaccineDoseCodes {
+  Set<String>? get additionalVaccineDoseCodes {
     final value = _additionalVaccineDoseCodes;
     if (value == null) return null;
-    if (_additionalVaccineDoseCodes is EqualUnmodifiableListView)
+    if (_additionalVaccineDoseCodes is EqualUnmodifiableSetView)
       return _additionalVaccineDoseCodes;
     // ignore: implicit_dynamic_type
-    return EqualUnmodifiableListView(value);
+    return EqualUnmodifiableSetView(value);
   }
 
   @override
@@ -1044,9 +1043,9 @@ abstract class _VaccineDeliveryState implements VaccineDeliveryState {
           {final bool loading,
           final List<String>? availedVaccineDoseCodes,
           final List<VaccineDeliveryDetails>? currentVaccineDoseData,
-          final List<String>? nextVaccineDoseData,
-          final List<String>? filterVaccineDoseCodes,
-          final List<String>? additionalVaccineDoseCodes}) =
+          final Set<String>? nextVaccineDoseData,
+          final Set<String>? filterVaccineDoseCodes,
+          final Set<String>? additionalVaccineDoseCodes}) =
       _$VaccineDeliveryStateImpl;
 
   @override
@@ -1056,11 +1055,11 @@ abstract class _VaccineDeliveryState implements VaccineDeliveryState {
   @override
   List<VaccineDeliveryDetails>? get currentVaccineDoseData;
   @override
-  List<String>? get nextVaccineDoseData;
+  Set<String>? get nextVaccineDoseData;
   @override
-  List<String>? get filterVaccineDoseCodes;
+  Set<String>? get filterVaccineDoseCodes;
   @override
-  List<String>? get additionalVaccineDoseCodes;
+  Set<String>? get additionalVaccineDoseCodes;
   @override
   @JsonKey(ignore: true)
   _$$VaccineDeliveryStateImplCopyWith<_$VaccineDeliveryStateImpl>

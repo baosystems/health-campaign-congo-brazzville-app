@@ -58,20 +58,19 @@ class VaccineDeliveryBloc
     List<String> eligibleVaccinesCode =
         _getEligibleVaccineDoseCodes(event.eligibleVaccinesCodeByAgeIndex);
 
-    List<String> filterVaccineDoseCodes = [
-      ...event.availedVaccineDoseCodes,
-      ...(state.filterVaccineDoseCodes ?? [])
-    ];
+    Set<String> filterVaccineDoseCodes = {};
+    filterVaccineDoseCodes.addAll(event.availedVaccineDoseCodes);
+    filterVaccineDoseCodes.addAll(state.filterVaccineDoseCodes ?? []);
 
     // Filter out vaccines that have already been availed
-    List<String> deliverableVaccineCodes = eligibleVaccinesCode
+    Set<String> deliverableVaccineCodes = eligibleVaccinesCode
         .whereNot((e) => (filterVaccineDoseCodes.contains(e)))
-        .toList();
+        .toSet();
 
     deliverableVaccineCodes.addAll(state.additionalVaccineDoseCodes ?? []);
 
     // Determine the current vaccine dose codes that can be administered according to the availed vaccines
-    List<String> currentVaccineDoseDataCodes =
+    Set<String> currentVaccineDoseDataCodes =
         deliverableVaccineCodes.where((vaccineCode) {
       //Only allow if previous dose was availed (for versioned vaccines)
       return _isVaccineAllowed(
@@ -79,12 +78,12 @@ class VaccineDeliveryBloc
         availedVaccineCodes: event.availedVaccineDoseCodes,
         allVaccineCodes: event.allVaccineDoseCodes,
       );
-    }).toList();
+    }).toSet();
 
     // Determine the next vaccine dose codes that can be administered
-    List<String> nextVaccineDoseDataCodes = deliverableVaccineCodes
+    Set<String> nextVaccineDoseDataCodes = deliverableVaccineCodes
         .whereNot((e) => currentVaccineDoseDataCodes.contains(e))
-        .toList();
+        .toSet();
 
     List<VaccineDeliveryDetails> currentVaccineDoseData =
         currentVaccineDoseDataCodes.map((vaccineCode) {
@@ -111,10 +110,16 @@ class VaccineDeliveryBloc
     VaccineDeliveryAdditionalVaccineDoseEvent event,
     VaccineDeliveryEmitter emit,
   ) {
-    emit(state.copyWith(
-      filterVaccineDoseCodes: event.filterVaccineDoseCodes,
-      additionalVaccineDoseCodes: event.additionalVaccineDoseCodes,
-    ));
+    if (event.filterVaccineDoseCodes != null) {
+      emit(state.copyWith(
+        filterVaccineDoseCodes: event.filterVaccineDoseCodes,
+      ));
+    }
+    if (event.additionalVaccineDoseCodes != null) {
+      emit(state.copyWith(
+        additionalVaccineDoseCodes: event.additionalVaccineDoseCodes,
+      ));
+    }
   }
 
   List<String> _getEligibleVaccineDoseCodes(
@@ -173,8 +178,8 @@ class VaccineDeliveryEvent with _$VaccineDeliveryEvent {
     required List<String> allVaccineDoseCodes,
   }) = VaccineDeliveryVaccineSelectionEvent;
   const factory VaccineDeliveryEvent.additionalVaccineDose({
-    List<String>? filterVaccineDoseCodes,
-    List<String>? additionalVaccineDoseCodes,
+    Set<String>? filterVaccineDoseCodes,
+    Set<String>? additionalVaccineDoseCodes,
   }) = VaccineDeliveryAdditionalVaccineDoseEvent;
 }
 
@@ -184,8 +189,8 @@ class VaccineDeliveryState with _$VaccineDeliveryState {
     @Default(false) bool loading,
     List<String>? availedVaccineDoseCodes,
     List<VaccineDeliveryDetails>? currentVaccineDoseData,
-    List<String>? nextVaccineDoseData,
-    List<String>? filterVaccineDoseCodes,
-    List<String>? additionalVaccineDoseCodes,
+    Set<String>? nextVaccineDoseData,
+    Set<String>? filterVaccineDoseCodes,
+    Set<String>? additionalVaccineDoseCodes,
   }) = _VaccineDeliveryState;
 }

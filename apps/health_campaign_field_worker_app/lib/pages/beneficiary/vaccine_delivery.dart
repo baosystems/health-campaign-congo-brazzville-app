@@ -81,7 +81,7 @@ class _VaccineDeliveryPageState extends LocalizedState<VaccineDeliveryPage> {
   List<VaccineDeliveryDetails> currentVaccineDoseData = [];
   Set<VaccineDeliveryDetails> currentVaccineDoseDataSelected = {};
 
-  List<String> nextVaccineDoseCodes = [];
+  Set<String> nextVaccineDoseCodes = {};
 
   FormGroup _form(BuildContext context) {
     DateTime now = DateTime.now();
@@ -437,7 +437,7 @@ class _VaccineDeliveryPageState extends LocalizedState<VaccineDeliveryPage> {
                     currentVaccineDoseData =
                         deliveryState.currentVaccineDoseData ?? [];
                     nextVaccineDoseCodes =
-                        deliveryState.nextVaccineDoseData ?? [];
+                        deliveryState.nextVaccineDoseData ?? {};
                     return ReactiveFormBuilder(
                         form: () => _form(context),
                         builder: (context, form, child) {
@@ -657,7 +657,7 @@ class _VaccineDeliveryPageState extends LocalizedState<VaccineDeliveryPage> {
                                           VaccineDetailsCard(
                                             key: ValueKey(
                                                 currentVaccineDoseData[i]
-                                                    .productVariationId),
+                                                    .vaccineCode),
                                             vaccineDeliveryDetails:
                                                 currentVaccineDoseData[i],
                                             onVaccineDetailsChanged:

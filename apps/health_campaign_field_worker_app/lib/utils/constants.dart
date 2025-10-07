@@ -124,6 +124,9 @@ class Constants {
   static const String hpvVaccine = "HCM_VACCINE_HPV";
   static const String penta1 = "HCM_VACCINE_PENTA_1";
 
+  static const int yearsInDays = 365;
+  static const int monthsInDays = 30;
+
   // for stock validation
 
   static const String spaq1 = "SPAQ 1";

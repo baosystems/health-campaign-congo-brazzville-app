@@ -217,13 +217,15 @@ class CustomMemberCard extends StatelessWidget {
     bool isUnderVaccinated = checkBeneficiaryUnderVaccinated(doseTasks);
     bool isFullyVaccinated = checkBeneficiaryZeroDoseDelivered(doseTasks);
 
-    final age = individual.dateOfBirth != null
-        ? digits.DigitDateUtils.calculateAge(
-            DateFormat(Constants.defaultDateFormat)
-                .parse(individual.dateOfBirth!))
-        : digits.DigitDateUtils.calculateAge(DateTime.now());
-    final ageInMonths = (age.years * 12) + age.months;
+    final dobStr = individual.dateOfBirth;
+    final ageInDays =
+        digits.DigitDateUtils.calculateAgeInDaysFromDob(dobStr ?? '');
     Gender? gender = individual.gender;
+
+    bool isHPVEligible =
+        gender == Gender.female && ageInDays >= 3240 && ageInDays < 3600;
+
+    bool isAgeInEligible = ageInDays > 540 && !isHPVEligible;
 
     final theme = Theme.of(context);
     if (isHead) {
@@ -239,8 +241,7 @@ class CustomMemberCard extends StatelessWidget {
         ),
       );
     }
-    if (((ageInMonths > 18 && gender == Gender.male) ||
-        (ageInMonths >= 120 && gender == Gender.female))) {
+    if (isAgeInEligible) {
       return Align(
         alignment: Alignment.centerLeft,
         child: DigitIconButton(
@@ -332,10 +333,12 @@ class CustomMemberCard extends StatelessWidget {
 
     bool isNextDeliveryAvailable = _checkIfFutureTaskPresent(context);
 
-    bool isAgeInEligible = ((ageInDays > 540 && gender == Gender.male) ||
-        (ageInDays >= 3600 && gender == Gender.female));
-    bool isHPVEligible =
-        gender == Gender.female && ageInDays >= 3240 && ageInDays < 3600;
+    bool isHPVEligible = gender == Gender.female &&
+        ageInDays >= (9 * Constants.yearsInDays) &&
+        ageInDays < (10 * Constants.yearsInDays);
+
+    bool isAgeInEligible =
+        ageInDays > (18 * Constants.monthsInDays) && !isHPVEligible;
 
     initializeVaccineSearch(
         BuildContext context, List<VaccineDoseData>? vaccineDataList) {
@@ -356,7 +359,7 @@ class CustomMemberCard extends StatelessWidget {
             .read<VaccineDeliveryBloc>()
             .add(const VaccineDeliveryEvent.additionalVaccineDose(
               filterVaccineDoseCodes: null,
-              additionalVaccineDoseCodes: [Constants.hpvVaccine],
+              additionalVaccineDoseCodes: {Constants.hpvVaccine},
             ));
       } else {
         context

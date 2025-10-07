@@ -120,7 +120,7 @@ class Constants {
   static const String rota1Vaccine = "HCM_VACCINE_ROTA_1";
   static const String rota2Vaccine = "HCM_VACCINE_ROTA_2";
   static const String bcgVaccine = "HCM_VACCINE_BCG";
-  static const String vaaVaccine = "HCM_VACCINE_BVAA";
+  static const String vaaVaccine = "HCM_VACCINE_VAA";
   static const String hpvVaccine = "HCM_VACCINE_HPV";
   static const String penta1 = "HCM_VACCINE_PENTA_1";
 

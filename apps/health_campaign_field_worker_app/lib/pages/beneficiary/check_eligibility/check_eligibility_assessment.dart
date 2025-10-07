@@ -14,6 +14,7 @@ import 'package:registration_delivery/blocs/search_households/search_households.
 import 'package:survey_form/survey_form.dart';
 import 'package:digit_data_model/data_model.dart';
 import 'package:registration_delivery/models/entities/task.dart';
+import '../../../blocs/vaccine/vaccine_delivery.dart';
 import '../../../blocs/vaccine/vaccine_search.dart';
 import '../../../models/entities/additional_fields_type.dart';
 import '../../../models/entities/roles_type.dart';
@@ -26,10 +27,10 @@ import '../../../widgets/localized.dart';
 import '../../../models/entities/assessment_checklist/status.dart'
     as status_local;
 import 'package:digit_ui_components/services/location_bloc.dart' as location;
+import '../../../utils/date_utils.dart' as digits;
 
 @RoutePage()
 class EligibilityChecklistViewPage extends LocalizedStatefulWidget {
-  final bool isHPVEligible;
   final String? referralClientRefId;
   final IndividualModel? individual;
   final String? projectBeneficiaryClientReferenceId;
@@ -38,7 +39,6 @@ class EligibilityChecklistViewPage extends LocalizedStatefulWidget {
 
   const EligibilityChecklistViewPage({
     super.key,
-    required this.isHPVEligible,
     this.referralClientRefId,
     this.individual,
     this.projectBeneficiaryClientReferenceId,
@@ -540,15 +540,36 @@ class _EligibilityChecklistViewPage
                                             projectBeneficiaryClientReferenceId:
                                                 widget.projectBeneficiaryClientReferenceId ??
                                                     ""));
+
+                                    int ageInDays = 0;
+                                    try {
+                                      String? dateOfBirth =
+                                          widget.individual?.dateOfBirth;
+                                      ageInDays = digits.DigitDateUtils
+                                          .calculateAgeInDaysFromDob(
+                                              dateOfBirth ?? '');
+                                    } catch (_) {}
+                                    if (ageInDays > 180) {
+                                      notApplicableVaccines
+                                          .add(Constants.rota1Vaccine);
+                                      notApplicableVaccines
+                                          .add(Constants.rota2Vaccine);
+                                    } else if (ageInDays > 360) {
+                                      notApplicableVaccines
+                                          .add(Constants.bcgVaccine);
+                                    }
+                                    context.read<VaccineDeliveryBloc>().add(
+                                            VaccineDeliveryEvent
+                                                .additionalVaccineDose(
+                                          filterVaccineDoseCodes:
+                                              notApplicableVaccines.toList(),
+                                        ));
                                     final router = context.router;
                                     router.push(VaccineDeliveryRoute(
                                       doseStatusTask: widget.doseStatusTask,
                                       projectBeneficiaryClientReferenceId: widget
                                           .projectBeneficiaryClientReferenceId,
                                       individual: widget.individual!,
-                                      isHPVEligible: widget.isHPVEligible,
-                                      notApplicableVaccines:
-                                          notApplicableVaccines,
                                     ));
                                   }
                                 }

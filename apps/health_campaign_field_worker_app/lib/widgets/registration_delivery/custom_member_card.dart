@@ -20,6 +20,7 @@ import 'package:registration_delivery/models/entities/task.dart';
 import 'package:registration_delivery/router/registration_delivery_router.gm.dart';
 import 'package:registration_delivery/utils/i18_key_constants.dart' as i18;
 import '../../blocs/localization/app_localization.dart';
+import '../../blocs/vaccine/vaccine_delivery.dart';
 import '../../blocs/vaccine/vaccine_product_variants.dart';
 import '../../blocs/vaccine/vaccine_search.dart';
 import '../../data/local_store/no_sql/schema/app_configuration.dart';
@@ -331,6 +332,8 @@ class CustomMemberCard extends StatelessWidget {
 
     bool isNextDeliveryAvailable = _checkIfFutureTaskPresent(context);
 
+    bool isAgeInEligible = ((ageInDays > 540 && gender == Gender.male) ||
+        (ageInDays >= 3600 && gender == Gender.female));
     bool isHPVEligible =
         gender == Gender.female && ageInDays >= 3240 && ageInDays < 3600;
 
@@ -348,14 +351,24 @@ class CustomMemberCard extends StatelessWidget {
             ageInDays: ageInDays,
             vaccineDataList: vaccineDataList ?? [],
           ));
+      if (isHPVEligible) {
+        context
+            .read<VaccineDeliveryBloc>()
+            .add(const VaccineDeliveryEvent.additionalVaccineDose(
+              filterVaccineDoseCodes: null,
+              additionalVaccineDoseCodes: [Constants.hpvVaccine],
+            ));
+      } else {
+        context
+            .read<VaccineDeliveryBloc>()
+            .add(const VaccineDeliveryEvent.additionalVaccineDose(
+              filterVaccineDoseCodes: null,
+              additionalVaccineDoseCodes: null,
+            ));
+      }
     }
 
-    return ((ageInDays > 540 && gender == Gender.male) ||
-                (ageInDays >= 3600 && gender == Gender.female)) ||
-            isBeneficiaryRefuse ||
-            isBeneficiaryAbsent ||
-            isSideEffect ||
-            isBeneficiaryReferred
+    return isAgeInEligible || isBeneficiaryReferred
         ? const Offstage()
         : BlocBuilder<VaccineProductVariantBloc, VaccineProductVariantState>(
             builder: (context, vaccineVariantState) {
@@ -466,7 +479,6 @@ class CustomMemberCard extends StatelessWidget {
                                         projectBeneficiaryClientReferenceId,
                                     individual: individual,
                                     doseStatusTask: doseStatusTasks.firstOrNull,
-                                    isHPVEligible: isHPVEligible,
                                   ));
                                 },
                               ),
@@ -476,7 +488,11 @@ class CustomMemberCard extends StatelessWidget {
                         return const Offstage();
                       }
                     }),
-                  if (context.isHealthFacilitySupervisor && !isFullyVaccinated)
+                  if (context.isHealthFacilitySupervisor &&
+                      !isFullyVaccinated &&
+                      !isBeneficiaryRefused &&
+                      !isBeneficiaryAbsent &&
+                      !isSideEffect)
                     DigitButton(
                       label: localizations.translate(
                         i18.memberCard.unableToDeliverLabel,
@@ -557,6 +573,10 @@ class CustomMemberCard extends StatelessWidget {
                     AdditionalField(
                       'taskStatus',
                       Status.beneficiaryRefused.toValue(),
+                    ),
+                    AdditionalField(
+                      AdditionalFieldsType.doseStatus.toValue(),
+                      DoseStatus.zeroDose.name,
                     ),
                     ...getIndividualAdditionalFields(individual),
                   ],
@@ -639,6 +659,10 @@ class CustomMemberCard extends StatelessWidget {
                       AdditionalFieldsType.taskStatus.toValue(),
                       Constants.beneficiaryAbsent,
                     ),
+                    AdditionalField(
+                      AdditionalFieldsType.doseStatus.toValue(),
+                      DoseStatus.zeroDose.name,
+                    ),
                     ...getIndividualAdditionalFields(individual),
                   ],
                 ),
@@ -679,28 +703,6 @@ class CustomMemberCard extends StatelessWidget {
                   ));
             },
           ),
-          // DigitButton(
-          //   label: localizations.translate(
-          //     i18.memberCard.referBeneficiaryLabel,
-          //   ),
-          //   type: DigitButtonType.secondary,
-          //   size: DigitButtonSize.large,
-          //   onPressed: () async {
-          //     Navigator.of(
-          //       context,
-          //       rootNavigator: true,
-          //     ).pop();
-          //     List<String> referralReasons = ["BENEFICIARY_REFERRED"];
-          //     await context.router.push(
-          //       CustomReferBeneficiarySMCRoute(
-          //         projectBeneficiaryClientRefId:
-          //             projectBeneficiaryClientReferenceId ?? '',
-          //         individual: individual,
-          //         referralReasons: referralReasons,
-          //       ),
-          //     );
-          //   },
-          // ),
           DigitButton(
             label: localizations.translate(
               i18.memberCard.recordAdverseEventsLabel,

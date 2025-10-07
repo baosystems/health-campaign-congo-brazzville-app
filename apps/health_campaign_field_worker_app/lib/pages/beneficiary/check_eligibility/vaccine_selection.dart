@@ -568,18 +568,21 @@ class _VaccineSelectionPageState extends LocalizedState<VaccineSelectionPage> {
 
   DoseStatus _getDoseStatus(
       List<String> selectedCodes, List<String> noSelectedCodes) {
-    if (selectedCodes.isEmpty && noSelectedCodes.isEmpty) {
+    Set<String> filterDoseCodes = {"HCM_VACCINE_VIT_A", "HCM_VACCINE_MEN_A"};
+    List<String> updatedNoSelectedCodes =
+        noSelectedCodes.whereNot((e) => filterDoseCodes.contains(e)).toList();
+    if (selectedCodes.isEmpty && updatedNoSelectedCodes.isEmpty) {
       return DoseStatus.none;
-    } else if ((selectedCodes.isEmpty && noSelectedCodes.isNotEmpty) ||
+    } else if ((selectedCodes.isEmpty && updatedNoSelectedCodes.isNotEmpty) ||
         (selectedCodes.isNotEmpty &&
-            noSelectedCodes.isNotEmpty &&
-            noSelectedCodes.contains(Constants.penta1))) {
+            updatedNoSelectedCodes.isNotEmpty &&
+            updatedNoSelectedCodes.contains(Constants.penta1))) {
       return DoseStatus.zeroDose;
     } else if (selectedCodes.isNotEmpty &&
-        noSelectedCodes.isNotEmpty &&
+        updatedNoSelectedCodes.isNotEmpty &&
         selectedCodes.contains(Constants.penta1)) {
       return DoseStatus.underVaccinated;
-    } else if (selectedCodes.isNotEmpty && noSelectedCodes.isEmpty) {
+    } else if (selectedCodes.isNotEmpty && updatedNoSelectedCodes.isEmpty) {
       return DoseStatus.fullyVaccinated;
     }
     return DoseStatus.zeroDose;

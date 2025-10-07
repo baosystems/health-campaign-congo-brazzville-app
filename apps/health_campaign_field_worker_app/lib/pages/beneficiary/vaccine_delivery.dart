@@ -52,16 +52,12 @@ import 'check_eligibility/view_vaccination_status.dart';
 
 @RoutePage()
 class VaccineDeliveryPage extends LocalizedStatefulWidget {
-  final bool isHPVEligible;
-  final Set<String> notApplicableVaccines;
   final TaskModel? doseStatusTask;
   final String? projectBeneficiaryClientReferenceId;
   final IndividualModel? individual;
 
   const VaccineDeliveryPage({
     super.key,
-    required this.isHPVEligible,
-    required this.notApplicableVaccines,
     required this.doseStatusTask,
     required this.projectBeneficiaryClientReferenceId,
     required this.individual,
@@ -406,18 +402,6 @@ class _VaccineDeliveryPageState extends LocalizedState<VaccineDeliveryPage> {
 
   @override
   initState() {
-    int ageInDays = 0;
-    try {
-      String? dateOfBirth = widget.individual?.dateOfBirth;
-      ageInDays = calculateAgeInDaysFromDob(dateOfBirth ?? '');
-    } catch (_) {}
-    if (ageInDays > 180) {
-      widget.notApplicableVaccines.add(Constants.rota1Vaccine);
-      widget.notApplicableVaccines.add(Constants.rota2Vaccine);
-    } else if (ageInDays > 360) {
-      widget.notApplicableVaccines.add(Constants.bcgVaccine);
-    }
-    setState(() {});
     super.initState();
   }
 
@@ -438,7 +422,6 @@ class _VaccineDeliveryPageState extends LocalizedState<VaccineDeliveryPage> {
                           vaccineVariantState.productVariants ?? [],
                       availedVaccineDoseCodes:
                           vaccineSearchState.availedVaccineDoseCodes ?? [],
-                      filterVaccineDoseCodes: widget.notApplicableVaccines,
                       eligibleVaccinesCodeByAgeIndex: vaccineSearchState
                               .eligibleVaccinesDoseCodeByAgeIndex ??
                           {},

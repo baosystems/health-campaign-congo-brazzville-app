@@ -9,6 +9,7 @@ import 'package:registration_delivery/blocs/search_households/search_households.
 import 'package:registration_delivery/models/entities/task.dart';
 
 import '../../models/entities/vaccine/vaccine_delivery_details.dart';
+import '../../utils/constants.dart';
 
 part 'vaccine_delivery.freezed.dart';
 
@@ -22,8 +23,9 @@ class VaccineDeliveryBloc
     super.initialState, {
     required this.taskRepository,
   }) {
-    on(_handleSubmit);
+    on(_handleAdditionalVaccineDose);
     on(_handleCurrentVaccineDose);
+    on(_handleSubmit);
   }
 
   // Event handler for submitting a task
@@ -56,10 +58,17 @@ class VaccineDeliveryBloc
     List<String> eligibleVaccinesCode =
         _getEligibleVaccineDoseCodes(event.eligibleVaccinesCodeByAgeIndex);
 
+    List<String> filterVaccineDoseCodes = [
+      ...event.availedVaccineDoseCodes,
+      ...(state.filterVaccineDoseCodes ?? [])
+    ];
+
     // Filter out vaccines that have already been availed
     List<String> deliverableVaccineCodes = eligibleVaccinesCode
-        .whereNot((e) => event.availedVaccineDoseCodes.contains(e))
+        .whereNot((e) => (filterVaccineDoseCodes.contains(e)))
         .toList();
+
+    deliverableVaccineCodes.addAll(state.additionalVaccineDoseCodes ?? []);
 
     // Determine the current vaccine dose codes that can be administered according to the availed vaccines
     List<String> currentVaccineDoseDataCodes =
@@ -95,6 +104,16 @@ class VaccineDeliveryBloc
       availedVaccineDoseCodes: event.availedVaccineDoseCodes,
       currentVaccineDoseData: currentVaccineDoseData,
       nextVaccineDoseData: nextVaccineDoseDataCodes,
+    ));
+  }
+
+  FutureOr<void> _handleAdditionalVaccineDose(
+    VaccineDeliveryAdditionalVaccineDoseEvent event,
+    VaccineDeliveryEmitter emit,
+  ) {
+    emit(state.copyWith(
+      filterVaccineDoseCodes: event.filterVaccineDoseCodes,
+      additionalVaccineDoseCodes: event.additionalVaccineDoseCodes,
     ));
   }
 
@@ -151,9 +170,12 @@ class VaccineDeliveryEvent with _$VaccineDeliveryEvent {
     required List<ProductVariantModel> productVariants,
     required Map<int, Set<String>> eligibleVaccinesCodeByAgeIndex,
     required List<String> availedVaccineDoseCodes,
-    required Set<String> filterVaccineDoseCodes,
     required List<String> allVaccineDoseCodes,
   }) = VaccineDeliveryVaccineSelectionEvent;
+  const factory VaccineDeliveryEvent.additionalVaccineDose({
+    List<String>? filterVaccineDoseCodes,
+    List<String>? additionalVaccineDoseCodes,
+  }) = VaccineDeliveryAdditionalVaccineDoseEvent;
 }
 
 @freezed
@@ -163,5 +185,7 @@ class VaccineDeliveryState with _$VaccineDeliveryState {
     List<String>? availedVaccineDoseCodes,
     List<VaccineDeliveryDetails>? currentVaccineDoseData,
     List<String>? nextVaccineDoseData,
+    List<String>? filterVaccineDoseCodes,
+    List<String>? additionalVaccineDoseCodes,
   }) = _VaccineDeliveryState;
 }

@@ -777,10 +777,3 @@ class _ViewVaccinationStatusPageState
     ));
   }
 }
-
-int calculateAgeInDaysFromDob(String dobString) {
-  final dob = DigitDateUtils.getFormattedDateToDateTime(dobString);
-  if (dob == null) return 0;
-  final now = DateTime.now();
-  return now.difference(dob).inDays;
-}

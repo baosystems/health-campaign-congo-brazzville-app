@@ -717,7 +717,6 @@ abstract class _$AppRouter extends RootStackRouter {
         routeData: routeData,
         child: EligibilityChecklistViewPage(
           key: args.key,
-          isHPVEligible: args.isHPVEligible,
           referralClientRefId: args.referralClientRefId,
           individual: args.individual,
           projectBeneficiaryClientReferenceId:
@@ -849,8 +848,6 @@ abstract class _$AppRouter extends RootStackRouter {
         routeData: routeData,
         child: VaccineDeliveryPage(
           key: args.key,
-          isHPVEligible: args.isHPVEligible,
-          notApplicableVaccines: args.notApplicableVaccines,
           doseStatusTask: args.doseStatusTask,
           projectBeneficiaryClientReferenceId:
               args.projectBeneficiaryClientReferenceId,
@@ -3514,7 +3511,6 @@ class EligibilityChecklistViewRoute
     extends PageRouteInfo<EligibilityChecklistViewRouteArgs> {
   EligibilityChecklistViewRoute({
     Key? key,
-    required bool isHPVEligible,
     String? referralClientRefId,
     IndividualModel? individual,
     String? projectBeneficiaryClientReferenceId,
@@ -3526,7 +3522,6 @@ class EligibilityChecklistViewRoute
           EligibilityChecklistViewRoute.name,
           args: EligibilityChecklistViewRouteArgs(
             key: key,
-            isHPVEligible: isHPVEligible,
             referralClientRefId: referralClientRefId,
             individual: individual,
             projectBeneficiaryClientReferenceId:
@@ -3547,7 +3542,6 @@ class EligibilityChecklistViewRoute
 class EligibilityChecklistViewRouteArgs {
   const EligibilityChecklistViewRouteArgs({
     this.key,
-    required this.isHPVEligible,
     this.referralClientRefId,
     this.individual,
     this.projectBeneficiaryClientReferenceId,
@@ -3557,8 +3551,6 @@ class EligibilityChecklistViewRouteArgs {
   });
 
   final Key? key;
-
-  final bool isHPVEligible;
 
   final String? referralClientRefId;
 
@@ -3574,7 +3566,7 @@ class EligibilityChecklistViewRouteArgs {
 
   @override
   String toString() {
-    return 'EligibilityChecklistViewRouteArgs{key: $key, isHPVEligible: $isHPVEligible, referralClientRefId: $referralClientRefId, individual: $individual, projectBeneficiaryClientReferenceId: $projectBeneficiaryClientReferenceId, doseStatusTask: $doseStatusTask, eligibilityAssessmentType: $eligibilityAssessmentType, appLocalizations: $appLocalizations}';
+    return 'EligibilityChecklistViewRouteArgs{key: $key, referralClientRefId: $referralClientRefId, individual: $individual, projectBeneficiaryClientReferenceId: $projectBeneficiaryClientReferenceId, doseStatusTask: $doseStatusTask, eligibilityAssessmentType: $eligibilityAssessmentType, appLocalizations: $appLocalizations}';
   }
 }
 
@@ -3984,8 +3976,6 @@ class UserQRDetailsRouteArgs {
 class VaccineDeliveryRoute extends PageRouteInfo<VaccineDeliveryRouteArgs> {
   VaccineDeliveryRoute({
     Key? key,
-    required bool isHPVEligible,
-    required Set<String> notApplicableVaccines,
     required TaskModel? doseStatusTask,
     required String? projectBeneficiaryClientReferenceId,
     required IndividualModel? individual,
@@ -3994,8 +3984,6 @@ class VaccineDeliveryRoute extends PageRouteInfo<VaccineDeliveryRouteArgs> {
           VaccineDeliveryRoute.name,
           args: VaccineDeliveryRouteArgs(
             key: key,
-            isHPVEligible: isHPVEligible,
-            notApplicableVaccines: notApplicableVaccines,
             doseStatusTask: doseStatusTask,
             projectBeneficiaryClientReferenceId:
                 projectBeneficiaryClientReferenceId,
@@ -4013,18 +4001,12 @@ class VaccineDeliveryRoute extends PageRouteInfo<VaccineDeliveryRouteArgs> {
 class VaccineDeliveryRouteArgs {
   const VaccineDeliveryRouteArgs({
     this.key,
-    required this.isHPVEligible,
-    required this.notApplicableVaccines,
     required this.doseStatusTask,
     required this.projectBeneficiaryClientReferenceId,
     required this.individual,
   });
 
   final Key? key;
-
-  final bool isHPVEligible;
-
-  final Set<String> notApplicableVaccines;
 
   final TaskModel? doseStatusTask;
 
@@ -4034,7 +4016,7 @@ class VaccineDeliveryRouteArgs {
 
   @override
   String toString() {
-    return 'VaccineDeliveryRouteArgs{key: $key, isHPVEligible: $isHPVEligible, notApplicableVaccines: $notApplicableVaccines, doseStatusTask: $doseStatusTask, projectBeneficiaryClientReferenceId: $projectBeneficiaryClientReferenceId, individual: $individual}';
+    return 'VaccineDeliveryRouteArgs{key: $key, doseStatusTask: $doseStatusTask, projectBeneficiaryClientReferenceId: $projectBeneficiaryClientReferenceId, individual: $individual}';
   }
 }
 

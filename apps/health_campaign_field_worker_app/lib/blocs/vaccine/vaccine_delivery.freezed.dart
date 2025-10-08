@@ -29,6 +29,7 @@ mixin _$VaccineDeliveryEvent {
     required TResult Function(Set<String>? filterVaccineDoseCodes,
             Set<String>? additionalVaccineDoseCodes)
         additionalVaccineDose,
+    required TResult Function() clearAdditionalVaccineDose,
   }) =>
       throw _privateConstructorUsedError;
   @optionalTypeArgs
@@ -43,6 +44,7 @@ mixin _$VaccineDeliveryEvent {
     TResult? Function(Set<String>? filterVaccineDoseCodes,
             Set<String>? additionalVaccineDoseCodes)?
         additionalVaccineDose,
+    TResult? Function()? clearAdditionalVaccineDose,
   }) =>
       throw _privateConstructorUsedError;
   @optionalTypeArgs
@@ -57,6 +59,7 @@ mixin _$VaccineDeliveryEvent {
     TResult Function(Set<String>? filterVaccineDoseCodes,
             Set<String>? additionalVaccineDoseCodes)?
         additionalVaccineDose,
+    TResult Function()? clearAdditionalVaccineDose,
     required TResult orElse(),
   }) =>
       throw _privateConstructorUsedError;
@@ -67,6 +70,9 @@ mixin _$VaccineDeliveryEvent {
         vaccineSelection,
     required TResult Function(VaccineDeliveryAdditionalVaccineDoseEvent value)
         additionalVaccineDose,
+    required TResult Function(
+            VaccineDeliveryClearAdditionalVaccineDoseEvent value)
+        clearAdditionalVaccineDose,
   }) =>
       throw _privateConstructorUsedError;
   @optionalTypeArgs
@@ -76,6 +82,8 @@ mixin _$VaccineDeliveryEvent {
         vaccineSelection,
     TResult? Function(VaccineDeliveryAdditionalVaccineDoseEvent value)?
         additionalVaccineDose,
+    TResult? Function(VaccineDeliveryClearAdditionalVaccineDoseEvent value)?
+        clearAdditionalVaccineDose,
   }) =>
       throw _privateConstructorUsedError;
   @optionalTypeArgs
@@ -85,6 +93,8 @@ mixin _$VaccineDeliveryEvent {
         vaccineSelection,
     TResult Function(VaccineDeliveryAdditionalVaccineDoseEvent value)?
         additionalVaccineDose,
+    TResult Function(VaccineDeliveryClearAdditionalVaccineDoseEvent value)?
+        clearAdditionalVaccineDose,
     required TResult orElse(),
   }) =>
       throw _privateConstructorUsedError;
@@ -198,6 +208,7 @@ class _$VaccineDeliverySubmitEventImpl implements VaccineDeliverySubmitEvent {
     required TResult Function(Set<String>? filterVaccineDoseCodes,
             Set<String>? additionalVaccineDoseCodes)
         additionalVaccineDose,
+    required TResult Function() clearAdditionalVaccineDose,
   }) {
     return submit(task, currentDoseTask);
   }
@@ -215,6 +226,7 @@ class _$VaccineDeliverySubmitEventImpl implements VaccineDeliverySubmitEvent {
     TResult? Function(Set<String>? filterVaccineDoseCodes,
             Set<String>? additionalVaccineDoseCodes)?
         additionalVaccineDose,
+    TResult? Function()? clearAdditionalVaccineDose,
   }) {
     return submit?.call(task, currentDoseTask);
   }
@@ -232,6 +244,7 @@ class _$VaccineDeliverySubmitEventImpl implements VaccineDeliverySubmitEvent {
     TResult Function(Set<String>? filterVaccineDoseCodes,
             Set<String>? additionalVaccineDoseCodes)?
         additionalVaccineDose,
+    TResult Function()? clearAdditionalVaccineDose,
     required TResult orElse(),
   }) {
     if (submit != null) {
@@ -248,6 +261,9 @@ class _$VaccineDeliverySubmitEventImpl implements VaccineDeliverySubmitEvent {
         vaccineSelection,
     required TResult Function(VaccineDeliveryAdditionalVaccineDoseEvent value)
         additionalVaccineDose,
+    required TResult Function(
+            VaccineDeliveryClearAdditionalVaccineDoseEvent value)
+        clearAdditionalVaccineDose,
   }) {
     return submit(this);
   }
@@ -260,6 +276,8 @@ class _$VaccineDeliverySubmitEventImpl implements VaccineDeliverySubmitEvent {
         vaccineSelection,
     TResult? Function(VaccineDeliveryAdditionalVaccineDoseEvent value)?
         additionalVaccineDose,
+    TResult? Function(VaccineDeliveryClearAdditionalVaccineDoseEvent value)?
+        clearAdditionalVaccineDose,
   }) {
     return submit?.call(this);
   }
@@ -272,6 +290,8 @@ class _$VaccineDeliverySubmitEventImpl implements VaccineDeliverySubmitEvent {
         vaccineSelection,
     TResult Function(VaccineDeliveryAdditionalVaccineDoseEvent value)?
         additionalVaccineDose,
+    TResult Function(VaccineDeliveryClearAdditionalVaccineDoseEvent value)?
+        clearAdditionalVaccineDose,
     required TResult orElse(),
   }) {
     if (submit != null) {
@@ -446,6 +466,7 @@ class _$VaccineDeliveryVaccineSelectionEventImpl
     required TResult Function(Set<String>? filterVaccineDoseCodes,
             Set<String>? additionalVaccineDoseCodes)
         additionalVaccineDose,
+    required TResult Function() clearAdditionalVaccineDose,
   }) {
     return vaccineSelection(productVariants, eligibleVaccinesCodeByAgeIndex,
         availedVaccineDoseCodes, allVaccineDoseCodes);
@@ -464,6 +485,7 @@ class _$VaccineDeliveryVaccineSelectionEventImpl
     TResult? Function(Set<String>? filterVaccineDoseCodes,
             Set<String>? additionalVaccineDoseCodes)?
         additionalVaccineDose,
+    TResult? Function()? clearAdditionalVaccineDose,
   }) {
     return vaccineSelection?.call(
         productVariants,
@@ -485,6 +507,7 @@ class _$VaccineDeliveryVaccineSelectionEventImpl
     TResult Function(Set<String>? filterVaccineDoseCodes,
             Set<String>? additionalVaccineDoseCodes)?
         additionalVaccineDose,
+    TResult Function()? clearAdditionalVaccineDose,
     required TResult orElse(),
   }) {
     if (vaccineSelection != null) {
@@ -502,6 +525,9 @@ class _$VaccineDeliveryVaccineSelectionEventImpl
         vaccineSelection,
     required TResult Function(VaccineDeliveryAdditionalVaccineDoseEvent value)
         additionalVaccineDose,
+    required TResult Function(
+            VaccineDeliveryClearAdditionalVaccineDoseEvent value)
+        clearAdditionalVaccineDose,
   }) {
     return vaccineSelection(this);
   }
@@ -514,6 +540,8 @@ class _$VaccineDeliveryVaccineSelectionEventImpl
         vaccineSelection,
     TResult? Function(VaccineDeliveryAdditionalVaccineDoseEvent value)?
         additionalVaccineDose,
+    TResult? Function(VaccineDeliveryClearAdditionalVaccineDoseEvent value)?
+        clearAdditionalVaccineDose,
   }) {
     return vaccineSelection?.call(this);
   }
@@ -526,6 +554,8 @@ class _$VaccineDeliveryVaccineSelectionEventImpl
         vaccineSelection,
     TResult Function(VaccineDeliveryAdditionalVaccineDoseEvent value)?
         additionalVaccineDose,
+    TResult Function(VaccineDeliveryClearAdditionalVaccineDoseEvent value)?
+        clearAdditionalVaccineDose,
     required TResult orElse(),
   }) {
     if (vaccineSelection != null) {
@@ -674,6 +704,7 @@ class _$VaccineDeliveryAdditionalVaccineDoseEventImpl
     required TResult Function(Set<String>? filterVaccineDoseCodes,
             Set<String>? additionalVaccineDoseCodes)
         additionalVaccineDose,
+    required TResult Function() clearAdditionalVaccineDose,
   }) {
     return additionalVaccineDose(
         filterVaccineDoseCodes, additionalVaccineDoseCodes);
@@ -692,6 +723,7 @@ class _$VaccineDeliveryAdditionalVaccineDoseEventImpl
     TResult? Function(Set<String>? filterVaccineDoseCodes,
             Set<String>? additionalVaccineDoseCodes)?
         additionalVaccineDose,
+    TResult? Function()? clearAdditionalVaccineDose,
   }) {
     return additionalVaccineDose?.call(
         filterVaccineDoseCodes, additionalVaccineDoseCodes);
@@ -710,6 +742,7 @@ class _$VaccineDeliveryAdditionalVaccineDoseEventImpl
     TResult Function(Set<String>? filterVaccineDoseCodes,
             Set<String>? additionalVaccineDoseCodes)?
         additionalVaccineDose,
+    TResult Function()? clearAdditionalVaccineDose,
     required TResult orElse(),
   }) {
     if (additionalVaccineDose != null) {
@@ -727,6 +760,9 @@ class _$VaccineDeliveryAdditionalVaccineDoseEventImpl
         vaccineSelection,
     required TResult Function(VaccineDeliveryAdditionalVaccineDoseEvent value)
         additionalVaccineDose,
+    required TResult Function(
+            VaccineDeliveryClearAdditionalVaccineDoseEvent value)
+        clearAdditionalVaccineDose,
   }) {
     return additionalVaccineDose(this);
   }
@@ -739,6 +775,8 @@ class _$VaccineDeliveryAdditionalVaccineDoseEventImpl
         vaccineSelection,
     TResult? Function(VaccineDeliveryAdditionalVaccineDoseEvent value)?
         additionalVaccineDose,
+    TResult? Function(VaccineDeliveryClearAdditionalVaccineDoseEvent value)?
+        clearAdditionalVaccineDose,
   }) {
     return additionalVaccineDose?.call(this);
   }
@@ -751,6 +789,8 @@ class _$VaccineDeliveryAdditionalVaccineDoseEventImpl
         vaccineSelection,
     TResult Function(VaccineDeliveryAdditionalVaccineDoseEvent value)?
         additionalVaccineDose,
+    TResult Function(VaccineDeliveryClearAdditionalVaccineDoseEvent value)?
+        clearAdditionalVaccineDose,
     required TResult orElse(),
   }) {
     if (additionalVaccineDose != null) {
@@ -773,6 +813,162 @@ abstract class VaccineDeliveryAdditionalVaccineDoseEvent
   _$$VaccineDeliveryAdditionalVaccineDoseEventImplCopyWith<
           _$VaccineDeliveryAdditionalVaccineDoseEventImpl>
       get copyWith => throw _privateConstructorUsedError;
+}
+
+/// @nodoc
+abstract class _$$VaccineDeliveryClearAdditionalVaccineDoseEventImplCopyWith<
+    $Res> {
+  factory _$$VaccineDeliveryClearAdditionalVaccineDoseEventImplCopyWith(
+          _$VaccineDeliveryClearAdditionalVaccineDoseEventImpl value,
+          $Res Function(_$VaccineDeliveryClearAdditionalVaccineDoseEventImpl)
+              then) =
+      __$$VaccineDeliveryClearAdditionalVaccineDoseEventImplCopyWithImpl<$Res>;
+}
+
+/// @nodoc
+class __$$VaccineDeliveryClearAdditionalVaccineDoseEventImplCopyWithImpl<$Res>
+    extends _$VaccineDeliveryEventCopyWithImpl<$Res,
+        _$VaccineDeliveryClearAdditionalVaccineDoseEventImpl>
+    implements
+        _$$VaccineDeliveryClearAdditionalVaccineDoseEventImplCopyWith<$Res> {
+  __$$VaccineDeliveryClearAdditionalVaccineDoseEventImplCopyWithImpl(
+      _$VaccineDeliveryClearAdditionalVaccineDoseEventImpl _value,
+      $Res Function(_$VaccineDeliveryClearAdditionalVaccineDoseEventImpl) _then)
+      : super(_value, _then);
+}
+
+/// @nodoc
+
+class _$VaccineDeliveryClearAdditionalVaccineDoseEventImpl
+    implements VaccineDeliveryClearAdditionalVaccineDoseEvent {
+  const _$VaccineDeliveryClearAdditionalVaccineDoseEventImpl();
+
+  @override
+  String toString() {
+    return 'VaccineDeliveryEvent.clearAdditionalVaccineDose()';
+  }
+
+  @override
+  bool operator ==(Object other) {
+    return identical(this, other) ||
+        (other.runtimeType == runtimeType &&
+            other is _$VaccineDeliveryClearAdditionalVaccineDoseEventImpl);
+  }
+
+  @override
+  int get hashCode => runtimeType.hashCode;
+
+  @override
+  @optionalTypeArgs
+  TResult when<TResult extends Object?>({
+    required TResult Function(TaskModel task, TaskModel? currentDoseTask)
+        submit,
+    required TResult Function(
+            List<ProductVariantModel> productVariants,
+            Map<int, Set<String>> eligibleVaccinesCodeByAgeIndex,
+            List<String> availedVaccineDoseCodes,
+            List<String> allVaccineDoseCodes)
+        vaccineSelection,
+    required TResult Function(Set<String>? filterVaccineDoseCodes,
+            Set<String>? additionalVaccineDoseCodes)
+        additionalVaccineDose,
+    required TResult Function() clearAdditionalVaccineDose,
+  }) {
+    return clearAdditionalVaccineDose();
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult? whenOrNull<TResult extends Object?>({
+    TResult? Function(TaskModel task, TaskModel? currentDoseTask)? submit,
+    TResult? Function(
+            List<ProductVariantModel> productVariants,
+            Map<int, Set<String>> eligibleVaccinesCodeByAgeIndex,
+            List<String> availedVaccineDoseCodes,
+            List<String> allVaccineDoseCodes)?
+        vaccineSelection,
+    TResult? Function(Set<String>? filterVaccineDoseCodes,
+            Set<String>? additionalVaccineDoseCodes)?
+        additionalVaccineDose,
+    TResult? Function()? clearAdditionalVaccineDose,
+  }) {
+    return clearAdditionalVaccineDose?.call();
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult maybeWhen<TResult extends Object?>({
+    TResult Function(TaskModel task, TaskModel? currentDoseTask)? submit,
+    TResult Function(
+            List<ProductVariantModel> productVariants,
+            Map<int, Set<String>> eligibleVaccinesCodeByAgeIndex,
+            List<String> availedVaccineDoseCodes,
+            List<String> allVaccineDoseCodes)?
+        vaccineSelection,
+    TResult Function(Set<String>? filterVaccineDoseCodes,
+            Set<String>? additionalVaccineDoseCodes)?
+        additionalVaccineDose,
+    TResult Function()? clearAdditionalVaccineDose,
+    required TResult orElse(),
+  }) {
+    if (clearAdditionalVaccineDose != null) {
+      return clearAdditionalVaccineDose();
+    }
+    return orElse();
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult map<TResult extends Object?>({
+    required TResult Function(VaccineDeliverySubmitEvent value) submit,
+    required TResult Function(VaccineDeliveryVaccineSelectionEvent value)
+        vaccineSelection,
+    required TResult Function(VaccineDeliveryAdditionalVaccineDoseEvent value)
+        additionalVaccineDose,
+    required TResult Function(
+            VaccineDeliveryClearAdditionalVaccineDoseEvent value)
+        clearAdditionalVaccineDose,
+  }) {
+    return clearAdditionalVaccineDose(this);
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult? mapOrNull<TResult extends Object?>({
+    TResult? Function(VaccineDeliverySubmitEvent value)? submit,
+    TResult? Function(VaccineDeliveryVaccineSelectionEvent value)?
+        vaccineSelection,
+    TResult? Function(VaccineDeliveryAdditionalVaccineDoseEvent value)?
+        additionalVaccineDose,
+    TResult? Function(VaccineDeliveryClearAdditionalVaccineDoseEvent value)?
+        clearAdditionalVaccineDose,
+  }) {
+    return clearAdditionalVaccineDose?.call(this);
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult maybeMap<TResult extends Object?>({
+    TResult Function(VaccineDeliverySubmitEvent value)? submit,
+    TResult Function(VaccineDeliveryVaccineSelectionEvent value)?
+        vaccineSelection,
+    TResult Function(VaccineDeliveryAdditionalVaccineDoseEvent value)?
+        additionalVaccineDose,
+    TResult Function(VaccineDeliveryClearAdditionalVaccineDoseEvent value)?
+        clearAdditionalVaccineDose,
+    required TResult orElse(),
+  }) {
+    if (clearAdditionalVaccineDose != null) {
+      return clearAdditionalVaccineDose(this);
+    }
+    return orElse();
+  }
+}
+
+abstract class VaccineDeliveryClearAdditionalVaccineDoseEvent
+    implements VaccineDeliveryEvent {
+  const factory VaccineDeliveryClearAdditionalVaccineDoseEvent() =
+      _$VaccineDeliveryClearAdditionalVaccineDoseEventImpl;
 }
 
 /// @nodoc

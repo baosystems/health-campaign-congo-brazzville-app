@@ -354,19 +354,15 @@ class CustomMemberCard extends StatelessWidget {
             ageInDays: ageInDays,
             vaccineDataList: vaccineDataList ?? [],
           ));
+      context
+          .read<VaccineDeliveryBloc>()
+          .add(const VaccineDeliveryEvent.clearAdditionalVaccineDose());
       if (isHPVEligible) {
         context
             .read<VaccineDeliveryBloc>()
             .add(const VaccineDeliveryEvent.additionalVaccineDose(
               filterVaccineDoseCodes: null,
               additionalVaccineDoseCodes: {Constants.hpvVaccine},
-            ));
-      } else {
-        context
-            .read<VaccineDeliveryBloc>()
-            .add(const VaccineDeliveryEvent.additionalVaccineDose(
-              filterVaccineDoseCodes: null,
-              additionalVaccineDoseCodes: null,
             ));
       }
     }

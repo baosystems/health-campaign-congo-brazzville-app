@@ -241,37 +241,6 @@ class _ViewVaccinationStatusPageState
     super.initState();
   }
 
-  // Future<void> fetchTasksData() async {
-  //   List<String> yesSelectedVaccines = [];
-  //   List<String> noSelectedVaccines = [];
-  //   // ignore: avoid_dynamic_calls
-  //   yesSelectedVaccines = ((widget.task.additionalFields!.fields
-  //               .firstWhereOrNull((e) =>
-  //                   e.key == AdditionalFieldsType.selectedVaccines.toValue())
-  //               ?.value as String?) ??
-  //           '')
-  //       .split('.')
-  //       // ignore: avoid_dynamic_calls
-  //       .where((e) => e.isNotEmpty)
-  //       .toList();
-
-  //   // ignore: avoid_dynamic_calls
-  //   noSelectedVaccines = ((widget.task.additionalFields!.fields
-  //               .firstWhereOrNull((e) =>
-  //                   e.key == AdditionalFieldsType.noSelectedVaccines.toValue())
-  //               ?.value as String?) ??
-  //           '')
-  //       .split('.')
-  //       // ignore: avoid_dynamic_calls
-  //       .where((e) => e.isNotEmpty)
-  //       .toList();
-
-  //   setState(() {
-  //     selectedCodes = yesSelectedVaccines;
-  //     noSelectedCodes = noSelectedVaccines;
-  //   });
-  // }
-
   bool isVaccineAllowedToShow({
     required String vaccineCode,
     required List<String> allVaccineCodes,

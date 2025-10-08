@@ -23,6 +23,7 @@ class VaccineDeliveryBloc
     super.initialState, {
     required this.taskRepository,
   }) {
+    on(_handleClearAdditionalVaccineDose);
     on(_handleAdditionalVaccineDose);
     on(_handleCurrentVaccineDose);
     on(_handleSubmit);
@@ -122,6 +123,16 @@ class VaccineDeliveryBloc
     }
   }
 
+  FutureOr<void> _handleClearAdditionalVaccineDose(
+    VaccineDeliveryClearAdditionalVaccineDoseEvent event,
+    VaccineDeliveryEmitter emit,
+  ) {
+    emit(state.copyWith(
+      filterVaccineDoseCodes: null,
+      additionalVaccineDoseCodes: null,
+    ));
+  }
+
   List<String> _getEligibleVaccineDoseCodes(
       Map<int, Set<String>> eligibleVaccinesCodeByAgeIndex) {
     List<String> eligibleVaccinesCode = [];
@@ -181,6 +192,8 @@ class VaccineDeliveryEvent with _$VaccineDeliveryEvent {
     Set<String>? filterVaccineDoseCodes,
     Set<String>? additionalVaccineDoseCodes,
   }) = VaccineDeliveryAdditionalVaccineDoseEvent;
+  const factory VaccineDeliveryEvent.clearAdditionalVaccineDose() =
+      VaccineDeliveryClearAdditionalVaccineDoseEvent;
 }
 
 @freezed

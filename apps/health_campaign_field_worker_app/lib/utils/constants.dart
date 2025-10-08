@@ -149,7 +149,7 @@ class Constants {
   static const String zeroDose = 'zeroDose';
 
   // todo enable before cycle2
-  static const bool isDownSyncEnabled = false;
+  static const bool isDownSyncEnabled = true;
   static const String dashboardAnalyticsPath =
       '/dashboard-analytics/dashboard/getChartV2';
 

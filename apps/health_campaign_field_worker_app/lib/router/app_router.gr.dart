@@ -869,8 +869,6 @@ abstract class _$AppRouter extends RootStackRouter {
               args.projectBeneficiaryClientReferenceId,
           individual: args.individual,
           task: args.task,
-          hasSideEffects: args.hasSideEffects,
-          sideEffect: args.sideEffect,
         ),
       );
     },
@@ -901,9 +899,7 @@ abstract class _$AppRouter extends RootStackRouter {
           projectBeneficiaryClientReferenceId:
               args.projectBeneficiaryClientReferenceId,
           individual: args.individual,
-          hasSideEffects: args.hasSideEffects,
           isRefused: args.isRefused,
-          sideEffect: args.sideEffect,
           task: args.task,
         ),
       );
@@ -4032,8 +4028,6 @@ class VaccineSelectionRoute extends PageRouteInfo<VaccineSelectionRouteArgs> {
     String? projectBeneficiaryClientReferenceId,
     IndividualModel? individual,
     required TaskModel task,
-    bool? hasSideEffects = false,
-    required SideEffectModel sideEffect,
     List<PageRouteInfo>? children,
   }) : super(
           VaccineSelectionRoute.name,
@@ -4047,8 +4041,6 @@ class VaccineSelectionRoute extends PageRouteInfo<VaccineSelectionRouteArgs> {
                 projectBeneficiaryClientReferenceId,
             individual: individual,
             task: task,
-            hasSideEffects: hasSideEffects,
-            sideEffect: sideEffect,
           ),
           initialChildren: children,
         );
@@ -4069,8 +4061,6 @@ class VaccineSelectionRouteArgs {
     this.projectBeneficiaryClientReferenceId,
     this.individual,
     required this.task,
-    this.hasSideEffects = false,
-    required this.sideEffect,
   });
 
   final Key? key;
@@ -4089,13 +4079,9 @@ class VaccineSelectionRouteArgs {
 
   final TaskModel task;
 
-  final bool? hasSideEffects;
-
-  final SideEffectModel sideEffect;
-
   @override
   String toString() {
-    return 'VaccineSelectionRouteArgs{key: $key, appLocalizations: $appLocalizations, isAdministration: $isAdministration, eligibilityAssessmentType: $eligibilityAssessmentType, isChecklistAssessmentDone: $isChecklistAssessmentDone, projectBeneficiaryClientReferenceId: $projectBeneficiaryClientReferenceId, individual: $individual, task: $task, hasSideEffects: $hasSideEffects, sideEffect: $sideEffect}';
+    return 'VaccineSelectionRouteArgs{key: $key, appLocalizations: $appLocalizations, isAdministration: $isAdministration, eligibilityAssessmentType: $eligibilityAssessmentType, isChecklistAssessmentDone: $isChecklistAssessmentDone, projectBeneficiaryClientReferenceId: $projectBeneficiaryClientReferenceId, individual: $individual, task: $task}';
   }
 }
 
@@ -4156,9 +4142,7 @@ class ZeroDoseCheckRoute extends PageRouteInfo<ZeroDoseCheckRouteArgs> {
     bool isChecklistAssessmentDone = true,
     String? projectBeneficiaryClientReferenceId,
     IndividualModel? individual,
-    bool? hasSideEffects = false,
     bool isRefused = false,
-    SideEffectModel? sideEffect,
     TaskModel? task,
     List<PageRouteInfo>? children,
   }) : super(
@@ -4173,9 +4157,7 @@ class ZeroDoseCheckRoute extends PageRouteInfo<ZeroDoseCheckRouteArgs> {
             projectBeneficiaryClientReferenceId:
                 projectBeneficiaryClientReferenceId,
             individual: individual,
-            hasSideEffects: hasSideEffects,
             isRefused: isRefused,
-            sideEffect: sideEffect,
             task: task,
           ),
           initialChildren: children,
@@ -4197,9 +4179,7 @@ class ZeroDoseCheckRouteArgs {
     this.isChecklistAssessmentDone = true,
     this.projectBeneficiaryClientReferenceId,
     this.individual,
-    this.hasSideEffects = false,
     this.isRefused = false,
-    this.sideEffect,
     this.task,
   });
 
@@ -4219,16 +4199,12 @@ class ZeroDoseCheckRouteArgs {
 
   final IndividualModel? individual;
 
-  final bool? hasSideEffects;
-
   final bool isRefused;
-
-  final SideEffectModel? sideEffect;
 
   final TaskModel? task;
 
   @override
   String toString() {
-    return 'ZeroDoseCheckRouteArgs{key: $key, appLocalizations: $appLocalizations, eligibilityAssessmentType: $eligibilityAssessmentType, isAdministration: $isAdministration, isEditing: $isEditing, isChecklistAssessmentDone: $isChecklistAssessmentDone, projectBeneficiaryClientReferenceId: $projectBeneficiaryClientReferenceId, individual: $individual, hasSideEffects: $hasSideEffects, isRefused: $isRefused, sideEffect: $sideEffect, task: $task}';
+    return 'ZeroDoseCheckRouteArgs{key: $key, appLocalizations: $appLocalizations, eligibilityAssessmentType: $eligibilityAssessmentType, isAdministration: $isAdministration, isEditing: $isEditing, isChecklistAssessmentDone: $isChecklistAssessmentDone, projectBeneficiaryClientReferenceId: $projectBeneficiaryClientReferenceId, individual: $individual, isRefused: $isRefused, task: $task}';
   }
 }

@@ -41,6 +41,8 @@ import 'package:survey_form/utils/i18_key_constants.dart' as i18_survey_form;
 //  Add this import for the radio button component.
 import 'package:group_radio_button/group_radio_button.dart';
 
+import '../../../utils/date_utils.dart' as date_utils_local;
+
 @RoutePage()
 class VaccineSelectionPage extends LocalizedStatefulWidget {
   final bool isAdministration;
@@ -49,8 +51,6 @@ class VaccineSelectionPage extends LocalizedStatefulWidget {
   final String? projectBeneficiaryClientReferenceId;
   final IndividualModel? individual;
   final TaskModel task;
-  final bool? hasSideEffects;
-  final SideEffectModel sideEffect;
 
   const VaccineSelectionPage({
     super.key,
@@ -61,8 +61,6 @@ class VaccineSelectionPage extends LocalizedStatefulWidget {
     this.projectBeneficiaryClientReferenceId,
     this.individual,
     required this.task,
-    this.hasSideEffects = false,
-    required this.sideEffect,
   });
 
   @override
@@ -129,9 +127,6 @@ class _VaccineSelectionPageState extends LocalizedState<VaccineSelectionPage> {
 
   TaskModel _getTaskModel() {
     final clientReferenceId = IdGen.i.identifier;
-    List<String?> ineligibilityReasons = [];
-    ineligibilityReasons.add(Constants.ineligibleForBCG);
-    ineligibilityReasons.add(Constants.ineligibleForRota);
     return TaskModel(
       projectBeneficiaryClientReferenceId:
           widget.projectBeneficiaryClientReferenceId,
@@ -157,17 +152,6 @@ class _VaccineSelectionPageState extends LocalizedState<VaccineSelectionPage> {
             AdditionalFieldsType.cycleIndex.toValue(),
             "0${context.selectedCycle?.id}",
           ),
-          if (widget.hasSideEffects == false) ...[
-            AdditionalField(
-              AdditionalFieldsType.ineligibleReasons.toValue(),
-              ineligibilityReasons.join(","),
-            ),
-          ] else ...[
-            AdditionalField(AdditionalFieldsType.ineligibleReasons.toValue(),
-                ["SIDE_EFFECTS"].join(",")),
-            AdditionalField(
-                AdditionalFieldsType.hasSideEffects.toValue(), true.toString()),
-          ],
           AdditionalField(
             AdditionalFieldsType.deliveryType.toValue(),
             EligibilityAssessmentStatus.smcDone.name,
@@ -1297,16 +1281,6 @@ class _VaccineSelectionPageState extends LocalizedState<VaccineSelectionPage> {
                                               );
                                             }
                                           } else {
-                                            if (widget.hasSideEffects == true) {
-                                              context
-                                                  .read<SideEffectsBloc>()
-                                                  .add(
-                                                    SideEffectsSubmitEvent(
-                                                      widget.sideEffect!,
-                                                      false,
-                                                    ),
-                                                  );
-                                            }
                                             TaskModel task = _getTaskModel();
                                             context
                                                 .read<DeliverInterventionBloc>()

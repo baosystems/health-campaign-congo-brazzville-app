@@ -63,8 +63,6 @@ class ZeroDoseCheckPage extends LocalizedStatefulWidget {
   final String? projectBeneficiaryClientReferenceId;
   final IndividualModel? individual;
   final TaskModel task;
-  final bool? hasSideEffects;
-  final SideEffectModel sideEffect;
   final bool isRefused;
 
   ZeroDoseCheckPage({
@@ -76,12 +74,9 @@ class ZeroDoseCheckPage extends LocalizedStatefulWidget {
     this.isChecklistAssessmentDone = true,
     this.projectBeneficiaryClientReferenceId,
     this.individual,
-    this.hasSideEffects = false,
     this.isRefused = false,
-    SideEffectModel? sideEffect,
     TaskModel? task,
-  })  : task = task ?? TaskModel(clientReferenceId: ''),
-        sideEffect = sideEffect ?? SideEffectModel(clientReferenceId: '');
+  }) : task = task ?? TaskModel(clientReferenceId: '');
 
   @override
   State<ZeroDoseCheckPage> createState() => ZeroDoseCheckPageState();
@@ -105,7 +100,6 @@ class ZeroDoseCheckPageState extends LocalizedState<ZeroDoseCheckPage> {
   final String yes = "YES";
   final String no = "NO";
   List<String> allVaccineCodes = [];
-  List<String?> ineligibilityReasons = [];
 
   // List of controllers for form elements
   final List _controllers = [];
@@ -173,11 +167,6 @@ class ZeroDoseCheckPageState extends LocalizedState<ZeroDoseCheckPage> {
               AdditionalFieldsType.selectedVaccines.toValue(),
               availedVaccines.join("."),
             ),
-          if (ineligibilityReasons.isNotEmpty)
-            AdditionalField(
-              AdditionalFieldsType.ineligibleReasons.toValue(),
-              ineligibilityReasons.join(","),
-            ),
           AdditionalField(
             additional_fields_local.AdditionalFieldsType.deliveryType.toValue(),
             EligibilityAssessmentStatus.smcDone.name,
@@ -204,21 +193,6 @@ class ZeroDoseCheckPageState extends LocalizedState<ZeroDoseCheckPage> {
         .state
         .selectedIndividual
         ?.clientReferenceId;
-
-    final dobStr = context
-        .read<HouseholdOverviewBloc>()
-        .state
-        .selectedIndividual
-        ?.dateOfBirth;
-    final ageInDays =
-        date_utils_local.DigitDateUtils.calculateAgeInDaysFromDob(dobStr ?? '');
-
-    if (ageInDays < 180) {
-      ineligibilityReasons.add(Constants.ineligibleForRota);
-    }
-    if (ageInDays < 360) {
-      ineligibilityReasons.add(Constants.ineligibleForRota);
-    }
 
     return WillPopScope(
       onWillPop: () async {
@@ -367,8 +341,6 @@ class ZeroDoseCheckPageState extends LocalizedState<ZeroDoseCheckPage> {
                                             projectBeneficiaryClientReferenceId,
                                         individual: widget.individual,
                                         task: widget.task,
-                                        hasSideEffects: widget.hasSideEffects!,
-                                        sideEffect: widget.sideEffect!,
                                       ));
                                     } else {
                                       context

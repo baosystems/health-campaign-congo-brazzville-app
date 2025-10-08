@@ -227,6 +227,9 @@ class HouseholdOverView {
 class DeliverIntervention {
   const DeliverIntervention();
 
+  String get noEligibleAvailableForThisSelection =>
+      'NO_ELIGIBLE_AVAILABLE_FOR_THIS_SELECTION';
+
   String get selectDeliveryComment =>
       'DELIVER_INTERVENTION_SELECT_DELIVERY_COMMENT';
 

@@ -689,16 +689,19 @@ class _VaccineSelectionPageState extends LocalizedState<VaccineSelectionPage> {
                   setState(() => currentIndex += 1);
                 } else {
                   // No more buckets to show: go final step (Reasons if any "NO", else submit)
-                  final pbId = widget.projectBeneficiaryClientReferenceId ??
-                      context
-                          .read<HouseholdOverviewBloc>()
-                          .state
-                          .selectedIndividual
-                          ?.clientReferenceId ??
-                      '';
+                  // await DigitToast.show(
+                  //   context,
+                  //   options: DigitToastOptions(
+                  //     localizations.translate(
+                  //       i18_local.deliverIntervention
+                  //           .noEligibleAvailableForThisSelection,
+                  //     ),
+                  //     false,
+                  //     theme,
+                  //   ),
+                  // );
                 }
               });
-              return const SizedBox.shrink();
             }
 
             // If next bucket ends up empty, treat current as last

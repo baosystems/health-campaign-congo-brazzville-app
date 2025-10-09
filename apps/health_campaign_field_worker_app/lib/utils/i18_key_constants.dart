@@ -409,6 +409,9 @@ class ReferBeneficiary {
   String get referAlertDialogTitle => 'REFERRAL_ALERT_DIALOG_TITLE';
   String get referAlertDialogContent => 'REFERRAL_ALERT_DIALOG_CONTENT';
   String get validationForReferralAge => 'REFERRAL_AGE_VALIDATION';
+
+  String get reasonForReferralExpanded => 'REFERRAL_REASON';
+  String get reasonComments => 'REFERRAL_COMMENTS';
 }
 
 class HouseholdDetails {

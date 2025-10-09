@@ -135,19 +135,6 @@ class _ComplaintCapturePageState extends State<ComplaintCapturePage> {
                       : () async {
                           final l = AppLocalizations.of(context);
                           final theme = Theme.of(context);
-
-                          if (_complaintCtrl.text.trim().isEmpty) {
-                            DigitToast.show(
-                              context,
-                              options: DigitToastOptions(
-                                l.translate(i18_local.zeroDose.enterReason),
-                                true,
-                                theme,
-                              ),
-                            );
-                            return;
-                          }
-
                           final boundary =
                               RegistrationDeliverySingleton().boundary;
                           if (boundary == null) {

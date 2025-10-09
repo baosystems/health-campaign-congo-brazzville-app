@@ -501,7 +501,8 @@ class _BoundarySelectionPageState
 
                                                 if (context.mounted) {
                                                   if (isOnline &&
-                                                      isDistributor &&
+                                                      context
+                                                          .isHealthFacilitySupervisor &&
                                                       Constants
                                                           .isDownSyncEnabled) {
                                                     context

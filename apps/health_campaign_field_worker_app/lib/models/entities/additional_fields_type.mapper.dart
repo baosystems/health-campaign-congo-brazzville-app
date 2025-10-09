@@ -31,6 +31,8 @@ class AdditionalFieldsTypeMapper extends EnumMapper<AdditionalFieldsType> {
         return AdditionalFieldsType.selectedVaccines;
       case "noSelectedVaccines":
         return AdditionalFieldsType.noSelectedVaccines;
+      case "vaccineDoseList":
+        return AdditionalFieldsType.vaccineDoseList;
       case "hasSideEffects":
         return AdditionalFieldsType.hasSideEffects;
       case "deliveryStrategy":
@@ -45,6 +47,8 @@ class AdditionalFieldsTypeMapper extends EnumMapper<AdditionalFieldsType> {
         return AdditionalFieldsType.dateOfAdministration;
       case "dateOfDelivery":
         return AdditionalFieldsType.dateOfDelivery;
+      case "nextDateOfDelivery":
+        return AdditionalFieldsType.nextDateOfDelivery;
       case "referralComments":
         return AdditionalFieldsType.referralComments;
       case "cycle":
@@ -103,6 +107,8 @@ class AdditionalFieldsTypeMapper extends EnumMapper<AdditionalFieldsType> {
         return "selectedVaccines";
       case AdditionalFieldsType.noSelectedVaccines:
         return "noSelectedVaccines";
+      case AdditionalFieldsType.vaccineDoseList:
+        return "vaccineDoseList";
       case AdditionalFieldsType.hasSideEffects:
         return "hasSideEffects";
       case AdditionalFieldsType.deliveryStrategy:
@@ -117,6 +123,8 @@ class AdditionalFieldsTypeMapper extends EnumMapper<AdditionalFieldsType> {
         return "dateOfAdministration";
       case AdditionalFieldsType.dateOfDelivery:
         return "dateOfDelivery";
+      case AdditionalFieldsType.nextDateOfDelivery:
+        return "nextDateOfDelivery";
       case AdditionalFieldsType.referralComments:
         return "referralComments";
       case AdditionalFieldsType.cycle:

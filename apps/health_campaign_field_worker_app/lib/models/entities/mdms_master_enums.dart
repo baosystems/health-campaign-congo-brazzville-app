@@ -33,6 +33,8 @@ enum MasterEnums {
   deliveryComments,
   @MappableValue("vaccination-data")
   vaccinationData,
+  @MappableValue("VACCINATION-DOSE-DATA")
+  vaccinationDoseData,
   @MappableValue("BACKEND_INTERFACE")
   backendInterface,
   @MappableValue("CALL_SUPPORT")

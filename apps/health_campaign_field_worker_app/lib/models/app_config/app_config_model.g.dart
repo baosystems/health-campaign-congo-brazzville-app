@@ -195,12 +195,16 @@ _$HCMProductsWrapperModelImpl _$$HCMProductsWrapperModelImplFromJson(
       vaccinationData: (json['vaccination-data'] as List<dynamic>)
           .map((e) => VaccineData.fromJson(e as Map<String, dynamic>))
           .toList(),
+      vaccinationDoseData: (json['VACCINATION-DOSE-DATA'] as List<dynamic>)
+          .map((e) => VaccineDoseData.fromJson(e as Map<String, dynamic>))
+          .toList(),
     );
 
 Map<String, dynamic> _$$HCMProductsWrapperModelImplToJson(
         _$HCMProductsWrapperModelImpl instance) =>
     <String, dynamic>{
       'vaccination-data': instance.vaccinationData,
+      'VACCINATION-DOSE-DATA': instance.vaccinationDoseData,
     };
 
 _$AppConfigSecondaryWrapperModelImpl
@@ -266,6 +270,26 @@ _$VaccineDataImpl _$$VaccineDataImplFromJson(Map<String, dynamic> json) =>
 Map<String, dynamic> _$$VaccineDataImplToJson(_$VaccineDataImpl instance) =>
     <String, dynamic>{
       'code': instance.code,
+      'name': instance.name,
+      'active': instance.active,
+      'ageInDays': instance.ageInDays,
+    };
+
+_$VaccineDoseDataImpl _$$VaccineDoseDataImplFromJson(
+        Map<String, dynamic> json) =>
+    _$VaccineDoseDataImpl(
+      code: json['code'] as String,
+      doseCode: json['doseCode'] as String,
+      name: json['name'] as String,
+      active: json['active'] as bool,
+      ageInDays: (json['ageInDays'] as num).toInt(),
+    );
+
+Map<String, dynamic> _$$VaccineDoseDataImplToJson(
+        _$VaccineDoseDataImpl instance) =>
+    <String, dynamic>{
+      'code': instance.code,
+      'doseCode': instance.doseCode,
       'name': instance.name,
       'active': instance.active,
       'ageInDays': instance.ageInDays,

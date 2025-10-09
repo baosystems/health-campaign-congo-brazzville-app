@@ -1,10 +1,14 @@
 // GENERATED using mason_cli
 import 'dart:async';
 
+import 'package:collection/collection.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:digit_data_model/data_model.dart';
 
+import '../../data/local_store/no_sql/schema/app_configuration.dart';
+import '../../models/entities/vaccine/vaccine_dose_variant.dart';
+import '../../utils/constants.dart';
 import '../../utils/typedefs.dart';
 
 // import '../utils/typedefs.dart';
@@ -19,11 +23,10 @@ class VaccineProductVariantBloc
   final ProjectResourceDataRepository projectResourceDataRepository;
   final ProductVariantDataRepository productVariantDataRepository;
 
-  VaccineProductVariantBloc(
+  VaccineProductVariantBloc(super.initialState,
       {required this.projectResourceDataRepository,
-      required this.productVariantDataRepository})
-      : super(const VaccineProductVariantState.loading()) {
-    on<VaccineProductVariantLoadEvent>(_handleLoad);
+      required this.productVariantDataRepository}) {
+    on(_handleLoad);
   }
 
   // Event handler for loading product variants
@@ -32,10 +35,10 @@ class VaccineProductVariantBloc
     VaccineProductVariantEmitter emit,
   ) async {
     // Emitting the loading state
-    emit(const VaccineProductVariantLoadingState());
+    emit(state.copyWith(loading: true));
     // Fetching the product variants
     final projectResources = await projectResourceDataRepository.search(
-      event.query,
+      ProjectResourceSearchModel(projectId: [event.projectId]),
     );
 
     final productVariants = await productVariantDataRepository.search(
@@ -46,15 +49,32 @@ class VaccineProductVariantBloc
       ),
     );
 
-    // Checking if the product variants are null
-    if (productVariants.isEmpty) {
-      // Emitting the empty state if product variants are null
-      emit((const VaccineProductVariantEmptyState()));
-    } else {
-      // Emitting the fetched state with the fetched product variants
-      emit(
-          VaccineProductVariantState.fetched(productVariants: productVariants));
+    List<VaccineDoseData> vaccineDataList = event.vaccineDataList ?? [];
+    Set allVaccineCodes = {};
+    for (var v in vaccineDataList) {
+      allVaccineCodes.add(v.code);
     }
+    Map<String, VaccineDoseVariant> vaccineDoseDataVariation = {};
+    for (var code in allVaccineCodes) {
+      String productVariationId = productVariants
+              .firstWhereOrNull((element) => element.sku == code)
+              ?.id ??
+          '';
+      List<String> vaccineDoseKeys = vaccineDataList
+          .where((element) => element.code == code)
+          .map((e) => e.doseCode)
+          .toList();
+      vaccineDoseDataVariation[code] = VaccineDoseVariant(
+          productVariationId: productVariationId,
+          numberOfDose: vaccineDoseKeys.length,
+          vaccineDoseKeys: vaccineDoseKeys);
+    }
+    emit(state.copyWith(
+      loading: false,
+      productVariants: productVariants,
+      vaccineDataList: vaccineDataList,
+      vaccineDoseDataVariation: vaccineDoseDataVariation,
+    ));
   }
 }
 
@@ -63,23 +83,18 @@ class VaccineProductVariantBloc
 class VaccineProductVariantEvent with _$VaccineProductVariantEvent {
   // Event for loading product variants
   const factory VaccineProductVariantEvent.load({
-    required ProjectResourceSearchModel query,
+    required String projectId,
+    required List<VaccineDoseData>? vaccineDataList,
   }) = VaccineProductVariantLoadEvent;
 }
 
 // Freezed union class for product variant states
 @freezed
 class VaccineProductVariantState with _$VaccineProductVariantState {
-  // State for when the product variants are being loaded
-  const factory VaccineProductVariantState.loading() =
-      VaccineProductVariantLoadingState;
-
-  // State for when there are no product variants
-  const factory VaccineProductVariantState.empty() =
-      VaccineProductVariantEmptyState;
-
-  // State for when the product variants have been fetched
-  const factory VaccineProductVariantState.fetched({
-    required List<ProductVariantModel> productVariants,
-  }) = VaccineProductVariantFetchedState;
+  const factory VaccineProductVariantState({
+    bool? loading,
+    List<ProductVariantModel>? productVariants,
+    List<VaccineDoseData>? vaccineDataList,
+    Map<String, VaccineDoseVariant>? vaccineDoseDataVariation,
+  }) = _VaccineProductVariantState;
 }

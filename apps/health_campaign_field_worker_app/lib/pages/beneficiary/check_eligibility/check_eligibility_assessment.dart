@@ -14,6 +14,8 @@ import 'package:registration_delivery/blocs/search_households/search_households.
 import 'package:survey_form/survey_form.dart';
 import 'package:digit_data_model/data_model.dart';
 import 'package:registration_delivery/models/entities/task.dart';
+import '../../../blocs/vaccine/vaccine_delivery.dart';
+import '../../../blocs/vaccine/vaccine_search.dart';
 import '../../../models/entities/additional_fields_type.dart';
 import '../../../models/entities/roles_type.dart';
 import '../../../router/app_router.dart';
@@ -25,10 +27,10 @@ import '../../../widgets/localized.dart';
 import '../../../models/entities/assessment_checklist/status.dart'
     as status_local;
 import 'package:digit_ui_components/services/location_bloc.dart' as location;
+import '../../../utils/date_utils.dart' as digits;
 
 @RoutePage()
 class EligibilityChecklistViewPage extends LocalizedStatefulWidget {
-  final bool isHPVEligible;
   final String? referralClientRefId;
   final IndividualModel? individual;
   final String? projectBeneficiaryClientReferenceId;
@@ -37,7 +39,6 @@ class EligibilityChecklistViewPage extends LocalizedStatefulWidget {
 
   const EligibilityChecklistViewPage({
     super.key,
-    required this.isHPVEligible,
     this.referralClientRefId,
     this.individual,
     this.projectBeneficiaryClientReferenceId,
@@ -70,7 +71,7 @@ class _EligibilityChecklistViewPage
   final String test_unavailable = "TEST_UNAVAILABLE";
   bool triggerLocalization = false;
 
-  Set notApplicableVaccines = {};
+  Set<String> notApplicableVaccines = {};
 
   @override
   void initState() {
@@ -229,41 +230,20 @@ class _EligibilityChecklistViewPage
                               // final router = context.router;
 
                               List<String>? referralReasons = [];
-                              List<String?> ineligibilityReasons = [];
-                              List<bool> checkIfIneligibleFlow = [];
 
                               ifReferral =
                                   isReferral(responses, referralReasons);
-                              /* widget.eligibilityAssessmentType ==
-                                      EligibilityAssessmentType.smc
-                                  ? isReferral(responses, referralReasons)
-                                  : isVASReferral(responses, referralReasons); */
                               ifDeliver = isDelivery(responses);
-                              checkIfIneligibleFlow = isIneligible(
-                                responses,
-                                ineligibilityReasons,
-                                ifAdministration,
-                              );
-                              if (checkIfIneligibleFlow.isNotEmpty &&
-                                  checkIfIneligibleFlow.length >= 2) {
-                                ifIneligible = checkIfIneligibleFlow[0];
-                                ifAdministration = checkIfIneligibleFlow[1];
-                              }
 
-                              var descriptionText = ifIneligible
+                              var descriptionText = ifReferral
                                   ? localizations.translate(
                                       i18_local.deliverIntervention
-                                          .beneficiaryIneligibleDescription,
+                                          .beneficiaryReferralDescription,
                                     )
-                                  : ifReferral
-                                      ? localizations.translate(
-                                          i18_local.deliverIntervention
-                                              .beneficiaryReferralDescription,
-                                        )
-                                      : localizations.translate(
-                                          i18_local.deliverIntervention
-                                              .spaqRedirectionScreenDescription,
-                                        );
+                                  : localizations.translate(
+                                      i18_local.deliverIntervention
+                                          .spaqRedirectionScreenDescription,
+                                    );
 
                               final shouldSubmit = await DigitDialog.show(
                                 context,
@@ -437,91 +417,9 @@ class _EligibilityChecklistViewPage
                               if (shouldSubmit ?? false) {
                                 if (context.mounted &&
                                     ((ifDeliver || ifAdministration) ||
-                                        ifIneligible ||
                                         ifReferral)) {
                                   final router = context.router;
-                                  if (ifIneligible) {
-                                    final clientReferenceId =
-                                        IdGen.i.identifier;
-                                    final task = TaskModel(
-                                      projectBeneficiaryClientReferenceId:
-                                          projectBeneficiaryClientReferenceId,
-                                      clientReferenceId: clientReferenceId,
-                                      tenantId: envConfig.variables.tenantId,
-                                      rowVersion: 1,
-                                      auditDetails: AuditDetails(
-                                        createdBy: context.loggedInUserUuid,
-                                        createdTime:
-                                            context.millisecondsSinceEpoch(),
-                                      ),
-                                      projectId: context.projectId,
-                                      status: status_local
-                                          .Status.beneficiaryInEligible
-                                          .toValue(),
-                                      clientAuditDetails: ClientAuditDetails(
-                                        createdBy: context.loggedInUserUuid,
-                                        createdTime:
-                                            context.millisecondsSinceEpoch(),
-                                        lastModifiedBy:
-                                            context.loggedInUserUuid,
-                                        lastModifiedTime:
-                                            context.millisecondsSinceEpoch(),
-                                      ),
-                                      additionalFields: TaskAdditionalFields(
-                                        version: 1,
-                                        fields: [
-                                          AdditionalField(
-                                            AdditionalFieldsType.cycleIndex
-                                                .toValue(),
-                                            "0${context.selectedCycle?.id}",
-                                          ),
-                                          AdditionalField(
-                                            AdditionalFieldsType
-                                                .ineligibleReasons
-                                                .toValue(),
-                                            ineligibilityReasons.join(","),
-                                          ),
-                                          AdditionalField(
-                                            AdditionalFieldsType.deliveryType
-                                                .toValue(),
-                                            getDeliveryType(),
-                                          ),
-                                          ...getIndividualAdditionalFields(
-                                            widget.individual,
-                                          ),
-                                        ],
-                                      ),
-                                      address: widget.individual!.address?.first
-                                          .copyWith(
-                                        relatedClientReferenceId:
-                                            clientReferenceId,
-                                        id: null,
-                                      ),
-                                    );
-
-                                    context.read<DeliverInterventionBloc>().add(
-                                          DeliverInterventionSubmitEvent(
-                                              task: task,
-                                              isEditing: false,
-                                              boundaryModel: context.boundary,
-                                              navigateToSummary: false,
-                                              householdMemberWrapper:
-                                                  householdOverviewState
-                                                      .householdMemberWrapper),
-                                        );
-                                    final searchBloc =
-                                        context.read<SearchHouseholdsBloc>();
-                                    searchBloc.add(
-                                      const SearchHouseholdsClearEvent(),
-                                    );
-
-                                    router.push(
-                                      CustomHouseholdAcknowledgementRoute(
-                                          enableViewHousehold: true,
-                                          eligibilityAssessmentType:
-                                              widget.eligibilityAssessmentType),
-                                    );
-                                  } else if (ifReferral) {
+                                  if (ifReferral) {
                                     if (widget.eligibilityAssessmentType ==
                                         EligibilityAssessmentType.vaccine) {
                                       router
@@ -534,15 +432,43 @@ class _EligibilityChecklistViewPage
                                       ));
                                     }
                                   } else {
+                                    context.read<VaccineSearchBloc>().add(
+                                        VaccineSearchEvent.handleTaskSearch(
+                                            projectBeneficiaryClientReferenceId:
+                                                widget.projectBeneficiaryClientReferenceId ??
+                                                    ""));
+
+                                    int ageInDays = 0;
+                                    try {
+                                      String? dateOfBirth =
+                                          widget.individual?.dateOfBirth;
+                                      ageInDays = digits.DigitDateUtils
+                                          .calculateAgeInDaysFromDob(
+                                              dateOfBirth ?? '');
+                                    } catch (_) {}
+                                    if (ageInDays >
+                                        (6 * Constants.monthsInDays)) {
+                                      notApplicableVaccines
+                                          .add(Constants.rota1Vaccine);
+                                      notApplicableVaccines
+                                          .add(Constants.rota2Vaccine);
+                                    }
+                                    if (ageInDays > Constants.yearsInDays) {
+                                      notApplicableVaccines
+                                          .add(Constants.bcgVaccine);
+                                    }
+                                    context.read<VaccineDeliveryBloc>().add(
+                                            VaccineDeliveryEvent
+                                                .additionalVaccineDose(
+                                          filterVaccineDoseCodes:
+                                              notApplicableVaccines,
+                                        ));
                                     final router = context.router;
                                     router.push(VaccineDeliveryRoute(
                                       doseStatusTask: widget.doseStatusTask,
                                       projectBeneficiaryClientReferenceId: widget
                                           .projectBeneficiaryClientReferenceId,
                                       individual: widget.individual!,
-                                      isHPVEligible: widget.isHPVEligible,
-                                      notApplicableVaccines:
-                                          notApplicableVaccines,
                                     ));
                                   }
                                 }
@@ -1021,57 +947,6 @@ class _EligibilityChecklistViewPage
         ],
       ),
     );
-  }
-
-  List<bool> isIneligible(
-    Map<String?, String> responses,
-    List<String?> ineligibilityReasons,
-    bool ifAdministration,
-  ) {
-    var isIneligible = false;
-    var q1Key = "CEAQ1";
-    var q2Key = "CEAQ2";
-    var q3Key = "CEAQ3";
-    var q4Key = "CEAQ4";
-    var q5Key = "CEAQ5";
-    Map<String, String> keyVsReason = {
-      q2Key: "FEVER",
-      q3Key: "CHILD_ALLERGIC_TO_DRUGS",
-      q5Key: "TAKEN_SP_OR_CTX",
-    };
-
-    if (responses.isNotEmpty) {
-      if (responses.containsKey(q1Key) && responses[q1Key]!.isNotEmpty) {
-        isIneligible = responses[q1Key] == no ? true : false;
-      }
-      if (!isIneligible &&
-          (responses.containsKey(q2Key) && responses[q2Key]!.isNotEmpty)) {
-        isIneligible = responses[q2Key] == no ? true : false;
-      }
-      if (!isIneligible &&
-          (responses.containsKey(q3Key) && responses[q3Key]!.isNotEmpty)) {
-        isIneligible = responses[q3Key] == no ? true : false;
-      }
-      if (!isIneligible &&
-          (responses.containsKey(q4Key) && responses[q4Key]!.isNotEmpty)) {
-        isIneligible = responses[q4Key] == yes ? true : false;
-      }
-      if (!isIneligible &&
-          (responses.containsKey(q5Key) && responses[q5Key]!.isNotEmpty)) {
-        isIneligible = responses[q5Key] == no ? true : false;
-      }
-    }
-    if (isIneligible) {
-      for (var entry in responses.entries) {
-        if (entry.key == q3Key || entry.key == q5Key) {
-          entry.value == yes
-              ? ineligibilityReasons.add(keyVsReason[entry.key])
-              : null;
-        }
-      }
-    }
-
-    return [false, ifAdministration];
   }
 
   bool isReferral(

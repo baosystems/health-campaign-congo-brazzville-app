@@ -717,7 +717,6 @@ abstract class _$AppRouter extends RootStackRouter {
         routeData: routeData,
         child: EligibilityChecklistViewPage(
           key: args.key,
-          isHPVEligible: args.isHPVEligible,
           referralClientRefId: args.referralClientRefId,
           individual: args.individual,
           projectBeneficiaryClientReferenceId:
@@ -849,8 +848,6 @@ abstract class _$AppRouter extends RootStackRouter {
         routeData: routeData,
         child: VaccineDeliveryPage(
           key: args.key,
-          isHPVEligible: args.isHPVEligible,
-          notApplicableVaccines: args.notApplicableVaccines,
           doseStatusTask: args.doseStatusTask,
           projectBeneficiaryClientReferenceId:
               args.projectBeneficiaryClientReferenceId,
@@ -872,14 +869,12 @@ abstract class _$AppRouter extends RootStackRouter {
               args.projectBeneficiaryClientReferenceId,
           individual: args.individual,
           task: args.task,
-          hasSideEffects: args.hasSideEffects,
-          sideEffect: args.sideEffect,
-          isZeroDoseAlreadyDone: args.isZeroDoseAlreadyDone,
         ),
       );
     },
     ViewVaccinationStatusRoute.name: (routeData) {
-      final args = routeData.argsAs<ViewVaccinationStatusRouteArgs>();
+      final args = routeData.argsAs<ViewVaccinationStatusRouteArgs>(
+          orElse: () => const ViewVaccinationStatusRouteArgs());
       return AutoRoutePage<dynamic>(
         routeData: routeData,
         child: ViewVaccinationStatusPage(
@@ -887,7 +882,6 @@ abstract class _$AppRouter extends RootStackRouter {
           appLocalizations: args.appLocalizations,
           projectBeneficiaryClientReferenceId:
               args.projectBeneficiaryClientReferenceId,
-          task: args.task,
         ),
       );
     },
@@ -905,9 +899,7 @@ abstract class _$AppRouter extends RootStackRouter {
           projectBeneficiaryClientReferenceId:
               args.projectBeneficiaryClientReferenceId,
           individual: args.individual,
-          hasSideEffects: args.hasSideEffects,
           isRefused: args.isRefused,
-          sideEffect: args.sideEffect,
           task: args.task,
         ),
       );
@@ -3515,7 +3507,6 @@ class EligibilityChecklistViewRoute
     extends PageRouteInfo<EligibilityChecklistViewRouteArgs> {
   EligibilityChecklistViewRoute({
     Key? key,
-    required bool isHPVEligible,
     String? referralClientRefId,
     IndividualModel? individual,
     String? projectBeneficiaryClientReferenceId,
@@ -3527,7 +3518,6 @@ class EligibilityChecklistViewRoute
           EligibilityChecklistViewRoute.name,
           args: EligibilityChecklistViewRouteArgs(
             key: key,
-            isHPVEligible: isHPVEligible,
             referralClientRefId: referralClientRefId,
             individual: individual,
             projectBeneficiaryClientReferenceId:
@@ -3548,7 +3538,6 @@ class EligibilityChecklistViewRoute
 class EligibilityChecklistViewRouteArgs {
   const EligibilityChecklistViewRouteArgs({
     this.key,
-    required this.isHPVEligible,
     this.referralClientRefId,
     this.individual,
     this.projectBeneficiaryClientReferenceId,
@@ -3558,8 +3547,6 @@ class EligibilityChecklistViewRouteArgs {
   });
 
   final Key? key;
-
-  final bool isHPVEligible;
 
   final String? referralClientRefId;
 
@@ -3575,7 +3562,7 @@ class EligibilityChecklistViewRouteArgs {
 
   @override
   String toString() {
-    return 'EligibilityChecklistViewRouteArgs{key: $key, isHPVEligible: $isHPVEligible, referralClientRefId: $referralClientRefId, individual: $individual, projectBeneficiaryClientReferenceId: $projectBeneficiaryClientReferenceId, doseStatusTask: $doseStatusTask, eligibilityAssessmentType: $eligibilityAssessmentType, appLocalizations: $appLocalizations}';
+    return 'EligibilityChecklistViewRouteArgs{key: $key, referralClientRefId: $referralClientRefId, individual: $individual, projectBeneficiaryClientReferenceId: $projectBeneficiaryClientReferenceId, doseStatusTask: $doseStatusTask, eligibilityAssessmentType: $eligibilityAssessmentType, appLocalizations: $appLocalizations}';
   }
 }
 
@@ -3985,8 +3972,6 @@ class UserQRDetailsRouteArgs {
 class VaccineDeliveryRoute extends PageRouteInfo<VaccineDeliveryRouteArgs> {
   VaccineDeliveryRoute({
     Key? key,
-    required bool isHPVEligible,
-    required Set<dynamic> notApplicableVaccines,
     required TaskModel? doseStatusTask,
     required String? projectBeneficiaryClientReferenceId,
     required IndividualModel? individual,
@@ -3995,8 +3980,6 @@ class VaccineDeliveryRoute extends PageRouteInfo<VaccineDeliveryRouteArgs> {
           VaccineDeliveryRoute.name,
           args: VaccineDeliveryRouteArgs(
             key: key,
-            isHPVEligible: isHPVEligible,
-            notApplicableVaccines: notApplicableVaccines,
             doseStatusTask: doseStatusTask,
             projectBeneficiaryClientReferenceId:
                 projectBeneficiaryClientReferenceId,
@@ -4014,18 +3997,12 @@ class VaccineDeliveryRoute extends PageRouteInfo<VaccineDeliveryRouteArgs> {
 class VaccineDeliveryRouteArgs {
   const VaccineDeliveryRouteArgs({
     this.key,
-    required this.isHPVEligible,
-    required this.notApplicableVaccines,
     required this.doseStatusTask,
     required this.projectBeneficiaryClientReferenceId,
     required this.individual,
   });
 
   final Key? key;
-
-  final bool isHPVEligible;
-
-  final Set<dynamic> notApplicableVaccines;
 
   final TaskModel? doseStatusTask;
 
@@ -4035,7 +4012,7 @@ class VaccineDeliveryRouteArgs {
 
   @override
   String toString() {
-    return 'VaccineDeliveryRouteArgs{key: $key, isHPVEligible: $isHPVEligible, notApplicableVaccines: $notApplicableVaccines, doseStatusTask: $doseStatusTask, projectBeneficiaryClientReferenceId: $projectBeneficiaryClientReferenceId, individual: $individual}';
+    return 'VaccineDeliveryRouteArgs{key: $key, doseStatusTask: $doseStatusTask, projectBeneficiaryClientReferenceId: $projectBeneficiaryClientReferenceId, individual: $individual}';
   }
 }
 
@@ -4051,9 +4028,6 @@ class VaccineSelectionRoute extends PageRouteInfo<VaccineSelectionRouteArgs> {
     String? projectBeneficiaryClientReferenceId,
     IndividualModel? individual,
     required TaskModel task,
-    bool? hasSideEffects = false,
-    required SideEffectModel sideEffect,
-    bool isZeroDoseAlreadyDone = false,
     List<PageRouteInfo>? children,
   }) : super(
           VaccineSelectionRoute.name,
@@ -4067,9 +4041,6 @@ class VaccineSelectionRoute extends PageRouteInfo<VaccineSelectionRouteArgs> {
                 projectBeneficiaryClientReferenceId,
             individual: individual,
             task: task,
-            hasSideEffects: hasSideEffects,
-            sideEffect: sideEffect,
-            isZeroDoseAlreadyDone: isZeroDoseAlreadyDone,
           ),
           initialChildren: children,
         );
@@ -4090,9 +4061,6 @@ class VaccineSelectionRouteArgs {
     this.projectBeneficiaryClientReferenceId,
     this.individual,
     required this.task,
-    this.hasSideEffects = false,
-    required this.sideEffect,
-    this.isZeroDoseAlreadyDone = false,
   });
 
   final Key? key;
@@ -4111,15 +4079,9 @@ class VaccineSelectionRouteArgs {
 
   final TaskModel task;
 
-  final bool? hasSideEffects;
-
-  final SideEffectModel sideEffect;
-
-  final bool isZeroDoseAlreadyDone;
-
   @override
   String toString() {
-    return 'VaccineSelectionRouteArgs{key: $key, appLocalizations: $appLocalizations, isAdministration: $isAdministration, eligibilityAssessmentType: $eligibilityAssessmentType, isChecklistAssessmentDone: $isChecklistAssessmentDone, projectBeneficiaryClientReferenceId: $projectBeneficiaryClientReferenceId, individual: $individual, task: $task, hasSideEffects: $hasSideEffects, sideEffect: $sideEffect, isZeroDoseAlreadyDone: $isZeroDoseAlreadyDone}';
+    return 'VaccineSelectionRouteArgs{key: $key, appLocalizations: $appLocalizations, isAdministration: $isAdministration, eligibilityAssessmentType: $eligibilityAssessmentType, isChecklistAssessmentDone: $isChecklistAssessmentDone, projectBeneficiaryClientReferenceId: $projectBeneficiaryClientReferenceId, individual: $individual, task: $task}';
   }
 }
 
@@ -4131,7 +4093,6 @@ class ViewVaccinationStatusRoute
     Key? key,
     AppLocalizations? appLocalizations,
     String? projectBeneficiaryClientReferenceId,
-    required TaskModel task,
     List<PageRouteInfo>? children,
   }) : super(
           ViewVaccinationStatusRoute.name,
@@ -4140,7 +4101,6 @@ class ViewVaccinationStatusRoute
             appLocalizations: appLocalizations,
             projectBeneficiaryClientReferenceId:
                 projectBeneficiaryClientReferenceId,
-            task: task,
           ),
           initialChildren: children,
         );
@@ -4156,7 +4116,6 @@ class ViewVaccinationStatusRouteArgs {
     this.key,
     this.appLocalizations,
     this.projectBeneficiaryClientReferenceId,
-    required this.task,
   });
 
   final Key? key;
@@ -4165,11 +4124,9 @@ class ViewVaccinationStatusRouteArgs {
 
   final String? projectBeneficiaryClientReferenceId;
 
-  final TaskModel task;
-
   @override
   String toString() {
-    return 'ViewVaccinationStatusRouteArgs{key: $key, appLocalizations: $appLocalizations, projectBeneficiaryClientReferenceId: $projectBeneficiaryClientReferenceId, task: $task}';
+    return 'ViewVaccinationStatusRouteArgs{key: $key, appLocalizations: $appLocalizations, projectBeneficiaryClientReferenceId: $projectBeneficiaryClientReferenceId}';
   }
 }
 
@@ -4185,9 +4142,7 @@ class ZeroDoseCheckRoute extends PageRouteInfo<ZeroDoseCheckRouteArgs> {
     bool isChecklistAssessmentDone = true,
     String? projectBeneficiaryClientReferenceId,
     IndividualModel? individual,
-    bool? hasSideEffects = false,
     bool isRefused = false,
-    SideEffectModel? sideEffect,
     TaskModel? task,
     List<PageRouteInfo>? children,
   }) : super(
@@ -4202,9 +4157,7 @@ class ZeroDoseCheckRoute extends PageRouteInfo<ZeroDoseCheckRouteArgs> {
             projectBeneficiaryClientReferenceId:
                 projectBeneficiaryClientReferenceId,
             individual: individual,
-            hasSideEffects: hasSideEffects,
             isRefused: isRefused,
-            sideEffect: sideEffect,
             task: task,
           ),
           initialChildren: children,
@@ -4226,9 +4179,7 @@ class ZeroDoseCheckRouteArgs {
     this.isChecklistAssessmentDone = true,
     this.projectBeneficiaryClientReferenceId,
     this.individual,
-    this.hasSideEffects = false,
     this.isRefused = false,
-    this.sideEffect,
     this.task,
   });
 
@@ -4248,16 +4199,12 @@ class ZeroDoseCheckRouteArgs {
 
   final IndividualModel? individual;
 
-  final bool? hasSideEffects;
-
   final bool isRefused;
-
-  final SideEffectModel? sideEffect;
 
   final TaskModel? task;
 
   @override
   String toString() {
-    return 'ZeroDoseCheckRouteArgs{key: $key, appLocalizations: $appLocalizations, eligibilityAssessmentType: $eligibilityAssessmentType, isAdministration: $isAdministration, isEditing: $isEditing, isChecklistAssessmentDone: $isChecklistAssessmentDone, projectBeneficiaryClientReferenceId: $projectBeneficiaryClientReferenceId, individual: $individual, hasSideEffects: $hasSideEffects, isRefused: $isRefused, sideEffect: $sideEffect, task: $task}';
+    return 'ZeroDoseCheckRouteArgs{key: $key, appLocalizations: $appLocalizations, eligibilityAssessmentType: $eligibilityAssessmentType, isAdministration: $isAdministration, isEditing: $isEditing, isChecklistAssessmentDone: $isChecklistAssessmentDone, projectBeneficiaryClientReferenceId: $projectBeneficiaryClientReferenceId, individual: $individual, isRefused: $isRefused, task: $task}';
   }
 }

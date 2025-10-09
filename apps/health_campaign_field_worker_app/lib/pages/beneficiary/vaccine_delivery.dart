@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:collection/collection.dart';
 import 'package:digit_components/utils/date_utils.dart';
 import 'package:digit_components/widgets/atoms/digit_reactive_search_dropdown.dart';
@@ -7,12 +9,10 @@ import 'package:digit_components/widgets/digit_elevated_button.dart';
 import 'package:digit_components/widgets/scrollable_content.dart';
 import 'package:digit_data_model/data_model.dart';
 import 'package:digit_ui_components/enum/app_enums.dart';
-import 'package:digit_ui_components/models/DropdownModels.dart';
 import 'package:digit_ui_components/services/location_bloc.dart';
 import 'package:digit_ui_components/utils/component_utils.dart';
 import 'package:digit_ui_components/widgets/atoms/digit_button.dart';
 import 'package:digit_ui_components/widgets/atoms/digit_date_form_input.dart';
-import 'package:digit_ui_components/widgets/atoms/digit_dropdown_input.dart';
 import 'package:digit_ui_components/widgets/atoms/digit_numeric_form_input.dart';
 import 'package:digit_ui_components/widgets/atoms/input_wrapper.dart';
 import 'package:digit_ui_components/widgets/atoms/labelled_fields.dart';
@@ -24,19 +24,18 @@ import 'package:digit_ui_components/widgets/molecules/show_pop_up.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
+import 'package:path/path.dart';
 import 'package:reactive_forms/reactive_forms.dart';
-import 'package:registration_delivery/blocs/delivery_intervention/deliver_intervention.dart';
 import 'package:registration_delivery/blocs/household_overview/household_overview.dart';
-import 'package:registration_delivery/blocs/search_households/search_households.dart';
 import 'package:registration_delivery/models/entities/deliver_strategy_type.dart';
-import 'package:registration_delivery/models/entities/project_beneficiary.dart';
-import 'package:registration_delivery/models/entities/registration_delivery_enums.dart';
 import 'package:registration_delivery/models/entities/task.dart';
 import 'package:registration_delivery/models/entities/task_resource.dart';
 import 'package:registration_delivery/utils/utils.dart';
 
 import '../../blocs/app_initialization/app_initialization.dart';
-import '../../blocs/delivery_intervention/vaccine_delivery.dart';
+import '../../blocs/vaccine/vaccine_delivery.dart';
+import '../../blocs/vaccine/vaccine_product_variants.dart';
+import '../../blocs/vaccine/vaccine_search.dart';
 import '../../data/local_store/no_sql/schema/app_configuration.dart';
 import '../../models/entities/additional_fields_type.dart';
 import '../../models/entities/assessment_checklist/status.dart';
@@ -44,26 +43,21 @@ import '../../models/entities/identifier_types.dart';
 import '../../models/entities/vaccine/vaccine_delivery_details.dart';
 import '../../router/app_router.dart';
 import '../../utils/app_enums.dart';
-import '../../utils/constants.dart';
-import '../../utils/extensions/extensions.dart';
 import '../../utils/utils.dart';
 import '../../widgets/custom_back_navigation.dart';
 import '../../widgets/localized.dart';
 import '../../widgets/showcase/showcase_wrappers.dart';
 import '../../../utils/i18_key_constants.dart' as i18_local;
+import 'check_eligibility/view_vaccination_status.dart';
 
 @RoutePage()
 class VaccineDeliveryPage extends LocalizedStatefulWidget {
-  final bool isHPVEligible;
-  final Set notApplicableVaccines;
   final TaskModel? doseStatusTask;
   final String? projectBeneficiaryClientReferenceId;
   final IndividualModel? individual;
 
   const VaccineDeliveryPage({
     super.key,
-    required this.isHPVEligible,
-    required this.notApplicableVaccines,
     required this.doseStatusTask,
     required this.projectBeneficiaryClientReferenceId,
     required this.individual,
@@ -79,11 +73,26 @@ class _VaccineDeliveryPageState extends LocalizedState<VaccineDeliveryPage> {
   static const _doseAdministeredByKey = 'doseAdministeredBy';
   static const _deliveryCommentKey = 'deliveryComment';
 
-  Map<String, VaccineDeliveryDetails> vaccineDeliveryDetails = {};
-  Set<String> selectedVaccineSet = {};
-  Set<String> noSelectedVaccineSet = {};
+  // Map<String, VaccineDeliveryDetails> vaccineDeliveryDetails = {};
 
-  FormGroup _form() {
+  List<String> allEligibleVaccineDoseCodes = [];
+  Set<String> availedVaccineDoseCodes = {};
+
+  List<VaccineDeliveryDetails> currentVaccineDoseData = [];
+  Set<VaccineDeliveryDetails> currentVaccineDoseDataSelected = {};
+
+  Set<String> nextVaccineDoseCodes = {};
+
+  bool isCommentsRequired() {
+    bool result = currentVaccineDoseDataSelected.isEmpty ||
+        currentVaccineDoseDataSelected.length < currentVaccineDoseData.length ||
+        currentVaccineDoseDataSelected
+            .any((vaccineData) => vaccineData.numberOfDose == 0);
+
+    return result;
+  }
+
+  FormGroup _form(BuildContext context) {
     DateTime now = DateTime.now();
 
     return fb.group({
@@ -94,7 +103,7 @@ class _VaccineDeliveryPageState extends LocalizedState<VaccineDeliveryPage> {
         value: DateFormat("dd MMMM yyyy").format(now),
       ),
       _doseAdministeredByKey: FormControl<String>(
-        value: context.loggedInUser.name ?? "dd",
+        value: context.loggedInUser.name ?? "",
       ),
       _deliveryCommentKey: FormControl<String>(
         validators: [Validators.required],
@@ -102,351 +111,19 @@ class _VaccineDeliveryPageState extends LocalizedState<VaccineDeliveryPage> {
     });
   }
 
-  @override
-  initState() {
-    int ageInMonth = 0;
-    try {
-      String ageInMonthString = widget.doseStatusTask?.additionalFields?.fields
-          .firstWhereOrNull((e) => e.key == AdditionalFieldsType.age.toValue())
-          ?.value;
-      ageInMonth = int.parse(ageInMonthString);
-    } catch (e) {
-      try {
-        ageInMonth = widget.doseStatusTask?.additionalFields?.fields
-            .firstWhereOrNull(
-                (e) => e.key == AdditionalFieldsType.age.toValue())
-            ?.value;
-      } catch (e) {}
-    }
-    if (ageInMonth > 6) {
-      widget.notApplicableVaccines.add(Constants.rota1Vaccine);
-      widget.notApplicableVaccines.add(Constants.rota2Vaccine);
-    } else if (ageInMonth > 12) {
-      widget.notApplicableVaccines.add(Constants.bcgVaccine);
-    }
-    setState(() {});
-    super.initState();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final selectedVaccines = widget.doseStatusTask?.additionalFields?.fields
-            .firstWhereOrNull(
-                (e) => e.key == AdditionalFieldsType.selectedVaccines.toValue())
-            ?.value ??
-        "";
-    selectedVaccineSet = selectedVaccines.split(".").toSet();
-    String noSelectedVaccines = widget.doseStatusTask?.additionalFields?.fields
-            .firstWhereOrNull((e) =>
-                e.key == AdditionalFieldsType.noSelectedVaccines.toValue())
-            ?.value ??
-        "";
-    noSelectedVaccineSet = noSelectedVaccines.split(".").toSet();
-    final filterNoSelectedVaccinesList = noSelectedVaccineSet
-        .whereNot((e) => widget.notApplicableVaccines.contains(e))
-        .toList();
-    return BlocBuilder<LocationBloc, LocationState>(
-      builder: (context, locationState) {
-        return ReactiveFormBuilder(
-            form: () => _form(),
-            builder: (context, form, child) {
-              return ScrollableContent(
-                  header: const Column(children: [
-                    CustomBackNavigationHelpHeaderWidget(
-                      showHelp: false,
-                    ),
-                  ]),
-                  enableFixedButton: true,
-                  footer: DigitCard(
-                    margin: const EdgeInsets.fromLTRB(0, kPadding, 0, 0),
-                    padding:
-                        const EdgeInsets.fromLTRB(kPadding, 0, kPadding, 0),
-                    children: [
-                      DigitElevatedButton(
-                        onPressed: () async {
-                          if (form.invalid) {
-                            form.markAllAsTouched();
-                            await DigitToast.show(
-                              context,
-                              options: DigitToastOptions(
-                                localizations.translate(i18_local
-                                    .deliverIntervention.selectDeliveryComment),
-                                true,
-                                theme,
-                              ),
-                            );
-                            return;
-                          }
-                          final submit = await showCustomPopup(
-                            context: context,
-                            builder: (popupContext) => Popup(
-                              title: localizations.translate(
-                                i18_local.common.coreCommonDialogTitle,
-                              ),
-                              onOutsideTap: () {
-                                Navigator.of(popupContext).pop(false);
-                              },
-                              description: localizations.translate(
-                                i18_local.common.coreCommonDialogContent,
-                              ),
-                              type: PopUpType.simple,
-                              actions: [
-                                DigitButton(
-                                  label: localizations.translate(
-                                    i18_local.common.coreCommonSubmit,
-                                  ),
-                                  onPressed: () {
-                                    Navigator.of(
-                                      popupContext,
-                                      rootNavigator: true,
-                                    ).pop(true);
-                                  },
-                                  type: DigitButtonType.primary,
-                                  size: DigitButtonSize.large,
-                                ),
-                                DigitButton(
-                                  label: localizations.translate(
-                                    i18_local.common.coreCommonCancel,
-                                  ),
-                                  onPressed: () {
-                                    Navigator.of(
-                                      popupContext,
-                                      rootNavigator: true,
-                                    ).pop(false);
-                                  },
-                                  type: DigitButtonType.secondary,
-                                  size: DigitButtonSize.large,
-                                ),
-                              ],
-                            ),
-                          ) as bool;
-                          if (submit == true) {
-                            handleLocationState(
-                              locationState,
-                              context,
-                              form,
-                              widget.individual,
-                              vaccineDeliveryDetails.values.toList(),
-                            );
-                          }
-                        },
-                        child: Text(localizations
-                            .translate(i18_local.common.coreCommonSubmit)),
-                      )
-                    ],
-                  ),
-                  children: [
-                    DigitCard(
-                      margin: const EdgeInsets.all(kPadding),
-                      padding: const EdgeInsets.all(kPadding),
-                      children: [
-                        Padding(
-                          padding: const EdgeInsets.only(left: 8),
-                          child: Text(
-                            localizations.translate(
-                              i18_local
-                                  .deliverIntervention.recordVaccinationDetails,
-                            ),
-                            style: theme.textTheme.displayMedium,
-                            textAlign: TextAlign.left,
-                          ),
-                        ),
-                        Column(
-                          children: [
-                            ReactiveWrapperField(
-                                formControlName: _currentMonthKey,
-                                builder: (field) {
-                                  return InputField(
-                                    type: InputType.text,
-                                    readOnly: true,
-                                    label: localizations.translate(
-                                      i18_local
-                                          .deliverIntervention.currentMonth,
-                                    ),
-                                    errorMessage: field.errorText,
-                                    initialValue: field.control.value,
-                                    onChange: (val) {
-                                      field.control.value = val;
-                                    },
-                                  );
-                                }),
-                            ReactiveWrapperField(
-                                formControlName: _dateOfVaccinationKey,
-                                builder: (field) {
-                                  return LabeledField(
-                                    label: localizations.translate(
-                                      i18_local.deliverIntervention
-                                          .dateOfVaccination,
-                                    ),
-                                    child: DigitDateFormInput(
-                                      readOnly: true,
-                                      initialValue: field.control.value,
-                                      onChange: (val) =>
-                                          field.control.value = val,
-                                      firstDate: DateTime.now(),
-                                      errorMessage: field.errorText,
-                                    ),
-                                  );
-                                }),
-                            ReactiveWrapperField(
-                                formControlName: _doseAdministeredByKey,
-                                builder: (field) {
-                                  return InputField(
-                                    type: InputType.text,
-                                    readOnly: true,
-                                    label: localizations.translate(
-                                      i18_local.deliverIntervention
-                                          .doseAdministeredBy,
-                                    ),
-                                    errorMessage: field.errorText,
-                                    initialValue: field.control.value,
-                                    onChange: (val) {
-                                      field.control.value = val;
-                                    },
-                                  );
-                                }),
-                          ],
-                        ),
-                        const SizedBox(height: 16),
-                      ],
-                    ),
-                    DigitCard(
-                      margin: const EdgeInsets.all(kPadding),
-                      padding: const EdgeInsets.all(kPadding),
-                      children: [
-                        Padding(
-                          padding: const EdgeInsets.only(left: 8),
-                          child: Text(
-                            localizations.translate(
-                              i18_local.deliverIntervention.vaccineDetails,
-                            ),
-                            style: theme.textTheme.displayMedium,
-                            textAlign: TextAlign.left,
-                          ),
-                        ),
-                        Column(
-                          children: [
-                            for (int i = 0;
-                                i < filterNoSelectedVaccinesList.length;
-                                i++)
-                              VaccineDetailsCard(
-                                vaccineName: filterNoSelectedVaccinesList[i],
-                                onVaccineDetailsChanged: (vaccineDetails) {
-                                  vaccineDeliveryDetails[vaccineDetails
-                                      .vaccineName] = vaccineDetails;
-                                  if (vaccineDetails.numberOfDose > 0) {
-                                    noSelectedVaccineSet
-                                        .remove(vaccineDetails.vaccineName);
-                                    selectedVaccineSet
-                                        .add(vaccineDetails.vaccineName);
-                                  } else {
-                                    selectedVaccineSet
-                                        .remove(vaccineDetails.vaccineName);
-                                    noSelectedVaccineSet
-                                        .add(vaccineDetails.vaccineName);
-                                  }
-                                },
-                              ),
-                            if (widget.isHPVEligible)
-                              VaccineDetailsCard(
-                                vaccineName: Constants.hpvVaccine,
-                                onVaccineDetailsChanged: (vaccineDetails) {
-                                  vaccineDeliveryDetails[vaccineDetails
-                                      .vaccineName] = vaccineDetails;
-                                },
-                              ),
-                          ],
-                        ),
-                      ],
-                    ),
-                    DigitCard(
-                      margin: const EdgeInsets.all(kPadding),
-                      padding: const EdgeInsets.all(kPadding),
-                      children: [
-                        BlocBuilder<AppInitializationBloc,
-                            AppInitializationState>(
-                          builder: (context, state) {
-                            if (state is! AppInitialized) {
-                              return const Offstage();
-                            }
-                            final deliveryCommentOptions =
-                                state.appConfiguration.deliveryCommentOptions ??
-                                    <DeliveryCommentOptions>[];
-                            return ReactiveWrapperField(
-                              formControlName: _deliveryCommentKey,
-                              builder: (field) {
-                                return LabeledField(
-                                  label: localizations.translate(
-                                    i18_local
-                                        .deliverIntervention.deliveryComment,
-                                  ),
-                                  isRequired: true,
-                                  child: DigitReactiveSearchDropdown<String>(
-                                    label: localizations.translate(
-                                      i18_local.common.noMatchFound,
-                                    ),
-                                    form: form,
-                                    enabled: true,
-                                    isRequired: false,
-                                    menuItems: deliveryCommentOptions.map((e) {
-                                      return e.code;
-                                    }).toList(),
-                                    formControlName: _deliveryCommentKey,
-                                    valueMapper: (value) =>
-                                        localizations.translate(
-                                      value,
-                                    ),
-                                    emptyText: localizations.translate(
-                                        i18_local.common.noMatchFound),
-                                    validationMessage: localizations.translate(
-                                      i18_local.common.corecommonRequired,
-                                    ),
-                                  ),
-                                );
-                              },
-                            );
-                          },
-                        ),
-                      ],
-                    )
-                  ]);
-            });
-      },
-    );
-  }
-
-  DoseStatus getDoseStatus(
-      List<String> selectedCodes, List<String> noSelectedCodes) {
-    if (selectedCodes.isEmpty && noSelectedCodes.isEmpty) {
-      return DoseStatus.none;
-    } else if ((selectedCodes.isEmpty && noSelectedCodes.isNotEmpty) ||
-        (selectedCodes.isNotEmpty &&
-            noSelectedCodes.isNotEmpty &&
-            noSelectedCodes.contains(Constants.penta1))) {
-      return DoseStatus.zeroDose;
-    } else if (selectedCodes.isNotEmpty &&
-        noSelectedCodes.isNotEmpty &&
-        selectedCodes.contains(Constants.penta1)) {
-      return DoseStatus.underVaccinated;
-    } else if (selectedCodes.isNotEmpty && noSelectedCodes.isEmpty) {
-      return DoseStatus.fullyVaccinated;
-    }
-    return DoseStatus.zeroDose;
-  }
-
   TaskModel _getTaskModel(
     BuildContext context, {
     required FormGroup form,
-    TaskModel? oldTask,
-    int? cycle,
-    int? dose,
-    String? projectBeneficiaryClientReferenceId,
-    AddressModel? address,
-    double? latitude,
-    double? longitude,
-    IndividualModel? selectedIndividual,
-    List<VaccineDeliveryDetails>? vaccineDeliveryDetailsList,
+    required TaskModel? oldTask,
+    required int? cycle,
+    required int? dose,
+    required String? projectBeneficiaryClientReferenceId,
+    required AddressModel? address,
+    required double? latitude,
+    required double? longitude,
+    required IndividualModel? selectedIndividual,
+    required List<String> updatedAvailedVaccineDoseCodes,
+    required List<String> notDeliveredVaccineDoseCodes,
   }) {
     // Assumption here productVariantDelivered will always have one item
 
@@ -464,10 +141,14 @@ class _VaccineDeliveryPageState extends LocalizedState<VaccineDeliveryPage> {
       auditDetails: AuditDetails(
         createdBy: RegistrationDeliverySingleton().loggedInUserUuid!,
         createdTime: context.millisecondsSinceEpoch(),
+        lastModifiedBy: RegistrationDeliverySingleton().loggedInUserUuid!,
+        lastModifiedTime: DateTime.now().millisecondsSinceEpoch,
       ),
       clientAuditDetails: ClientAuditDetails(
         createdBy: RegistrationDeliverySingleton().loggedInUserUuid!,
         createdTime: context.millisecondsSinceEpoch(),
+        lastModifiedBy: RegistrationDeliverySingleton().loggedInUserUuid!,
+        lastModifiedTime: DateTime.now().millisecondsSinceEpoch,
       ),
     );
 
@@ -491,10 +172,6 @@ class _VaccineDeliveryPageState extends LocalizedState<VaccineDeliveryPage> {
       AdditionalFieldsType.dateOfVaccination.toValue(),
       AdditionalFieldsType.doseAdministeredBy.toValue(),
       AdditionalFieldsType.deliveryComment.toValue(),
-      // AdditionalFieldsType.age.toValue(),
-      // AdditionalFieldsType.gender.toValue(),
-      // AdditionalFieldsType.individualClientReferenceId.toValue(),
-      // AdditionalFieldsType.uniqueBeneficiaryId.toValue(),
     };
 
     final oldAdditionalFields = task.additionalFields;
@@ -503,32 +180,9 @@ class _VaccineDeliveryPageState extends LocalizedState<VaccineDeliveryPage> {
             .toList() ??
         [];
 
-    DoseStatus doseStatus = getDoseStatus(
-        selectedVaccineSet.toList(), noSelectedVaccineSet.toList());
-
     // Update the task with information from the form and other context
     task = task.copyWith(
       projectId: RegistrationDeliverySingleton().projectId,
-      resources: vaccineDeliveryDetailsList!
-          .map((e) => TaskResourceModel(
-                taskclientReferenceId: clientReferenceId,
-                clientReferenceId: IdGen.i.identifier,
-                productVariantId: e.vaccineName,
-                isDelivered: true,
-                taskId: task?.id,
-                tenantId: RegistrationDeliverySingleton().tenantId,
-                rowVersion: oldTask?.rowVersion ?? 1,
-                quantity: e.numberOfDose.toString(),
-                clientAuditDetails: ClientAuditDetails(
-                  createdBy: RegistrationDeliverySingleton().loggedInUserUuid!,
-                  createdTime: context.millisecondsSinceEpoch(),
-                ),
-                auditDetails: AuditDetails(
-                  createdBy: RegistrationDeliverySingleton().loggedInUserUuid!,
-                  createdTime: context.millisecondsSinceEpoch(),
-                ),
-              ))
-          .toList(),
       address: address?.copyWith(
         relatedClientReferenceId: clientReferenceId,
         id: null,
@@ -540,15 +194,149 @@ class _VaccineDeliveryPageState extends LocalizedState<VaccineDeliveryPage> {
           ...filteredAdditionalFields,
           AdditionalField(
             AdditionalFieldsType.doseStatus.toValue(),
-            doseStatus.name,
+            DoseStatus.vaccinated.name,
+          ),
+          if (updatedAvailedVaccineDoseCodes.isNotEmpty)
+            AdditionalField(
+              AdditionalFieldsType.selectedVaccines.toValue(),
+              updatedAvailedVaccineDoseCodes.join("."),
+            ),
+          if (notDeliveredVaccineDoseCodes.isNotEmpty)
+            AdditionalField(
+              AdditionalFieldsType.noSelectedVaccines.toValue(),
+              notDeliveredVaccineDoseCodes.join("."),
+            ),
+          AdditionalField(
+            AdditionalFieldsType.cycleIndex.toValue(),
+            "0${cycle ?? 1}",
           ),
           AdditionalField(
-            AdditionalFieldsType.selectedVaccines.toValue(),
-            selectedVaccineSet.join("."),
+            AdditionalFieldsType.doseIndex.toValue(),
+            "0${dose ?? 1}",
           ),
           AdditionalField(
-            AdditionalFieldsType.noSelectedVaccines.toValue(),
-            noSelectedVaccineSet.join("."),
+            AdditionalFieldsType.deliveryStrategy.toValue(),
+            DeliverStrategyType.direct.toValue(),
+          ),
+          if (latitude != null)
+            AdditionalField(
+              AdditionalFieldsType.latitude.toValue(),
+              latitude,
+            ),
+          if (longitude != null)
+            AdditionalField(
+              AdditionalFieldsType.longitude.toValue(),
+              longitude,
+            ),
+          if (currentMonth != null)
+            AdditionalField(
+              AdditionalFieldsType.currentMonth.toValue(),
+              currentMonth,
+            ),
+          if (dateOfVaccination != null)
+            AdditionalField(
+              AdditionalFieldsType.dateOfVaccination.toValue(),
+              dateOfVaccination,
+            ),
+          if (doseAdministeredBy != null)
+            AdditionalField(
+              AdditionalFieldsType.doseAdministeredBy.toValue(),
+              doseAdministeredBy,
+            ),
+          if (deliveryComment != null &&
+              deliveryComment.trim().toString().isNotEmpty)
+            AdditionalField(
+              AdditionalFieldsType.deliveryComment.toValue(),
+              deliveryComment,
+            ),
+        ],
+      ),
+    );
+
+    return task;
+  }
+
+  TaskModel _getCurrentDoseTaskModel(
+    BuildContext context, {
+    required FormGroup form,
+    required int? cycle,
+    required int? dose,
+    required String? projectBeneficiaryClientReferenceId,
+    required AddressModel? address,
+    required double? latitude,
+    required double? longitude,
+    required IndividualModel? selectedIndividual,
+    required List<String> notDeliveredVaccineDoseCodes,
+  }) {
+    var clientReferenceId = IdGen.i.identifier;
+    final currentMonth = form.control(_currentMonthKey).value as String?;
+    final dateOfVaccination =
+        form.control(_dateOfVaccinationKey).value as String?;
+    final doseAdministeredBy =
+        form.control(_doseAdministeredByKey).value as String?;
+    final deliveryComment = form.control(_deliveryCommentKey).value as String?;
+
+    DateTime? nextDateOfDelivery = notDeliveredVaccineDoseCodes.isEmpty
+        ? null
+        : DateTime(DateTime.now().year, DateTime.now().month,
+            DateTime.now().day, DateTime.now().hour, DateTime.now().minute + 5);
+    TaskModel task = TaskModel(
+      projectBeneficiaryClientReferenceId: projectBeneficiaryClientReferenceId,
+      clientReferenceId: clientReferenceId,
+      address: address?.copyWith(
+        relatedClientReferenceId: clientReferenceId,
+        id: null,
+      ),
+      tenantId: RegistrationDeliverySingleton().tenantId,
+      rowVersion: 1,
+      auditDetails: AuditDetails(
+        createdBy: RegistrationDeliverySingleton().loggedInUserUuid!,
+        createdTime: context.millisecondsSinceEpoch(),
+        lastModifiedBy: RegistrationDeliverySingleton().loggedInUserUuid!,
+        lastModifiedTime: DateTime.now().millisecondsSinceEpoch,
+      ),
+      clientAuditDetails: ClientAuditDetails(
+        createdBy: RegistrationDeliverySingleton().loggedInUserUuid!,
+        createdTime: context.millisecondsSinceEpoch(),
+        lastModifiedBy: RegistrationDeliverySingleton().loggedInUserUuid!,
+        lastModifiedTime: DateTime.now().millisecondsSinceEpoch,
+      ),
+      projectId: RegistrationDeliverySingleton().projectId,
+      resources: currentVaccineDoseDataSelected
+          .map((e) => TaskResourceModel(
+                taskclientReferenceId: clientReferenceId,
+                clientReferenceId: IdGen.i.identifier,
+                productVariantId: e.productVariationId,
+                isDelivered: true,
+                tenantId: RegistrationDeliverySingleton().tenantId,
+                rowVersion: 1,
+                quantity: e.numberOfDose.toString(),
+                clientAuditDetails: ClientAuditDetails(
+                  createdBy: RegistrationDeliverySingleton().loggedInUserUuid!,
+                  createdTime: context.millisecondsSinceEpoch(),
+                ),
+                auditDetails: AuditDetails(
+                  createdBy: RegistrationDeliverySingleton().loggedInUserUuid!,
+                  createdTime: context.millisecondsSinceEpoch(),
+                ),
+              ))
+          .toList(),
+      status: Status.delivered.toValue(),
+      additionalFields: TaskAdditionalFields(
+        version: 1,
+        fields: [
+          AdditionalField(
+            AdditionalFieldsType.dateOfDelivery.toValue(),
+            DateTime.now().millisecondsSinceEpoch.toString(),
+          ),
+          if (nextDateOfDelivery != null)
+            AdditionalField(
+              AdditionalFieldsType.nextDateOfDelivery.toValue(),
+              nextDateOfDelivery.millisecondsSinceEpoch.toString(),
+            ),
+          AdditionalField(
+            AdditionalFieldsType.doseStatus.toValue(),
+            DoseStatus.vaccinated.name,
           ),
           AdditionalField(
             AdditionalFieldsType.cycleIndex.toValue(),
@@ -593,32 +381,393 @@ class _VaccineDeliveryPageState extends LocalizedState<VaccineDeliveryPage> {
               AdditionalFieldsType.deliveryComment.toValue(),
               deliveryComment,
             ),
-          // if (selectedIndividual != null)
-          //   AdditionalField(
-          //     AdditionalFieldsType.age.toValue(),
-          //     getIndividualAge(selectedIndividual),
-          //   ),
-          // if (selectedIndividual?.gender != null)
-          //   AdditionalField(
-          //     AdditionalFieldsType.gender.toValue(),
-          //     selectedIndividual?.gender,
-          //   ),
-          // if (selectedIndividual?.clientReferenceId != null)
-          //   AdditionalField(
-          //     AdditionalFieldsType.individualClientReferenceId.toValue(),
-          //     selectedIndividual?.clientReferenceId,
-          //   ),
-          // if (selectedIndividual != null &&
-          //     getBeneficiaryId(selectedIndividual) != null)
-          //   AdditionalField(
-          //     AdditionalFieldsType.uniqueBeneficiaryId.toValue(),
-          //     getBeneficiaryId(selectedIndividual),
-          //   ),
+          if (selectedIndividual != null)
+            AdditionalField(
+              AdditionalFieldsType.age.toValue(),
+              getIndividualAge(selectedIndividual),
+            ),
+          if (selectedIndividual?.gender != null)
+            AdditionalField(
+              AdditionalFieldsType.gender.toValue(),
+              selectedIndividual?.gender,
+            ),
+          if (selectedIndividual?.clientReferenceId != null)
+            AdditionalField(
+              AdditionalFieldsType.individualClientReferenceId.toValue(),
+              selectedIndividual?.clientReferenceId,
+            ),
+          if (selectedIndividual != null &&
+              getBeneficiaryId(selectedIndividual) != null)
+            AdditionalField(
+              AdditionalFieldsType.uniqueBeneficiaryId.toValue(),
+              getBeneficiaryId(selectedIndividual),
+            ),
         ],
       ),
     );
 
     return task;
+  }
+
+  @override
+  initState() {
+    super.initState();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return BlocBuilder<LocationBloc, LocationState>(
+      builder: (context, locationState) {
+        return BlocBuilder<VaccineProductVariantBloc,
+            VaccineProductVariantState>(
+          builder: (context, vaccineVariantState) {
+            return BlocBuilder<VaccineSearchBloc, VaccineSearchState>(
+              builder: (context, vaccineSearchState) {
+                context
+                    .read<VaccineDeliveryBloc>()
+                    .add(VaccineDeliveryEvent.vaccineSelection(
+                      productVariants:
+                          vaccineVariantState.productVariants ?? [],
+                      availedVaccineDoseCodes:
+                          vaccineSearchState.availedVaccineDoseCodes ?? [],
+                      eligibleVaccinesCodeByAgeIndex: vaccineSearchState
+                              .eligibleVaccinesDoseCodeByAgeIndex ??
+                          {},
+                      allVaccineDoseCodes:
+                          vaccineSearchState.allEligibleVaccineDoseCodes ?? [],
+                    ));
+                allEligibleVaccineDoseCodes =
+                    vaccineSearchState.allEligibleVaccineDoseCodes ?? [];
+                return BlocBuilder<VaccineDeliveryBloc, VaccineDeliveryState>(
+                  builder: (context, deliveryState) {
+                    availedVaccineDoseCodes =
+                        (deliveryState.availedVaccineDoseCodes ?? []).toSet();
+                    currentVaccineDoseData =
+                        deliveryState.currentVaccineDoseData ?? [];
+                    nextVaccineDoseCodes =
+                        deliveryState.nextVaccineDoseData ?? {};
+                    return ReactiveFormBuilder(
+                        form: () => _form(context),
+                        builder: (context, form, child) {
+                          return ScrollableContent(
+                              header: const Column(children: [
+                                CustomBackNavigationHelpHeaderWidget(
+                                  showHelp: false,
+                                ),
+                              ]),
+                              enableFixedButton: true,
+                              footer: DigitCard(
+                                margin: const EdgeInsets.fromLTRB(
+                                    0, kPadding, 0, 0),
+                                padding: const EdgeInsets.fromLTRB(
+                                    kPadding, 0, kPadding, 0),
+                                children: [
+                                  DigitElevatedButton(
+                                    onPressed: () async {
+                                      if (form.invalid) {
+                                        form.markAllAsTouched();
+                                        await DigitToast.show(
+                                          context,
+                                          options: DigitToastOptions(
+                                            localizations.translate(i18_local
+                                                .deliverIntervention
+                                                .selectDeliveryComment),
+                                            true,
+                                            theme,
+                                          ),
+                                        );
+                                        return;
+                                      }
+
+                                      Set<String>
+                                          currentAvailedVaccineDoseCodes = {};
+                                      currentAvailedVaccineDoseCodes
+                                          .addAll(availedVaccineDoseCodes);
+                                      currentAvailedVaccineDoseCodes.addAll(
+                                          currentVaccineDoseDataSelected
+                                              .map((e) => e.vaccineCode));
+                                      List<String>
+                                          notDeliveredVaccineDoseCodes =
+                                          allEligibleVaccineDoseCodes
+                                              .whereNot((code) =>
+                                                  currentAvailedVaccineDoseCodes
+                                                      .contains(code))
+                                              .toList();
+                                      int currentDose =
+                                          vaccineSearchState.currentDose ?? 0;
+                                      final submit = await showCustomPopup(
+                                        context: context,
+                                        builder: (popupContext) => Popup(
+                                          title: localizations.translate(
+                                            i18_local
+                                                .common.coreCommonDialogTitle,
+                                          ),
+                                          onOutsideTap: () {
+                                            Navigator.of(popupContext)
+                                                .pop(false);
+                                          },
+                                          description: localizations.translate(
+                                            i18_local
+                                                .common.coreCommonDialogContent,
+                                          ),
+                                          type: PopUpType.simple,
+                                          actions: [
+                                            DigitButton(
+                                              label: localizations.translate(
+                                                i18_local
+                                                    .common.coreCommonSubmit,
+                                              ),
+                                              onPressed: () {
+                                                Navigator.of(
+                                                  popupContext,
+                                                  rootNavigator: true,
+                                                ).pop(true);
+                                              },
+                                              type: DigitButtonType.primary,
+                                              size: DigitButtonSize.large,
+                                            ),
+                                            DigitButton(
+                                              label: localizations.translate(
+                                                i18_local
+                                                    .common.coreCommonCancel,
+                                              ),
+                                              onPressed: () {
+                                                Navigator.of(
+                                                  popupContext,
+                                                  rootNavigator: true,
+                                                ).pop(false);
+                                              },
+                                              type: DigitButtonType.secondary,
+                                              size: DigitButtonSize.large,
+                                            ),
+                                          ],
+                                        ),
+                                      ) as bool;
+
+                                      if (submit == true) {
+                                        handleLocationState(
+                                          locationState,
+                                          context,
+                                          form,
+                                          widget.individual,
+                                          currentDose,
+                                          currentAvailedVaccineDoseCodes
+                                              .toList(),
+                                          notDeliveredVaccineDoseCodes,
+                                        );
+                                      }
+                                    },
+                                    child: Text(localizations.translate(
+                                        i18_local.common.coreCommonSubmit)),
+                                  )
+                                ],
+                              ),
+                              children: [
+                                DigitCard(
+                                  margin: const EdgeInsets.all(kPadding),
+                                  padding: const EdgeInsets.all(kPadding),
+                                  children: [
+                                    Padding(
+                                      padding: const EdgeInsets.only(left: 8),
+                                      child: Text(
+                                        localizations.translate(
+                                          i18_local.deliverIntervention
+                                              .recordVaccinationDetails,
+                                        ),
+                                        style: theme.textTheme.displayMedium,
+                                        textAlign: TextAlign.left,
+                                      ),
+                                    ),
+                                    Column(
+                                      children: [
+                                        ReactiveWrapperField(
+                                            formControlName: _currentMonthKey,
+                                            builder: (field) {
+                                              return InputField(
+                                                type: InputType.text,
+                                                readOnly: true,
+                                                label: localizations.translate(
+                                                  i18_local.deliverIntervention
+                                                      .currentMonth,
+                                                ),
+                                                errorMessage: field.errorText,
+                                                initialValue:
+                                                    field.control.value,
+                                                onChange: (val) {
+                                                  field.control.value = val;
+                                                },
+                                              );
+                                            }),
+                                        ReactiveWrapperField(
+                                            formControlName:
+                                                _dateOfVaccinationKey,
+                                            builder: (field) {
+                                              return LabeledField(
+                                                label: localizations.translate(
+                                                  i18_local.deliverIntervention
+                                                      .dateOfVaccination,
+                                                ),
+                                                child: DigitDateFormInput(
+                                                  readOnly: true,
+                                                  initialValue:
+                                                      field.control.value,
+                                                  onChange: (val) =>
+                                                      field.control.value = val,
+                                                  firstDate: DateTime.now(),
+                                                  errorMessage: field.errorText,
+                                                ),
+                                              );
+                                            }),
+                                        ReactiveWrapperField(
+                                            formControlName:
+                                                _doseAdministeredByKey,
+                                            builder: (field) {
+                                              return InputField(
+                                                type: InputType.text,
+                                                readOnly: true,
+                                                label: localizations.translate(
+                                                  i18_local.deliverIntervention
+                                                      .doseAdministeredBy,
+                                                ),
+                                                errorMessage: field.errorText,
+                                                initialValue:
+                                                    field.control.value,
+                                                onChange: (val) {
+                                                  field.control.value = val;
+                                                },
+                                              );
+                                            }),
+                                      ],
+                                    ),
+                                    const SizedBox(height: 16),
+                                  ],
+                                ),
+                                DigitCard(
+                                  margin: const EdgeInsets.all(kPadding),
+                                  padding: const EdgeInsets.all(kPadding),
+                                  children: [
+                                    Padding(
+                                      padding: const EdgeInsets.only(left: 8),
+                                      child: Text(
+                                        localizations.translate(
+                                          i18_local.deliverIntervention
+                                              .vaccineDetails,
+                                        ),
+                                        style: theme.textTheme.displayMedium,
+                                        textAlign: TextAlign.left,
+                                      ),
+                                    ),
+                                    Column(
+                                      children: [
+                                        for (int i = 0;
+                                            i < currentVaccineDoseData.length;
+                                            i++)
+                                          VaccineDetailsCard(
+                                            key: ValueKey(
+                                                currentVaccineDoseData[i]
+                                                    .vaccineCode),
+                                            vaccineDeliveryDetails:
+                                                currentVaccineDoseData[i],
+                                            onVaccineDetailsChanged:
+                                                (vaccineDetails) {
+                                              if (vaccineDetails.numberOfDose >
+                                                  0) {
+                                                currentVaccineDoseDataSelected
+                                                    .add(vaccineDetails);
+                                              } else {
+                                                currentVaccineDoseDataSelected
+                                                    .remove(vaccineDetails);
+                                              }
+                                              if (isCommentsRequired()) {
+                                                form
+                                                    .control(
+                                                        _deliveryCommentKey)
+                                                    .setValidators(
+                                                        [Validators.required],
+                                                        autoValidate: true);
+                                              } else {
+                                                form
+                                                    .control(
+                                                        _deliveryCommentKey)
+                                                    .setValidators([],
+                                                        autoValidate: true);
+                                              }
+                                            },
+                                          ),
+                                      ],
+                                    ),
+                                  ],
+                                ),
+                                DigitCard(
+                                  margin: const EdgeInsets.all(kPadding),
+                                  padding: const EdgeInsets.all(kPadding),
+                                  children: [
+                                    BlocBuilder<AppInitializationBloc,
+                                        AppInitializationState>(
+                                      builder: (context, state) {
+                                        if (state is! AppInitialized) {
+                                          return const Offstage();
+                                        }
+                                        final deliveryCommentOptions = state
+                                                .appConfiguration
+                                                .deliveryCommentOptions ??
+                                            <DeliveryCommentOptions>[];
+                                        return ReactiveWrapperField(
+                                          formControlName: _deliveryCommentKey,
+                                          builder: (field) {
+                                            return LabeledField(
+                                              label: localizations.translate(
+                                                i18_local.deliverIntervention
+                                                    .deliveryComment,
+                                              ),
+                                              isRequired: isCommentsRequired(),
+                                              child:
+                                                  DigitReactiveSearchDropdown<
+                                                      String>(
+                                                label: localizations.translate(
+                                                  i18_local.common.noMatchFound,
+                                                ),
+                                                form: form,
+                                                enabled: true,
+                                                isRequired: false,
+                                                menuItems:
+                                                    deliveryCommentOptions
+                                                        .map((e) {
+                                                  return e.code;
+                                                }).toList(),
+                                                formControlName:
+                                                    _deliveryCommentKey,
+                                                valueMapper: (value) =>
+                                                    localizations.translate(
+                                                  value,
+                                                ),
+                                                emptyText: localizations
+                                                    .translate(i18_local
+                                                        .common.noMatchFound),
+                                                validationMessage:
+                                                    localizations.translate(
+                                                  i18_local.common
+                                                      .corecommonRequired,
+                                                ),
+                                              ),
+                                            );
+                                          },
+                                        );
+                                      },
+                                    ),
+                                  ],
+                                )
+                              ]);
+                        });
+                  },
+                );
+              },
+            );
+          },
+        );
+      },
+    );
   }
 
   int getIndividualAge(IndividualModel individualModel) {
@@ -643,7 +792,9 @@ class _VaccineDeliveryPageState extends LocalizedState<VaccineDeliveryPage> {
     BuildContext context,
     FormGroup form,
     IndividualModel? selectedIndividual,
-    List<VaccineDeliveryDetails>? vaccineDeliveryDetailsList,
+    int currentDose,
+    List<String> updatedAvailedVaccineDoseCodes,
+    List<String> notDeliveredVaccineDoseCodes,
   ) {
     if (context.mounted) {
       DigitComponentsUtils.showDialog(
@@ -660,7 +811,9 @@ class _VaccineDeliveryPageState extends LocalizedState<VaccineDeliveryPage> {
           context,
           form,
           selectedIndividual,
-          vaccineDeliveryDetailsList,
+          currentDose,
+          updatedAvailedVaccineDoseCodes,
+          notDeliveredVaccineDoseCodes,
         );
       });
     }
@@ -671,7 +824,9 @@ class _VaccineDeliveryPageState extends LocalizedState<VaccineDeliveryPage> {
     BuildContext context,
     FormGroup form,
     IndividualModel? selectedIndividual,
-    List<VaccineDeliveryDetails>? vaccineDeliveryDetailsList,
+    int currentDose,
+    List<String> updatedAvailedVaccineDoseCodes,
+    List<String> notDeliveredVaccineDoseCodes,
   ) async {
     final lat = locationState.latitude;
     final long = locationState.longitude;
@@ -680,19 +835,34 @@ class _VaccineDeliveryPageState extends LocalizedState<VaccineDeliveryPage> {
       context,
       form: form,
       cycle: context.selectedCycle?.id,
-      dose: 1,
+      dose: currentDose + 1,
+      address: widget.doseStatusTask?.address,
       oldTask: widget.doseStatusTask,
       projectBeneficiaryClientReferenceId:
           widget.projectBeneficiaryClientReferenceId,
       latitude: lat,
       longitude: long,
       selectedIndividual: selectedIndividual,
-      vaccineDeliveryDetailsList: vaccineDeliveryDetailsList,
+      updatedAvailedVaccineDoseCodes: updatedAvailedVaccineDoseCodes,
+      notDeliveredVaccineDoseCodes: notDeliveredVaccineDoseCodes,
     );
+
+    TaskModel currentDoseTask = _getCurrentDoseTaskModel(context,
+        form: form,
+        cycle: context.selectedCycle?.id,
+        dose: currentDose + 1,
+        address: updatedTask.address,
+        projectBeneficiaryClientReferenceId:
+            widget.projectBeneficiaryClientReferenceId,
+        latitude: lat,
+        longitude: long,
+        selectedIndividual: selectedIndividual,
+        notDeliveredVaccineDoseCodes: notDeliveredVaccineDoseCodes);
 
     context.read<VaccineDeliveryBloc>().add(
           VaccineDeliverySubmitEvent(
             task: updatedTask,
+            currentDoseTask: currentDoseTask,
           ),
         );
 
@@ -722,11 +892,11 @@ class _VaccineDeliveryPageState extends LocalizedState<VaccineDeliveryPage> {
 }
 
 class VaccineDetailsCard extends LocalizedStatefulWidget {
-  final String vaccineName;
+  final VaccineDeliveryDetails vaccineDeliveryDetails;
   final Function(VaccineDeliveryDetails) onVaccineDetailsChanged;
   const VaccineDetailsCard({
     super.key,
-    required this.vaccineName,
+    required this.vaccineDeliveryDetails,
     required this.onVaccineDetailsChanged,
   });
 
@@ -739,12 +909,11 @@ class _VaccineDetailsCardState extends LocalizedState<VaccineDetailsCard> {
   static const _enterBatchNumberKey = 'enterBatchNumber';
   static const _numberOfDoseKey = 'numberOfDose';
 
-  late VaccineDeliveryDetails vaccineDeliveryDetails;
-
   FormGroup _form() {
     return fb.group({
       _selectVaccineKey: FormControl<String>(
-        value: localizations.translate(widget.vaccineName),
+        value:
+            localizations.translate(widget.vaccineDeliveryDetails.vaccineCode),
         validators: [
           Validators.required,
         ],
@@ -758,13 +927,6 @@ class _VaccineDetailsCardState extends LocalizedState<VaccineDetailsCard> {
   }
 
   @override
-  void initState() {
-    vaccineDeliveryDetails = VaccineDeliveryDetails(
-        vaccineName: widget.vaccineName, batchNumber: "", numberOfDose: 0);
-    super.initState();
-  }
-
-  @override
   Widget build(BuildContext context) {
     return DigitCard(
       margin: const EdgeInsets.fromLTRB(0, kPadding, 0, 0),
@@ -772,6 +934,12 @@ class _VaccineDetailsCardState extends LocalizedState<VaccineDetailsCard> {
         ReactiveFormBuilder(
             form: () => _form(),
             builder: (context, form, child) {
+              form.control(_selectVaccineKey).value = localizations
+                  .translate(widget.vaccineDeliveryDetails.vaccineCode);
+              form.control(_enterBatchNumberKey).value =
+                  widget.vaccineDeliveryDetails.batchNumber;
+              form.control(_numberOfDoseKey).value =
+                  widget.vaccineDeliveryDetails.numberOfDose;
               return Column(
                 children: [
                   ReactiveWrapperField(
@@ -802,9 +970,9 @@ class _VaccineDetailsCardState extends LocalizedState<VaccineDetailsCard> {
                           errorMessage: field.errorText,
                           onChange: (val) {
                             field.control.value = val;
-                            vaccineDeliveryDetails.batchNumber = val;
+                            widget.vaccineDeliveryDetails.batchNumber = val;
                             widget.onVaccineDetailsChanged(
-                                vaccineDeliveryDetails);
+                                widget.vaccineDeliveryDetails);
                           },
                         );
                       }),
@@ -820,10 +988,10 @@ class _VaccineDetailsCardState extends LocalizedState<VaccineDetailsCard> {
                         initialValue: "0",
                         onChange: (value) {
                           field.control.value = int.parse(value);
-                          vaccineDeliveryDetails.numberOfDose =
+                          widget.vaccineDeliveryDetails.numberOfDose =
                               int.parse(value);
-                          widget
-                              .onVaccineDetailsChanged(vaccineDeliveryDetails);
+                          widget.onVaccineDetailsChanged(
+                              widget.vaccineDeliveryDetails);
                         },
                       ),
                     ),

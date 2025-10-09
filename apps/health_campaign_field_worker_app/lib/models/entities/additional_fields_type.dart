@@ -11,6 +11,8 @@ enum AdditionalFieldsType {
   selectedVaccines,
   @MappableValue("noSelectedVaccines")
   noSelectedVaccines,
+  @MappableValue("vaccineDoseList")
+  vaccineDoseList,
   @MappableValue("hasSideEffects")
   hasSideEffects,
   @MappableValue("deliveryStrategy")
@@ -25,6 +27,8 @@ enum AdditionalFieldsType {
   dateOfAdministration,
   @MappableValue("dateOfDelivery")
   dateOfDelivery,
+  @MappableValue("nextDateOfDelivery")
+  nextDateOfDelivery,
   @MappableValue("referralComments")
   referralComments,
   @MappableValue("cycle")

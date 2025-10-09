@@ -529,7 +529,8 @@ class CustomReferBeneficiarySMCPageState
                         children: [
                           Expanded(
                             child: Text(
-                              "What is the reason for referral?",
+                              localizations.translate(i18_local
+                                  .referBeneficiary.reasonForReferralExpanded),
                               style: theme.textTheme.displayMedium,
                             ),
                           ),
@@ -539,12 +540,14 @@ class CustomReferBeneficiarySMCPageState
                         children: [
                           DigitRadioButtonList(
                               formControlName: _reasonsKey,
-                              valueMapper: (x) => x,
+                              valueMapper: (x) =>
+                                  localizations.translate('REFERRAL_REASON_$x'),
                               options: reasons,
                               errorMessage: "Option Error"),
-                          const DigitTextFormField(
+                          DigitTextFormField(
                               formControlName: _commentsKey,
-                              label: "Referral comments"),
+                              label: localizations.translate(
+                                  i18_local.referBeneficiary.reasonComments)),
                         ],
                       )
                     ]))

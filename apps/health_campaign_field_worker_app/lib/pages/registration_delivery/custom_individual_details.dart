@@ -892,10 +892,6 @@ class CustomIndividualDetailsPageState
                                     .translate(i18_local.individualDetails
                                         .mobileNumberLengthValidationMessage)
                                     .replaceAll('{}', '9'),
-                                'startsWith7or9': (object) =>
-                                    localizations.translate(i18_local
-                                        .individualDetails
-                                        .mobileNumberStartWith7or9ValidationMessage),
                               },
                               builder: (field) => LabeledField(
                                 label: localizations.translate(
@@ -917,7 +913,6 @@ class CustomIndividualDetailsPageState
                                     if (value.isEmpty) {
                                       c
                                         ..removeError('mobileNumber')
-                                        ..removeError('startsWith7or9')
                                         ..removeError('maxLength')
                                         ..removeError('minLength');
                                     } else {
@@ -1118,9 +1113,6 @@ class CustomIndividualDetailsPageState
             local_utils.CustomValidator.validMobileNumber(validator)),
         Validators.minLength(9),
         Validators.maxLength(9),
-        Validators.delegate((validator) =>
-            local_utils.CustomValidator.startsWith7or9(validator)),
-        // Validators.required,
       ]),
     });
   }

@@ -282,6 +282,10 @@ class ZeroDoseCheckPageState extends LocalizedState<ZeroDoseCheckPage> {
                                   responses[attributeCode] = value;
                                 }
 
+                                if(responses.entries.any((element) => element.value.isEmpty)){
+                                  return;
+                                }
+
                                 bool showVaccineSelectionPage =
                                     _shouldShowVaccinePage(responses);
 

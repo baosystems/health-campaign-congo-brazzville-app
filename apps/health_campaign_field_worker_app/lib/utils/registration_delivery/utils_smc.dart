@@ -185,7 +185,7 @@ bool checkBeneficiaryUnderVaccinated(List<TaskModel>? tasks) {
   return successfulTask != null;
 }
 
-bool checkBeneficiaryZeroDoseDelivered(List<TaskModel>? tasks) {
+bool checkBeneficiaryFullyVaccinated(List<TaskModel>? tasks) {
   if ((tasks ?? []).isEmpty) {
     return false;
   }
@@ -198,6 +198,27 @@ bool checkBeneficiaryZeroDoseDelivered(List<TaskModel>? tasks) {
                       additional_fields_local.AdditionalFieldsType.doseStatus
                           .toValue() &&
                   e.value == DoseStatus.fullyVaccinated.name,
+            ) !=
+            null,
+      )
+      .lastOrNull;
+
+  return successfulTask != null;
+}
+
+bool checkBeneficiaryVaccineDoseDelivered(List<TaskModel>? tasks) {
+  if ((tasks ?? []).isEmpty) {
+    return false;
+  }
+  var successfulTask = tasks!
+      .where(
+        (element) =>
+            element.additionalFields?.fields.firstWhereOrNull(
+              (e) =>
+                  e.key ==
+                      additional_fields_local.AdditionalFieldsType.doseStatus
+                          .toValue() &&
+                  e.value == DoseStatus.vaccinated.name,
             ) !=
             null,
       )

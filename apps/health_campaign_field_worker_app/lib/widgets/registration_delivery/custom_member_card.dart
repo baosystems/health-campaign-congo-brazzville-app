@@ -180,8 +180,9 @@ class CustomMemberCard extends StatelessWidget {
                       additional_fields_local.AdditionalFieldsType.doseStatus
                           .toValue() &&
                   (element.value == DoseStatus.zeroDose.name ||
+                      element.value == DoseStatus.underVaccinated.name ||
                       element.value == DoseStatus.fullyVaccinated.name ||
-                      element.value == DoseStatus.underVaccinated.name),
+                      element.value == DoseStatus.vaccinated.name),
             ) !=
             null)
         .toList();
@@ -215,7 +216,8 @@ class CustomMemberCard extends StatelessWidget {
     List<TaskModel>? doseTasks = _getDoseStatusData(context);
     bool isZeroDose = checkBeneficiaryZeroDose(doseTasks);
     bool isUnderVaccinated = checkBeneficiaryUnderVaccinated(doseTasks);
-    bool isFullyVaccinated = checkBeneficiaryZeroDoseDelivered(doseTasks);
+    bool isFullyVaccinated = checkBeneficiaryFullyVaccinated(doseTasks);
+    bool isVaccinated = checkBeneficiaryVaccineDoseDelivered(doseTasks);
 
     final dobStr = individual.dateOfBirth;
     final ageInDays =
@@ -283,7 +285,7 @@ class CustomMemberCard extends StatelessWidget {
         ),
       );
     }
-    if (isZeroDose || isUnderVaccinated || isFullyVaccinated) {
+    if (isZeroDose || isUnderVaccinated || isFullyVaccinated || isVaccinated) {
       return Align(
         alignment: Alignment.centerLeft,
         child: DigitIconButton(
@@ -294,8 +296,11 @@ class CustomMemberCard extends StatelessWidget {
                 : isUnderVaccinated
                     ? i18_local
                         .householdOverView.householdOverViewUnderVaccinatedLabel
-                    : i18_local.householdOverView
-                        .householdOverViewFullyVaccinatedLabel,
+                    : isFullyVaccinated
+                        ? i18_local.householdOverView
+                            .householdOverViewFullyVaccinatedLabel
+                        : i18_local
+                            .householdOverView.householdOverViewVaccinatedLabel,
           ),
           iconSize: 20,
           iconTextColor: theme.colorScheme.onSurfaceVariant,
@@ -326,10 +331,11 @@ class CustomMemberCard extends StatelessWidget {
     bool isBeneficiaryAbsent = checkBeneficiaryAbsentSMC(currentTasks);
     bool isSideEffect = sideEffects != null && sideEffects!.isNotEmpty;
 
-    List<TaskModel>? doseStatusTasks = _getDoseStatusData(context);
-    bool isZeroDose = checkBeneficiaryZeroDose(doseStatusTasks);
-    bool isUnderVaccinated = checkBeneficiaryUnderVaccinated(doseStatusTasks);
-    bool isFullyVaccinated = checkBeneficiaryZeroDoseDelivered(doseStatusTasks);
+    List<TaskModel>? doseTasks = _getDoseStatusData(context);
+    bool isZeroDose = checkBeneficiaryZeroDose(doseTasks);
+    bool isUnderVaccinated = checkBeneficiaryUnderVaccinated(doseTasks);
+    bool isFullyVaccinated = checkBeneficiaryFullyVaccinated(doseTasks);
+    bool isVaccinated = checkBeneficiaryVaccineDoseDelivered(doseTasks);
 
     bool isNextDeliveryAvailable = _checkIfFutureTaskPresent(context);
 
@@ -373,7 +379,7 @@ class CustomMemberCard extends StatelessWidget {
             builder: (context, vaccineVariantState) {
               return Column(
                 children: [
-                  if (doseStatusTasks == null || doseStatusTasks.isEmpty)
+                  if (doseTasks == null || doseTasks.isEmpty)
                     DigitElevatedButton(
                       child: Center(
                         child: Text(
@@ -409,7 +415,7 @@ class CustomMemberCard extends StatelessWidget {
                         // }
                       },
                     ),
-                  if (doseStatusTasks != null && doseStatusTasks.isNotEmpty)
+                  if (doseTasks != null && doseTasks.isNotEmpty)
                     Builder(builder: (context) {
                       if (!context.isHealthFacilitySupervisor) {
                         return DigitElevatedButton(
@@ -432,6 +438,7 @@ class CustomMemberCard extends StatelessWidget {
                       } else if (isZeroDose ||
                           isUnderVaccinated ||
                           isFullyVaccinated ||
+                          isVaccinated ||
                           isNextDeliveryAvailable) {
                         return Column(
                           children: [
@@ -477,7 +484,7 @@ class CustomMemberCard extends StatelessWidget {
                                     projectBeneficiaryClientReferenceId:
                                         projectBeneficiaryClientReferenceId,
                                     individual: individual,
-                                    doseStatusTask: doseStatusTasks.firstOrNull,
+                                    doseStatusTask: doseTasks.firstOrNull,
                                   ));
                                 },
                               ),
@@ -488,6 +495,7 @@ class CustomMemberCard extends StatelessWidget {
                       }
                     }),
                   if (context.isHealthFacilitySupervisor &&
+                      !isVaccinated &&
                       !isFullyVaccinated &&
                       !isBeneficiaryRefused &&
                       !isBeneficiaryAbsent &&

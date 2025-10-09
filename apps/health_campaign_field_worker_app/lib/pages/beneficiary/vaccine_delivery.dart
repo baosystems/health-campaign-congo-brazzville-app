@@ -83,11 +83,12 @@ class _VaccineDeliveryPageState extends LocalizedState<VaccineDeliveryPage> {
 
   Set<String> nextVaccineDoseCodes = {};
 
-  bool isCommentsRequired(){
-    bool result = currentVaccineDoseDataSelected.isEmpty || 
-      currentVaccineDoseDataSelected.length < currentVaccineDoseData.length ||
-      currentVaccineDoseDataSelected.any((vaccineData) => vaccineData.numberOfDose == 0);
-    
+  bool isCommentsRequired() {
+    bool result = currentVaccineDoseDataSelected.isEmpty ||
+        currentVaccineDoseDataSelected.length < currentVaccineDoseData.length ||
+        currentVaccineDoseDataSelected
+            .any((vaccineData) => vaccineData.numberOfDose == 0);
+
     return result;
   }
 
@@ -193,7 +194,7 @@ class _VaccineDeliveryPageState extends LocalizedState<VaccineDeliveryPage> {
           ...filteredAdditionalFields,
           AdditionalField(
             AdditionalFieldsType.doseStatus.toValue(),
-            DoseStatus.fullyVaccinated.name,
+            DoseStatus.vaccinated.name,
           ),
           if (updatedAvailedVaccineDoseCodes.isNotEmpty)
             AdditionalField(
@@ -335,7 +336,7 @@ class _VaccineDeliveryPageState extends LocalizedState<VaccineDeliveryPage> {
             ),
           AdditionalField(
             AdditionalFieldsType.doseStatus.toValue(),
-            DoseStatus.fullyVaccinated.name,
+            DoseStatus.vaccinated.name,
           ),
           AdditionalField(
             AdditionalFieldsType.cycleIndex.toValue(),
@@ -678,12 +679,20 @@ class _VaccineDeliveryPageState extends LocalizedState<VaccineDeliveryPage> {
                                                 currentVaccineDoseDataSelected
                                                     .remove(vaccineDetails);
                                               }
-                                              if(isCommentsRequired()){
-                                                form.control(_deliveryCommentKey).setValidators([Validators.required],autoValidate: true);
-                                              }else{
-                                                form.control(_deliveryCommentKey).setValidators([],autoValidate: true);
+                                              if (isCommentsRequired()) {
+                                                form
+                                                    .control(
+                                                        _deliveryCommentKey)
+                                                    .setValidators(
+                                                        [Validators.required],
+                                                        autoValidate: true);
+                                              } else {
+                                                form
+                                                    .control(
+                                                        _deliveryCommentKey)
+                                                    .setValidators([],
+                                                        autoValidate: true);
                                               }
-                                              
                                             },
                                           ),
                                       ],

@@ -343,12 +343,13 @@ class ZeroDoseCheckPageState extends LocalizedState<ZeroDoseCheckPage> {
                                         task: widget.task,
                                       ));
                                     } else {
+                                      TaskModel task =
+                                          _getTaskModel(latitude, longitude);
                                       context
                                           .read<DeliverInterventionBloc>()
                                           .add(
                                             DeliverInterventionSubmitEvent(
-                                              task: _getTaskModel(
-                                                  latitude, longitude),
+                                              task: task,
                                               isEditing: false,
                                               boundaryModel: context.boundary,
                                               navigateToSummary: false,

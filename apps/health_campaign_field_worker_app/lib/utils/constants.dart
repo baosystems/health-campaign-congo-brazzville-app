@@ -407,7 +407,7 @@ enum DigitProgressDialogType {
   pendingSync,
 }
 
-enum DoseStatus { none, zeroDose, underVaccinated, fullyVaccinated }
+enum DoseStatus { none, zeroDose, underVaccinated, fullyVaccinated, vaccinated }
 
 class DownloadBeneficiary {
   String title;

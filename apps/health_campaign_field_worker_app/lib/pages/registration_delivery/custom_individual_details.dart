@@ -94,7 +94,8 @@ class CustomIndividualDetailsPageState
     super.initState();
   }
 
-  onSubmit(IndividualModel individual, bool isCreate) async {
+  onSubmit(IndividualModel individual, HouseholdModel? householdModel,
+      bool isCreate) async {
     final bloc = context.read<CustomBeneficiaryRegistrationBloc>();
     final router = context.router;
     final name = individual?.name?.givenName ?? '';
@@ -105,16 +106,16 @@ class CustomIndividualDetailsPageState
       } else {
         customSearchHouseholdsBloc
             .add(const CustomSearchHouseholdsEvent.clear());
-        customSearchHouseholdsBloc.add(
-          CustomSearchHouseholdsEvent.searchByHouseholdHead(
-            searchText: name.trim(),
-            projectId: RegistrationDeliverySingleton().projectId!,
-            isProximityEnabled: false,
-            maxRadius: RegistrationDeliverySingleton().maxRadius,
-            limit: customSearchHouseholdsBloc.state.limit,
-            offset: 0,
-          ),
-        );
+        if (householdModel != null) {
+          customSearchHouseholdsBloc.add(
+            CustomSearchHouseholdsEvent.searchByHousehold(
+              householdModel: householdModel,
+              projectId: RegistrationDeliverySingleton().projectId!,
+              isProximityEnabled: false,
+              maxRadius: RegistrationDeliverySingleton().maxRadius,
+            ),
+          );
+        }
         router.popUntil(
             (route) => route.settings.name == SearchBeneficiaryRoute.name);
         router.push(CustomBeneficiaryAcknowledgementRoute(
@@ -353,7 +354,8 @@ class CustomIndividualDetailsPageState
                                       ),
                                     );
                                     // router.push(CustomSummaryRoute());
-                                    await onSubmit(individual, true);
+                                    await onSubmit(
+                                        individual, householdModel, true);
                                   }
                                 },
                                 editIndividual: (
@@ -438,7 +440,7 @@ class CustomIndividualDetailsPageState
                                             : null,
                                       ),
                                     );
-                                    onSubmit(individual, false);
+                                    onSubmit(individual, householdModel, false);
                                   }
                                 },
                                 addMember: (

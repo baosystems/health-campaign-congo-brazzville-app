@@ -434,10 +434,10 @@ class CustomComplaintsDetailsPageState
                               'maxLength': (object) => localizations.translate(i18
                                   .individualDetails
                                   .mobileNumberInvalidFormatValidationMessage),
-                              'startsWith7or9': (object) =>
+                              /* 'startsWith7or9': (object) =>
                                   localizations.translate(i18_local
                                       .individualDetails
-                                      .mobileNumberStartWith7or9ValidationMessage),
+                                      .mobileNumberStartWith7or9ValidationMessage), */
                               // 'minLength': (object) => localizations.translate(
                               //     i18.complaints.validationMinLengthError),
                               // 'maxLength': (object) => localizations
@@ -631,8 +631,8 @@ class CustomComplaintsDetailsPageState
               (validator) => CustomValidator.validMobileNumber(validator)),
           Validators.minLength(9),
           Validators.maxLength(9),
-          Validators.delegate((validator) =>
-              local_utils.CustomValidator.startsWith7or9(validator)),
+          /* Validators.delegate((validator) =>
+              local_utils.CustomValidator.startsWith7or9(validator)), */
         ],
       ),
       _supervisorName: FormControl<String>(

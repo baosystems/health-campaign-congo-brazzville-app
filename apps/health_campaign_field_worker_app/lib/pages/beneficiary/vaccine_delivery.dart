@@ -186,7 +186,7 @@ class _VaccineDeliveryPageState extends LocalizedState<VaccineDeliveryPage> {
 
     // Update the task with information from the form and other context
     task = task.copyWith(
-      rowVersion: (task.rowVersion ?? 0) + 1,
+      rowVersion: task.rowVersion ?? 1,
       projectId: RegistrationDeliverySingleton().projectId,
       address: address?.copyWith(
         relatedClientReferenceId: clientReferenceId,
@@ -201,7 +201,7 @@ class _VaccineDeliveryPageState extends LocalizedState<VaccineDeliveryPage> {
         lastModifiedTime: DateTime.now().millisecondsSinceEpoch,
       ),
       additionalFields: TaskAdditionalFields(
-        version: (task.additionalFields?.version ?? 0) + 1,
+        version: task.additionalFields?.version ?? 1,
         fields: [
           ...filteredAdditionalFields,
           AdditionalField(

@@ -94,7 +94,8 @@ class CustomIndividualDetailsPageState
     super.initState();
   }
 
-  onSubmit(IndividualModel individual, bool isCreate) async {
+  onSubmit(IndividualModel individual, HouseholdModel? householdModel,
+      bool isCreate) async {
     final bloc = context.read<CustomBeneficiaryRegistrationBloc>();
     final router = context.router;
     final name = individual?.name?.givenName ?? '';
@@ -105,16 +106,16 @@ class CustomIndividualDetailsPageState
       } else {
         customSearchHouseholdsBloc
             .add(const CustomSearchHouseholdsEvent.clear());
-        customSearchHouseholdsBloc.add(
-          CustomSearchHouseholdsEvent.searchByHouseholdHead(
-            searchText: name.trim(),
-            projectId: RegistrationDeliverySingleton().projectId!,
-            isProximityEnabled: false,
-            maxRadius: RegistrationDeliverySingleton().maxRadius,
-            limit: customSearchHouseholdsBloc.state.limit,
-            offset: 0,
-          ),
-        );
+        if (householdModel != null) {
+          customSearchHouseholdsBloc.add(
+            CustomSearchHouseholdsEvent.searchByHousehold(
+              householdModel: householdModel,
+              projectId: RegistrationDeliverySingleton().projectId!,
+              isProximityEnabled: false,
+              maxRadius: RegistrationDeliverySingleton().maxRadius,
+            ),
+          );
+        }
         router.popUntil(
             (route) => route.settings.name == SearchBeneficiaryRoute.name);
         router.push(CustomBeneficiaryAcknowledgementRoute(
@@ -353,7 +354,8 @@ class CustomIndividualDetailsPageState
                                       ),
                                     );
                                     // router.push(CustomSummaryRoute());
-                                    await onSubmit(individual, true);
+                                    await onSubmit(
+                                        individual, householdModel, true);
                                   }
                                 },
                                 editIndividual: (
@@ -438,7 +440,7 @@ class CustomIndividualDetailsPageState
                                             : null,
                                       ),
                                     );
-                                    onSubmit(individual, false);
+                                    onSubmit(individual, householdModel, false);
                                   }
                                 },
                                 addMember: (
@@ -569,6 +571,7 @@ class CustomIndividualDetailsPageState
                                       ),
                                 },
                                 builder: (field) => LabeledField(
+                                  isRequired: true,
                                   label: localizations.translate(
                                     widget.isHeadOfHousehold
                                         ? i18_local.individualDetails
@@ -730,51 +733,6 @@ class CustomIndividualDetailsPageState
                             height: spacer2,
                           ),
                         individualDetailsShowcaseData.dateOfBirth.buildWith(
-                          // child: CustomDigitDobPicker(
-                          //   datePickerFormControl: _dobKey,
-                          //   datePickerLabel: localizations.translate(
-                          //     i18.individualDetails.dobLabelText,
-                          //   ),
-                          //   ageFieldLabel: localizations.translate(
-                          //     i18.individualDetails.ageLabelText,
-                          //   ),
-                          //   yearsHintLabel: localizations.translate(
-                          //     i18.individualDetails.yearsHintText,
-                          //   ),
-                          //   separatorLabel: localizations.translate(
-                          //     i18.individualDetails.separatorLabelText,
-                          //   ),
-                          //   yearsAndMonthsErrMsg: localizations.translate(
-                          //     i18_local.individualDetails
-                          //         .yearsAndMonthsErrorTextUpdate,
-                          //   ),
-                          //   isHead: widget.isHeadOfHousehold,
-                          //   requiredErrMsg: localizations.translate(
-                          //     i18.common.corecommonRequired,
-                          //   ),
-                          //   initialDate: before150Years,
-                          //   onChangeOfFormControl: (formControl) {
-                          //     // Handle changes to the control's value here
-                          //     final value = formControl.value;
-
-                          //     digits.DigitDOBAge age =
-                          //         digits.DigitDateUtils.calculateAge(value);
-                          //     // Allow only between 0 to 59 months for cycle 1
-                          //     final ageInMonths = age.years * 12 + age.months;
-                          //     if (ageInMonths > 59) {
-                          //       widget.isHeadOfHousehold
-                          //           ? formControl.removeError('')
-                          //           : formControl.setErrors({'': true});
-                          //     } else {
-                          //       formControl.removeError('');
-                          //     }
-                          //   },
-                          //   cancelText: localizations
-                          //       .translate(i18.common.coreCommonCancel),
-                          //   confirmText: localizations
-                          //       .translate(i18.common.coreCommonOk),
-                          //   monthsHintLabel: 'Month',
-                          // ),
                           child: CustomDigitDobPicker(
                             datePickerFormControl: _dobKey,
                             datePickerLabel: localizations.translate(
@@ -795,9 +753,9 @@ class CustomIndividualDetailsPageState
                             ),
                             isHeadOfHousehold: widget.isHeadOfHousehold,
                             initialDate: before150Years,
-                            // requiredErrMsg: localizations.translate(
-                            //   i18.common.corecommonRequired,
-                            // ),
+                            requiredErrMsg: localizations.translate(
+                              i18.common.corecommonRequired,
+                            ),
                             onChangeOfFormControl: (dob) {
                               final control = form.control(_dobKey);
                               if (dob == null) {
@@ -824,6 +782,7 @@ class CustomIndividualDetailsPageState
                           ),
                         ),
                         dropdown.DigitDropdown<String>(
+                          isRequired: true,
                           label: localizations.translate(
                             i18.individualDetails.genderLabelText,
                           ),

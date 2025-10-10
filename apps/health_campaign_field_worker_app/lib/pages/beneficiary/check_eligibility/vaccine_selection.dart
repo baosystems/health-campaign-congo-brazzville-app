@@ -127,6 +127,8 @@ class _VaccineSelectionPageState extends LocalizedState<VaccineSelectionPage> {
 
   TaskModel _getTaskModel() {
     final clientReferenceId = IdGen.i.identifier;
+    String selectedVaccineCodesString = selectedCodes.join(".");
+    String noSelectedVaccineCodesString = noSelectedCodes.join(".");
     return TaskModel(
       projectBeneficiaryClientReferenceId:
           widget.projectBeneficiaryClientReferenceId,
@@ -160,14 +162,18 @@ class _VaccineSelectionPageState extends LocalizedState<VaccineSelectionPage> {
             AdditionalFieldsType.doseStatus.toValue(),
             _getDoseStatus(selectedCodes, noSelectedCodes).name,
           ),
-          AdditionalField(
-            AdditionalFieldsType.selectedVaccines.toValue(),
-            selectedCodes.join('.'),
-          ),
-          AdditionalField(
-            AdditionalFieldsType.noSelectedVaccines.toValue(),
-            noSelectedCodes.join('.'),
-          ),
+          if (selectedVaccineCodesString.isNotEmpty &&
+              selectedVaccineCodesString.length > 2)
+            AdditionalField(
+              AdditionalFieldsType.selectedVaccines.toValue(),
+              selectedVaccineCodesString,
+            ),
+          if (noSelectedVaccineCodesString.isNotEmpty &&
+              noSelectedVaccineCodesString.length > 2)
+            AdditionalField(
+              AdditionalFieldsType.noSelectedVaccines.toValue(),
+              noSelectedVaccineCodesString,
+            ),
           ...getIndividualAdditionalFields(widget.individual)
         ],
       ),

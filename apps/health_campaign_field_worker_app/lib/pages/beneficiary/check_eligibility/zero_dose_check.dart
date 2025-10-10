@@ -136,7 +136,6 @@ class ZeroDoseCheckPageState extends LocalizedState<ZeroDoseCheckPage> {
 
   TaskModel _getTaskModel(double? latitude, double? longitude) {
     final clientReferenceId = IdGen.i.identifier;
-    List<String> availedVaccines = [];
     return TaskModel(
       projectBeneficiaryClientReferenceId:
           widget.projectBeneficiaryClientReferenceId,
@@ -162,11 +161,6 @@ class ZeroDoseCheckPageState extends LocalizedState<ZeroDoseCheckPage> {
             AdditionalFieldsType.cycleIndex.toValue(),
             "0${context.selectedCycle?.id}",
           ),
-          if (availedVaccines.isNotEmpty)
-            AdditionalField(
-              AdditionalFieldsType.selectedVaccines.toValue(),
-              availedVaccines.join("."),
-            ),
           AdditionalField(
             additional_fields_local.AdditionalFieldsType.deliveryType.toValue(),
             EligibilityAssessmentStatus.smcDone.name,

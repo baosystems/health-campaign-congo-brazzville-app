@@ -629,8 +629,8 @@ class CustomComplaintsDetailsPageState
           Validators.required,
           Validators.delegate(
               (validator) => CustomValidator.validMobileNumber(validator)),
-          // Validators.minLength(8),
-          Validators.maxLength(8),
+          Validators.minLength(9),
+          Validators.maxLength(9),
           Validators.delegate((validator) =>
               local_utils.CustomValidator.startsWith7or9(validator)),
         ],

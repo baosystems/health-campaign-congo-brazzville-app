@@ -730,7 +730,7 @@ class _VaccineDeliveryPageState extends LocalizedState<VaccineDeliveryPage> {
                                                 ),
                                                 form: form,
                                                 enabled: true,
-                                                isRequired: false,
+                                                isRequired: isCommentsRequired(),
                                                 menuItems:
                                                     deliveryCommentOptions
                                                         .map((e) {
@@ -918,10 +918,18 @@ class _VaccineDetailsCardState extends LocalizedState<VaccineDetailsCard> {
           Validators.required,
         ],
       ),
-      _enterBatchNumberKey: FormControl<String>(),
+      _enterBatchNumberKey: FormControl<String>(
+        validators: [
+          Validators.required,
+        ],
+      ),
       _numberOfDoseKey: FormControl<int>(
         value: 0,
-        validators: [Validators.required],
+        validators: [
+          Validators.required,
+          Validators.min(0),
+          Validators.max(1)
+        ],
       ),
     });
   }
@@ -964,6 +972,7 @@ class _VaccineDetailsCardState extends LocalizedState<VaccineDetailsCard> {
                       builder: (field) {
                         return InputField(
                           type: InputType.text,
+                          isRequired: true,
                           label: localizations.translate(
                             i18_local.deliverIntervention.enterBatchNumber,
                           ),
@@ -986,6 +995,7 @@ class _VaccineDetailsCardState extends LocalizedState<VaccineDetailsCard> {
                       child: DigitNumericFormInput(
                         step: 1,
                         initialValue: "0",
+                        maxValue: 1,
                         onChange: (value) {
                           field.control.value = int.parse(value);
                           widget.vaccineDeliveryDetails.numberOfDose =

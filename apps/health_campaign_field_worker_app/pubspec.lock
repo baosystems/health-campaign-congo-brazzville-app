@@ -524,10 +524,11 @@ packages:
   digit_data_model:
     dependency: "direct main"
     description:
-      name: digit_data_model
-      sha256: "6fdaa41a27b9fc2a84d9b7e238cad83d18b70d10f9fa9b797a4039365c27ce9b"
-      url: "https://pub.dev"
-    source: hosted
+      path: "packages/digit_data_model"
+      ref: digit-data-model-106-dev3
+      resolved-ref: ce6c387726172993e63e23bdd15bb907018c6d19
+      url: "https://github.com/egov-skb/health-campaign-field-worker-app.git"
+    source: git
     version: "1.0.6-dev.3"
   digit_dss:
     dependency: "direct main"

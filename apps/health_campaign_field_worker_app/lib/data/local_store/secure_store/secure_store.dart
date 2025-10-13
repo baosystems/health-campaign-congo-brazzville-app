@@ -5,6 +5,7 @@ import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
 import '../../../models/auth/auth_model.dart';
 import '../../../models/role_actions/role_actions_model.dart';
+import '../../../utils/constants.dart';
 
 class LocalSecureStore {
   static const accessTokenKey = 'accessTokenKey';
@@ -183,6 +184,54 @@ class LocalSecureStore {
       return spaq2Map[user.uuid] != null ? spaq2Map[user.uuid] as int : 0;
     } catch (_) {
       return 0;
+    }
+  }
+
+  Future<Map<String, int>> getAllProductSKUCounts() async {
+    final userBody = await storage.read(key: userObjectKey);
+    if (userBody == null) return {};
+    final localStorageStringMap =
+        await storage.read(key: Constants.productSKUCounts);
+    if (localStorageStringMap == null) return {};
+    try {
+      final user = UserRequestModel.fromJson(json.decode(userBody));
+      final userUUID = user.uuid;
+      final localStorageMap =
+          json.decode(localStorageStringMap) as Map<String, dynamic>;
+      if (localStorageMap[userUUID] != null) {
+        Map<String, int> productCountMap =
+            localStorageMap[userUUID] as Map<String, int>;
+        return productCountMap;
+      }
+    } catch (_) {}
+    return {};
+  }
+
+  Future<void> setProductSKUCounts(Map<String, int> productCounts) async {
+    final userBody = await storage.read(key: userObjectKey);
+    if (userBody == null) return;
+
+    try {
+      final user = UserRequestModel.fromJson(json.decode(userBody));
+      final userUUID = user.uuid;
+
+      Map<String, int> skuCounts = {};
+
+      for (final entry in productCounts.entries) {
+        final productCountKey = entry.key;
+        final productCount = entry.value;
+
+        skuCounts[productCountKey] = productCount;
+      }
+
+      Map<String, dynamic> skuCountsWithUUID = {userUUID: skuCounts};
+
+      await storage.write(
+        key: Constants.productSKUCounts,
+        value: json.encode(skuCountsWithUUID),
+      );
+    } catch (_) {
+      return;
     }
   }
 

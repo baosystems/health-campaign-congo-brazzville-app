@@ -526,7 +526,7 @@ packages:
     description:
       path: "packages/digit_data_model"
       ref: digit-data-model-106-dev3
-      resolved-ref: ce6c387726172993e63e23bdd15bb907018c6d19
+      resolved-ref: "4d176c52ea9ad0b5a541d5f37a215f0cca32b768"
       url: "https://github.com/egov-skb/health-campaign-field-worker-app.git"
     source: git
     version: "1.0.6-dev.3"

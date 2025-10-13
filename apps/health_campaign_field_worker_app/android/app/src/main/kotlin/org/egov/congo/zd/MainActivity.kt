@@ -1,4 +1,4 @@
-package org.egov.togo
+package org.egov.congo.zd
 
 import android.content.BroadcastReceiver
 import android.content.Context

@@ -131,7 +131,10 @@ class VaccineSearchBloc extends Bloc<VaccineSearchEvent, VaccineSearchState> {
     Map<int, Set<String>> eligibleVaccinesCodeByAgeIndex = {};
     for (var age in ageIndex) {
       allVaccinesCodeByAgeIndex[age] = ageToVaccineCodes[age]?.toSet() ?? {};
-      if (age < event.ageInDays) {
+      if (event.ageInDays <= 30) {
+        eligibleVaccinesCodeByAgeIndex[ageIndex[0]] =
+            ageToVaccineCodes[ageIndex[0]]?.toSet() ?? {};
+      } else if (age <= event.ageInDays) {
         eligibleVaccinesCodeByAgeIndex[age] =
             ageToVaccineCodes[age]?.toSet() ?? {};
       }

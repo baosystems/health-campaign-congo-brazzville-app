@@ -116,7 +116,10 @@ class CustomIndividualDetailsPageState
             ),
           );
         }
-        router.popUntil(
+        // router.popUntil(
+        //     (route) => route.settings.name == SearchBeneficiaryRoute.name);
+        (context.router.parent() as StackRouter).maybePop();
+        context.router.popUntil(
             (route) => route.settings.name == SearchBeneficiaryRoute.name);
         router.push(CustomBeneficiaryAcknowledgementRoute(
           enableViewHousehold: true,

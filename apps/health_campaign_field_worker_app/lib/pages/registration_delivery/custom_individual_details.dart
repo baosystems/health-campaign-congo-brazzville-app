@@ -95,10 +95,25 @@ class CustomIndividualDetailsPageState
   }
 
   onSubmit(IndividualModel individual, HouseholdModel? householdModel,
-      bool isCreate) async {
+      DateTime dob, bool isCreate) async {
     final bloc = context.read<CustomBeneficiaryRegistrationBloc>();
     final router = context.router;
     final name = individual?.name?.givenName ?? '';
+    final theme = Theme.of(context);
+
+    final ageInYears = DateTime.now().difference(dob).inDays / 365;
+
+    if (ageInYears > 18 && widget.isHeadOfHousehold == false) {
+      await DigitToast.show(
+        context,
+        options: DigitToastOptions(
+          localizations.translate(i18_local.individualDetails.childMaxAgeError),
+          true,
+          theme,
+        ),
+      );
+      return;
+    }
 
     if (context.mounted) {
       if (isCreate) {
@@ -132,8 +147,28 @@ class CustomIndividualDetailsPageState
     }
   }
 
-  onBeneficiarySubmit(name, individual) async {
+  onBeneficiarySubmit(
+    name,
+    individual,
+    DateTime dob,
+  ) async {
     final router = context.router;
+    final theme = Theme.of(context);
+
+    final ageInYears = DateTime.now().difference(dob).inDays / 365;
+
+    if (ageInYears > 18) {
+      await DigitToast.show(
+        context,
+        options: DigitToastOptions(
+          localizations.translate(i18_local.individualDetails.childMaxAgeError),
+          true,
+          theme,
+        ),
+      );
+      return;
+    }
+
     router.push(CustomBeneficiarySummaryRoute(
       name: name,
       individualModel: individual,
@@ -357,8 +392,9 @@ class CustomIndividualDetailsPageState
                                       ),
                                     );
                                     // router.push(CustomSummaryRoute());
+                                    DateTime dob = form.control(_dobKey).value;
                                     await onSubmit(
-                                        individual, householdModel, true);
+                                        individual, householdModel, dob, true);
                                   }
                                 },
                                 editIndividual: (
@@ -443,7 +479,9 @@ class CustomIndividualDetailsPageState
                                             : null,
                                       ),
                                     );
-                                    onSubmit(individual, householdModel, false);
+                                    DateTime dob = form.control(_dobKey).value;
+                                    onSubmit(
+                                        individual, householdModel, dob, false);
                                   }
                                 },
                                 addMember: (
@@ -523,9 +561,13 @@ class CustomIndividualDetailsPageState
                                       //         : null,
                                       //   ),
                                       // );
+                                      DateTime dob =
+                                          form.control(_dobKey).value;
+
                                       onBeneficiarySubmit(
                                           individual.name?.givenName ?? "",
-                                          individual);
+                                          individual,
+                                          dob);
                                     }
                                   }
                                 },

@@ -105,32 +105,39 @@ class _CustomSummaryReportState
                         data: DigitGridData(
                           columns: [
                             DigitGridColumn(
-                              label: 'Date',
+                              label: localizations.translate(
+                                  i18Local.homeShowcase.summaryReportDate),
                               key: _dateKey,
                               width: 120,
                             ),
                             DigitGridColumn(
-                              label: 'Nb. enfants enregistrés',
+                              label: localizations.translate(i18Local
+                                  .homeShowcase.summaryReportRegistredChildren),
                               key: _registeredChildrenKey,
                               width: 180,
                             ),
                             DigitGridColumn(
-                              label: 'Nb. enfants zéro-dose',
+                              label: localizations.translate(i18Local
+                                  .homeShowcase
+                                  .summaryReportAdministredChildren),
                               key: _zeroDoseChildrenKey,
                               width: 180,
                             ),
                             DigitGridColumn(
-                              label: 'Nb. enfants sous-vaccinés',
+                              label: localizations.translate(i18Local
+                                  .homeShowcase.summaryReportUnderVaccinated),
                               key: _underVaccinatedChildrenKey,
                               width: 180,
                             ),
                             DigitGridColumn(
-                              label: 'Nb. enfants complètement vaccinés',
+                              label: localizations.translate(i18Local
+                                  .homeShowcase.summaryReportFullyVaccinated),
                               key: _fullyVaccinatedChildrenKey,
                               width: 200,
                             ),
                             DigitGridColumn(
-                              label: 'Nb. refus',
+                              label: localizations.translate(i18Local
+                                  .homeShowcase.summaryReportRefusalsCases),
                               key: _refusalsCasesKey,
                               width: 120,
                             ),

@@ -118,8 +118,7 @@ class _CustomSummaryReportState
                             ),
                             DigitGridColumn(
                               label: localizations.translate(i18Local
-                                  .homeShowcase
-                                  .summaryReportAdministredChildren),
+                                  .homeShowcase.summaryReportZeroDoseChildren),
                               key: _zeroDoseChildrenKey,
                               width: 180,
                             ),

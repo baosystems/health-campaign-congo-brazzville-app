@@ -140,7 +140,7 @@ class CustomDeliverInterventionPageState
     }
 
     context.read<AuthBloc>().add(
-          const AuthUpdateProductSKUCountsEvent(skuCountUpdates: {}),
+          const AuthUpdateProductSKUCountsEvent(skuCounts: {}),
         );
 
     await handleSubmit(context, taskModel, deliverInterventionState);

@@ -431,7 +431,7 @@ class _RecordRedosePageState extends LocalizedState<RecordRedosePage> {
                                                               .read<AuthBloc>()
                                                               .add(
                                                                 const AuthUpdateProductSKUCountsEvent(
-                                                                    skuCountUpdates: {}),
+                                                                    skuCounts: {}),
                                                               );
                                                           final reloadState =
                                                               context.read<

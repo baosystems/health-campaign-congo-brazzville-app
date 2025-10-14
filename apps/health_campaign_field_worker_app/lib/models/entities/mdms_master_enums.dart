@@ -35,6 +35,8 @@ enum MasterEnums {
   vaccinationData,
   @MappableValue("VACCINATION-DOSE-DATA")
   vaccinationDoseData,
+  @MappableValue("VACCINATION-DOSE-STOCK-DATA")
+  vaccinationStockData,
   @MappableValue("BACKEND_INTERFACE")
   backendInterface,
   @MappableValue("CALL_SUPPORT")

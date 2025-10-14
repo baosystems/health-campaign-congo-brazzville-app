@@ -413,6 +413,19 @@ class CustomIndividualDetailsPageState
                                         addressModel: addressModel,
                                         householdModel: householdModel,
                                         model: individual.copyWith(
+                                          auditDetails:
+                                              individual.auditDetails == null
+                                                  ? null
+                                                  : individual.auditDetails!
+                                                      .copyWith(
+                                                      lastModifiedBy:
+                                                          RegistrationDeliverySingleton()
+                                                              .loggedInUserUuid,
+                                                      lastModifiedTime:
+                                                          ContextUtilityExtensions(
+                                                                  context)
+                                                              .millisecondsSinceEpoch(),
+                                                    ),
                                           clientAuditDetails: (individual
                                                           .clientAuditDetails
                                                           ?.createdBy !=

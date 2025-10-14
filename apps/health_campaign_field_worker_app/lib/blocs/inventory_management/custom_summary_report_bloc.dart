@@ -49,6 +49,8 @@ class SummaryReportBloc extends Bloc<SummaryReportEvent, SummaryReportState> {
     List<TaskResourceModel> spaq1List = [];
     List<TaskResourceModel> spaq2List = [];
     List<TaskModel> zeroDoseChildrenList = [];
+    List<TaskModel> underVaccinatedChildrenList = [];
+    List<TaskModel> fullyVaccinatedChildrenList = [];
     final currentCycle =
         RegistrationDeliverySingleton().projectType?.cycles?.firstWhere(
               (e) =>
@@ -84,13 +86,21 @@ class SummaryReportBloc extends Bloc<SummaryReportEvent, SummaryReportState> {
         refusalCasesList.add(element);
       }
 
-      if ((element.additionalFields?.fields.firstWhereOrNull((element) =>
-                  element.key ==
-                  additional_fields_local.AdditionalFieldsType.doseStatus
-                      .toValue()) !=
-              null) &&
-          element.status != Status.delivered.toValue()) {
+      final doseStatusField = element.additionalFields?.fields.firstWhereOrNull(
+        (f) =>
+            f.key ==
+            additional_fields_local.AdditionalFieldsType.doseStatus.toValue(),
+      );
+      final doseStatusValue = doseStatusField?.value?.toLowerCase();
+
+      final normalizedDose = doseStatusValue?.replaceAll('_', '') ?? '';
+
+      if (normalizedDose == 'zerodose') {
         zeroDoseChildrenList.add(element);
+      } else if (normalizedDose == 'undervaccinated') {
+        underVaccinatedChildrenList.add(element);
+      } else if (normalizedDose == 'fullyvaccinated') {
+        fullyVaccinatedChildrenList.add(element);
       }
     }
 
@@ -114,6 +124,10 @@ class SummaryReportBloc extends Bloc<SummaryReportEvent, SummaryReportState> {
     Map<String, List<TaskResourceModel>> dateVsSpaq1List = {};
     Map<String, List<TaskResourceModel>> dateVsSpaq2List = {};
     Map<String, List<TaskModel>> dateVsZeroDoseChildrenList = {};
+    Map<String, List<TaskModel>> dateVsUnderVaccinatedChildrenList = {};
+    Map<String, List<TaskModel>> dateVsFullyVaccinatedChildrenList = {};
+    Map<String, int> dateVsUnderVaccinatedChildrenCount = {};
+    Map<String, int> dateVsFullyVaccinatedChildrenCount = {};
     Set<String> uniqueDates = {};
     Map<String, int> dateVsHouseholdMembersCount = {};
     Map<String, int> dateVsAdministeredChilderenCount = {};
@@ -173,12 +187,36 @@ class SummaryReportBloc extends Bloc<SummaryReportEvent, SummaryReportState> {
       }
     }
 
+    for (var element in underVaccinatedChildrenList) {
+      var dateKey = DigitDateUtils.getDateFromTimestamp(
+          element.clientAuditDetails!.createdTime);
+      if (element.clientAuditDetails!.createdTime >= currentCycle!.startDate &&
+          element.clientAuditDetails!.createdTime <= currentCycle.endDate) {
+        dateVsUnderVaccinatedChildrenList
+            .putIfAbsent(dateKey, () => [])
+            .add(element);
+      }
+    }
+
+    for (var element in fullyVaccinatedChildrenList) {
+      var dateKey = DigitDateUtils.getDateFromTimestamp(
+          element.clientAuditDetails!.createdTime);
+      if (element.clientAuditDetails!.createdTime >= currentCycle!.startDate &&
+          element.clientAuditDetails!.createdTime <= currentCycle.endDate) {
+        dateVsFullyVaccinatedChildrenList
+            .putIfAbsent(dateKey, () => [])
+            .add(element);
+      }
+    }
+
     // get a set of unique dates
     getUniqueSetOfDates(
       dateVsHouseholdMembersList,
       dateVsAdministeredChilderenList,
       dateVsRefusalCasesList,
       dateVsZeroDoseChildrenList,
+      dateVsUnderVaccinatedChildrenList,
+      dateVsFullyVaccinatedChildrenList,
       dateVsSpaq1List,
       dateVsSpaq2List,
       uniqueDates,
@@ -194,6 +232,10 @@ class SummaryReportBloc extends Bloc<SummaryReportEvent, SummaryReportState> {
         dateVsZeroDoseChildrenList, dateVsZeroDoseChildrenCount);
     populateDateVsCountMap(dateVsSpaq1List, dateVsSpaq1Count);
     populateDateVsCountMap(dateVsSpaq2List, dateVsSpaq2Count);
+    populateDateVsCountMap(
+        dateVsUnderVaccinatedChildrenList, dateVsUnderVaccinatedChildrenCount);
+    populateDateVsCountMap(
+        dateVsFullyVaccinatedChildrenList, dateVsFullyVaccinatedChildrenCount);
 
     popoulateDateVsEntityCountMap(
       dateVsEntityVsCountMap,
@@ -203,8 +245,11 @@ class SummaryReportBloc extends Bloc<SummaryReportEvent, SummaryReportState> {
       dateVsZeroDoseChildrenCount,
       dateVsSpaq1Count,
       dateVsSpaq2Count,
+      dateVsUnderVaccinatedChildrenCount,
+      dateVsFullyVaccinatedChildrenCount,
       uniqueDates,
     );
+
     dateVsEntityVsCountMap =
         sortMapByDateKeyAndRenameDate(dateVsEntityVsCountMap);
     dateVsEntityVsCountMap = addTotalEntryToMap(dateVsEntityVsCountMap);
@@ -217,6 +262,8 @@ class SummaryReportBloc extends Bloc<SummaryReportEvent, SummaryReportState> {
     Map<String, List<TaskModel>> dateVsAdministeredChilderenList,
     Map<String, List<TaskModel>> dateVsRefusalCasesList,
     Map<String, List<TaskModel>> dateVsZeroDoseChildrenList,
+    Map<String, List<TaskModel>> dateVsUnderVaccinatedChildrenList,
+    Map<String, List<TaskModel>> dateVsFullyVaccinatedChildrenList,
     Map<String, List<TaskResourceModel>> dateVsSpaq1List,
     Map<String, List<TaskResourceModel>> dateVsSpaq2List,
     Set<String> uniqueDates,
@@ -225,6 +272,8 @@ class SummaryReportBloc extends Bloc<SummaryReportEvent, SummaryReportState> {
     uniqueDates.addAll(dateVsAdministeredChilderenList.keys.toSet());
     uniqueDates.addAll(dateVsRefusalCasesList.keys.toSet());
     uniqueDates.addAll(dateVsZeroDoseChildrenList.keys.toSet());
+    uniqueDates.addAll(dateVsUnderVaccinatedChildrenList.keys.toSet());
+    uniqueDates.addAll(dateVsFullyVaccinatedChildrenList.keys.toSet());
     uniqueDates.addAll(dateVsSpaq1List.keys.toSet());
     uniqueDates.addAll(dateVsSpaq2List.keys.toSet());
   }
@@ -244,6 +293,8 @@ class SummaryReportBloc extends Bloc<SummaryReportEvent, SummaryReportState> {
     Map<String, int> dateVsZeroDoseChildrenCount,
     Map<String, int> dateVsSpaq1Count,
     Map<String, int> dateVsSpaq2Count,
+    Map<String, int> dateVsUnderVaccinatedChildrenCount,
+    Map<String, int> dateVsFullyVaccinatedChildrenCount,
     Set<String> uniqueDates,
   ) {
     for (var date in uniqueDates) {
@@ -278,7 +329,14 @@ class SummaryReportBloc extends Bloc<SummaryReportEvent, SummaryReportState> {
         var count = dateVsSpaq2Count[date];
         elementVsCount[Constants.tablet_12_59] = count ?? 0;
       }
-
+      if (dateVsUnderVaccinatedChildrenCount.containsKey(date)) {
+        var count = dateVsUnderVaccinatedChildrenCount[date];
+        elementVsCount[Constants.underVaccinated] = count ?? 0;
+      }
+      if (dateVsFullyVaccinatedChildrenCount.containsKey(date)) {
+        var count = dateVsFullyVaccinatedChildrenCount[date];
+        elementVsCount[Constants.fullyVaccinated] = count ?? 0;
+      }
       dateVsEntityVsCountMap[date] = elementVsCount;
     }
   }

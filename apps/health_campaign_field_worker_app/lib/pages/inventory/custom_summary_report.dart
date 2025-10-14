@@ -48,11 +48,10 @@ class _CustomSummaryReportState
 
   static const _dateKey = 'dateKey';
   static const _registeredChildrenKey = 'registeredChildren';
-  static const _administeredChildrenKey = 'administeredChildren';
-  static const _refusalsCasesKey = 'refusalsCases';
-  static const _usedTablet_3_11monthKey = 'usedTablet3_11month';
-  static const _usedTablet_12_59monthKey = 'usedTablet12s_59month';
   static const _zeroDoseChildrenKey = 'zeroDoseChildren';
+  static const _underVaccinatedChildrenKey = 'underVaccinatedChildren';
+  static const _fullyVaccinatedChildrenKey = 'fullyVaccinatedChildren';
+  static const _refusalsCasesKey = 'refusalsCases';
 
   FormGroup _form() {
     return fb.group({});
@@ -106,47 +105,34 @@ class _CustomSummaryReportState
                         data: DigitGridData(
                           columns: [
                             DigitGridColumn(
-                              label: localizations.translate(
-                                  i18Local.homeShowcase.summaryReportDate),
+                              label: 'Date',
                               key: _dateKey,
                               width: 120,
                             ),
                             DigitGridColumn(
-                              label: localizations.translate(i18Local
-                                  .homeShowcase.summaryReportRegistredChildren),
+                              label: 'Nb. enfants enregistrés',
                               key: _registeredChildrenKey,
                               width: 180,
                             ),
                             DigitGridColumn(
-                              label: localizations.translate(i18Local
-                                  .homeShowcase
-                                  .summaryReportAdministredChildren),
-                              key: _administeredChildrenKey,
-                              width: 180,
-                            ),
-                            DigitGridColumn(
-                              label: localizations.translate(i18Local
-                                  .homeShowcase.summaryReportRefusalsCases),
-                              key: _refusalsCasesKey,
-                              width: 180,
-                            ),
-                            DigitGridColumn(
-                              label: localizations.translate(
-                                  i18Local.homeShowcase.summaryReportSPAQ1),
-                              key: _usedTablet_3_11monthKey,
-                              width: 180,
-                            ),
-                            DigitGridColumn(
-                              label: localizations.translate(
-                                  i18Local.homeShowcase.summaryReportSPAQ2),
-                              key: _usedTablet_12_59monthKey,
-                              width: 180,
-                            ),
-                            DigitGridColumn(
-                              label: localizations.translate(i18Local
-                                  .homeShowcase.summaryReportZeroDoseChildren),
+                              label: 'Nb. enfants zéro-dose',
                               key: _zeroDoseChildrenKey,
                               width: 180,
+                            ),
+                            DigitGridColumn(
+                              label: 'Nb. enfants sous-vaccinés',
+                              key: _underVaccinatedChildrenKey,
+                              width: 180,
+                            ),
+                            DigitGridColumn(
+                              label: 'Nb. enfants complètement vaccinés',
+                              key: _fullyVaccinatedChildrenKey,
+                              width: 200,
+                            ),
+                            DigitGridColumn(
+                              label: 'Nb. refus',
+                              key: _refusalsCasesKey,
+                              width: 120,
                             ),
                           ],
                           rows: [
@@ -155,48 +141,35 @@ class _CustomSummaryReportState
                               DigitGridRow(
                                 [
                                   DigitGridCell(
-                                    key: _dateKey,
-                                    value: entry.key,
-                                  ),
+                                      key: _dateKey, value: entry.key),
                                   DigitGridCell(
-                                    key: _registeredChildrenKey,
-                                    value:
-                                        (entry.value[Constants.registered] ?? 0)
-                                            .toString(),
-                                  ),
+                                      key: _registeredChildrenKey,
+                                      value:
+                                          (entry.value[Constants.registered] ??
+                                                  0)
+                                              .toString()),
                                   DigitGridCell(
-                                    key: _administeredChildrenKey,
-                                    value:
-                                        (entry.value[Constants.administered] ??
-                                                0)
-                                            .toString(),
-                                  ),
+                                      key: _zeroDoseChildrenKey,
+                                      value:
+                                          (entry.value[Constants.zeroDose] ?? 0)
+                                              .toString()),
                                   DigitGridCell(
-                                    key: _refusalsCasesKey,
-                                    value:
-                                        (entry.value[Constants.refusals] ?? 0)
-                                            .toString(),
-                                  ),
+                                      key: _underVaccinatedChildrenKey,
+                                      value: (entry.value[
+                                                  Constants.underVaccinated] ??
+                                              0)
+                                          .toString()),
                                   DigitGridCell(
-                                    key: _usedTablet_3_11monthKey,
-                                    value:
-                                        (entry.value[Constants.tablet_3_11] ??
-                                                0)
-                                            .toString(),
-                                  ),
+                                      key: _fullyVaccinatedChildrenKey,
+                                      value: (entry.value[
+                                                  Constants.fullyVaccinated] ??
+                                              0)
+                                          .toString()),
                                   DigitGridCell(
-                                    key: _usedTablet_12_59monthKey,
-                                    value:
-                                        (entry.value[Constants.tablet_12_59] ??
-                                                0)
-                                            .toString(),
-                                  ),
-                                  DigitGridCell(
-                                    key: _zeroDoseChildrenKey,
-                                    value:
-                                        (entry.value[Constants.zeroDose] ?? 0)
-                                            .toString(),
-                                  ),
+                                      key: _refusalsCasesKey,
+                                      value:
+                                          (entry.value[Constants.refusals] ?? 0)
+                                              .toString()),
                                 ],
                               ),
                             ],

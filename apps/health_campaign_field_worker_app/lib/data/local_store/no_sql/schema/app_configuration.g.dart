@@ -155,38 +155,44 @@ const AppConfigurationSchema = CollectionSchema(
       type: IsarType.objectList,
       target: r'VaccineDoseData',
     ),
-    r'houseStructureTypes': PropertySchema(
+    r'VACCINATION-DOSE-STOCK-DATA': PropertySchema(
       id: 24,
+      name: r'VACCINATION-DOSE-STOCK-DATA',
+      type: IsarType.objectList,
+      target: r'VaccineStockData',
+    ),
+    r'houseStructureTypes': PropertySchema(
+      id: 25,
       name: r'houseStructureTypes',
       type: IsarType.objectList,
       target: r'HouseStructureTypes',
     ),
     r'privacyPolicyConfig': PropertySchema(
-      id: 25,
+      id: 26,
       name: r'privacyPolicyConfig',
       type: IsarType.object,
       target: r'PrivacyPolicy',
     ),
     r'referralReasons': PropertySchema(
-      id: 26,
+      id: 27,
       name: r'referralReasons',
       type: IsarType.objectList,
       target: r'ReferralReasons',
     ),
     r'refusalReasons': PropertySchema(
-      id: 27,
+      id: 28,
       name: r'refusalReasons',
       type: IsarType.objectList,
       target: r'RefusalReasons',
     ),
     r'symptomsTypes': PropertySchema(
-      id: 28,
+      id: 29,
       name: r'symptomsTypes',
       type: IsarType.objectList,
       target: r'SymptomsTypes',
     ),
     r'vaccination-data': PropertySchema(
-      id: 29,
+      id: 30,
       name: r'vaccination-data',
       type: IsarType.objectList,
       target: r'VaccineData',
@@ -222,6 +228,7 @@ const AppConfigurationSchema = CollectionSchema(
     r'SearchCLFFilters': SearchCLFFiltersSchema,
     r'VaccineData': VaccineDataSchema,
     r'VaccineDoseData': VaccineDoseDataSchema,
+    r'VaccineStockData': VaccineStockDataSchema,
     r'ReferralReasons': ReferralReasonsSchema,
     r'HouseStructureTypes': HouseStructureTypesSchema,
     r'RefusalReasons': RefusalReasonsSchema,
@@ -507,6 +514,20 @@ int _appConfigurationEstimateSize(
     }
   }
   {
+    final list = object.vaccinationStockData;
+    if (list != null) {
+      bytesCount += 3 + list.length * 3;
+      {
+        final offsets = allOffsets[VaccineStockData]!;
+        for (var i = 0; i < list.length; i++) {
+          final value = list[i];
+          bytesCount +=
+              VaccineStockDataSchema.estimateSize(value, offsets, allOffsets);
+        }
+      }
+    }
+  }
+  {
     final list = object.houseStructureTypes;
     if (list != null) {
       bytesCount += 3 + list.length * 3;
@@ -707,38 +728,44 @@ void _appConfigurationSerialize(
     VaccineDoseDataSchema.serialize,
     object.vaccinationDoseData,
   );
-  writer.writeObjectList<HouseStructureTypes>(
+  writer.writeObjectList<VaccineStockData>(
     offsets[24],
+    allOffsets,
+    VaccineStockDataSchema.serialize,
+    object.vaccinationStockData,
+  );
+  writer.writeObjectList<HouseStructureTypes>(
+    offsets[25],
     allOffsets,
     HouseStructureTypesSchema.serialize,
     object.houseStructureTypes,
   );
   writer.writeObject<PrivacyPolicy>(
-    offsets[25],
+    offsets[26],
     allOffsets,
     PrivacyPolicySchema.serialize,
     object.privacyPolicyConfig,
   );
   writer.writeObjectList<ReferralReasons>(
-    offsets[26],
+    offsets[27],
     allOffsets,
     ReferralReasonsSchema.serialize,
     object.referralReasons,
   );
   writer.writeObjectList<RefusalReasons>(
-    offsets[27],
+    offsets[28],
     allOffsets,
     RefusalReasonsSchema.serialize,
     object.refusalReasons,
   );
   writer.writeObjectList<SymptomsTypes>(
-    offsets[28],
+    offsets[29],
     allOffsets,
     SymptomsTypesSchema.serialize,
     object.symptomsTypes,
   );
   writer.writeObjectList<VaccineData>(
-    offsets[29],
+    offsets[30],
     allOffsets,
     VaccineDataSchema.serialize,
     object.vaccinationData,
@@ -866,38 +893,44 @@ AppConfiguration _appConfigurationDeserialize(
     allOffsets,
     VaccineDoseData(),
   );
-  object.houseStructureTypes = reader.readObjectList<HouseStructureTypes>(
+  object.vaccinationStockData = reader.readObjectList<VaccineStockData>(
     offsets[24],
+    VaccineStockDataSchema.deserialize,
+    allOffsets,
+    VaccineStockData(),
+  );
+  object.houseStructureTypes = reader.readObjectList<HouseStructureTypes>(
+    offsets[25],
     HouseStructureTypesSchema.deserialize,
     allOffsets,
     HouseStructureTypes(),
   );
   object.id = id;
   object.privacyPolicyConfig = reader.readObjectOrNull<PrivacyPolicy>(
-    offsets[25],
+    offsets[26],
     PrivacyPolicySchema.deserialize,
     allOffsets,
   );
   object.referralReasons = reader.readObjectList<ReferralReasons>(
-    offsets[26],
+    offsets[27],
     ReferralReasonsSchema.deserialize,
     allOffsets,
     ReferralReasons(),
   );
   object.refusalReasons = reader.readObjectList<RefusalReasons>(
-    offsets[27],
+    offsets[28],
     RefusalReasonsSchema.deserialize,
     allOffsets,
     RefusalReasons(),
   );
   object.symptomsTypes = reader.readObjectList<SymptomsTypes>(
-    offsets[28],
+    offsets[29],
     SymptomsTypesSchema.deserialize,
     allOffsets,
     SymptomsTypes(),
   );
   object.vaccinationData = reader.readObjectList<VaccineData>(
-    offsets[29],
+    offsets[30],
     VaccineDataSchema.deserialize,
     allOffsets,
     VaccineData(),
@@ -1048,40 +1081,47 @@ P _appConfigurationDeserializeProp<P>(
         VaccineDoseData(),
       )) as P;
     case 24:
+      return (reader.readObjectList<VaccineStockData>(
+        offset,
+        VaccineStockDataSchema.deserialize,
+        allOffsets,
+        VaccineStockData(),
+      )) as P;
+    case 25:
       return (reader.readObjectList<HouseStructureTypes>(
         offset,
         HouseStructureTypesSchema.deserialize,
         allOffsets,
         HouseStructureTypes(),
       )) as P;
-    case 25:
+    case 26:
       return (reader.readObjectOrNull<PrivacyPolicy>(
         offset,
         PrivacyPolicySchema.deserialize,
         allOffsets,
       )) as P;
-    case 26:
+    case 27:
       return (reader.readObjectList<ReferralReasons>(
         offset,
         ReferralReasonsSchema.deserialize,
         allOffsets,
         ReferralReasons(),
       )) as P;
-    case 27:
+    case 28:
       return (reader.readObjectList<RefusalReasons>(
         offset,
         RefusalReasonsSchema.deserialize,
         allOffsets,
         RefusalReasons(),
       )) as P;
-    case 28:
+    case 29:
       return (reader.readObjectList<SymptomsTypes>(
         offset,
         SymptomsTypesSchema.deserialize,
         allOffsets,
         SymptomsTypes(),
       )) as P;
-    case 29:
+    case 30:
       return (reader.readObjectList<VaccineData>(
         offset,
         VaccineDataSchema.deserialize,
@@ -3701,6 +3741,113 @@ extension AppConfigurationQueryFilter
   }
 
   QueryBuilder<AppConfiguration, AppConfiguration, QAfterFilterCondition>
+      vaccinationStockDataIsNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(const FilterCondition.isNull(
+        property: r'VACCINATION-DOSE-STOCK-DATA',
+      ));
+    });
+  }
+
+  QueryBuilder<AppConfiguration, AppConfiguration, QAfterFilterCondition>
+      vaccinationStockDataIsNotNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(const FilterCondition.isNotNull(
+        property: r'VACCINATION-DOSE-STOCK-DATA',
+      ));
+    });
+  }
+
+  QueryBuilder<AppConfiguration, AppConfiguration, QAfterFilterCondition>
+      vaccinationStockDataLengthEqualTo(int length) {
+    return QueryBuilder.apply(this, (query) {
+      return query.listLength(
+        r'VACCINATION-DOSE-STOCK-DATA',
+        length,
+        true,
+        length,
+        true,
+      );
+    });
+  }
+
+  QueryBuilder<AppConfiguration, AppConfiguration, QAfterFilterCondition>
+      vaccinationStockDataIsEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.listLength(
+        r'VACCINATION-DOSE-STOCK-DATA',
+        0,
+        true,
+        0,
+        true,
+      );
+    });
+  }
+
+  QueryBuilder<AppConfiguration, AppConfiguration, QAfterFilterCondition>
+      vaccinationStockDataIsNotEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.listLength(
+        r'VACCINATION-DOSE-STOCK-DATA',
+        0,
+        false,
+        999999,
+        true,
+      );
+    });
+  }
+
+  QueryBuilder<AppConfiguration, AppConfiguration, QAfterFilterCondition>
+      vaccinationStockDataLengthLessThan(
+    int length, {
+    bool include = false,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.listLength(
+        r'VACCINATION-DOSE-STOCK-DATA',
+        0,
+        true,
+        length,
+        include,
+      );
+    });
+  }
+
+  QueryBuilder<AppConfiguration, AppConfiguration, QAfterFilterCondition>
+      vaccinationStockDataLengthGreaterThan(
+    int length, {
+    bool include = false,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.listLength(
+        r'VACCINATION-DOSE-STOCK-DATA',
+        length,
+        include,
+        999999,
+        true,
+      );
+    });
+  }
+
+  QueryBuilder<AppConfiguration, AppConfiguration, QAfterFilterCondition>
+      vaccinationStockDataLengthBetween(
+    int lower,
+    int upper, {
+    bool includeLower = true,
+    bool includeUpper = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.listLength(
+        r'VACCINATION-DOSE-STOCK-DATA',
+        lower,
+        includeLower,
+        upper,
+        includeUpper,
+      );
+    });
+  }
+
+  QueryBuilder<AppConfiguration, AppConfiguration, QAfterFilterCondition>
       houseStructureTypesIsNull() {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(const FilterCondition.isNull(
@@ -4441,6 +4588,13 @@ extension AppConfigurationQueryObject
   }
 
   QueryBuilder<AppConfiguration, AppConfiguration, QAfterFilterCondition>
+      vaccinationStockDataElement(FilterQuery<VaccineStockData> q) {
+    return QueryBuilder.apply(this, (query) {
+      return query.object(q, r'VACCINATION-DOSE-STOCK-DATA');
+    });
+  }
+
+  QueryBuilder<AppConfiguration, AppConfiguration, QAfterFilterCondition>
       houseStructureTypesElement(FilterQuery<HouseStructureTypes> q) {
     return QueryBuilder.apply(this, (query) {
       return query.object(q, r'houseStructureTypes');
@@ -4892,6 +5046,13 @@ extension AppConfigurationQueryProperty
       vaccinationDoseDataProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addPropertyName(r'VACCINATION-DOSE-DATA');
+    });
+  }
+
+  QueryBuilder<AppConfiguration, List<VaccineStockData>?, QQueryOperations>
+      vaccinationStockDataProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addPropertyName(r'VACCINATION-DOSE-STOCK-DATA');
     });
   }
 
@@ -7174,6 +7335,276 @@ extension VaccineDoseDataQueryFilter
 
 extension VaccineDoseDataQueryObject
     on QueryBuilder<VaccineDoseData, VaccineDoseData, QFilterCondition> {}
+
+// coverage:ignore-file
+// ignore_for_file: duplicate_ignore, non_constant_identifier_names, constant_identifier_names, invalid_use_of_protected_member, unnecessary_cast, prefer_const_constructors, lines_longer_than_80_chars, require_trailing_commas, inference_failure_on_function_invocation, unnecessary_parenthesis, unnecessary_raw_strings, unnecessary_null_checks, join_return_with_assignment, prefer_final_locals, avoid_js_rounded_ints, avoid_positional_boolean_parameters, always_specify_types
+
+const VaccineStockDataSchema = Schema(
+  name: r'VaccineStockData',
+  id: -3812224148472837732,
+  properties: {
+    r'code': PropertySchema(
+      id: 0,
+      name: r'code',
+      type: IsarType.string,
+    ),
+    r'dosesPerFlacon': PropertySchema(
+      id: 1,
+      name: r'dosesPerFlacon',
+      type: IsarType.long,
+    )
+  },
+  estimateSize: _vaccineStockDataEstimateSize,
+  serialize: _vaccineStockDataSerialize,
+  deserialize: _vaccineStockDataDeserialize,
+  deserializeProp: _vaccineStockDataDeserializeProp,
+);
+
+int _vaccineStockDataEstimateSize(
+  VaccineStockData object,
+  List<int> offsets,
+  Map<Type, List<int>> allOffsets,
+) {
+  var bytesCount = offsets.last;
+  bytesCount += 3 + object.code.length * 3;
+  return bytesCount;
+}
+
+void _vaccineStockDataSerialize(
+  VaccineStockData object,
+  IsarWriter writer,
+  List<int> offsets,
+  Map<Type, List<int>> allOffsets,
+) {
+  writer.writeString(offsets[0], object.code);
+  writer.writeLong(offsets[1], object.dosesPerFlacon);
+}
+
+VaccineStockData _vaccineStockDataDeserialize(
+  Id id,
+  IsarReader reader,
+  List<int> offsets,
+  Map<Type, List<int>> allOffsets,
+) {
+  final object = VaccineStockData();
+  object.code = reader.readString(offsets[0]);
+  object.dosesPerFlacon = reader.readLong(offsets[1]);
+  return object;
+}
+
+P _vaccineStockDataDeserializeProp<P>(
+  IsarReader reader,
+  int propertyId,
+  int offset,
+  Map<Type, List<int>> allOffsets,
+) {
+  switch (propertyId) {
+    case 0:
+      return (reader.readString(offset)) as P;
+    case 1:
+      return (reader.readLong(offset)) as P;
+    default:
+      throw IsarError('Unknown property with id $propertyId');
+  }
+}
+
+extension VaccineStockDataQueryFilter
+    on QueryBuilder<VaccineStockData, VaccineStockData, QFilterCondition> {
+  QueryBuilder<VaccineStockData, VaccineStockData, QAfterFilterCondition>
+      codeEqualTo(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'code',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<VaccineStockData, VaccineStockData, QAfterFilterCondition>
+      codeGreaterThan(
+    String value, {
+    bool include = false,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        include: include,
+        property: r'code',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<VaccineStockData, VaccineStockData, QAfterFilterCondition>
+      codeLessThan(
+    String value, {
+    bool include = false,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.lessThan(
+        include: include,
+        property: r'code',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<VaccineStockData, VaccineStockData, QAfterFilterCondition>
+      codeBetween(
+    String lower,
+    String upper, {
+    bool includeLower = true,
+    bool includeUpper = true,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.between(
+        property: r'code',
+        lower: lower,
+        includeLower: includeLower,
+        upper: upper,
+        includeUpper: includeUpper,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<VaccineStockData, VaccineStockData, QAfterFilterCondition>
+      codeStartsWith(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.startsWith(
+        property: r'code',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<VaccineStockData, VaccineStockData, QAfterFilterCondition>
+      codeEndsWith(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.endsWith(
+        property: r'code',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<VaccineStockData, VaccineStockData, QAfterFilterCondition>
+      codeContains(String value, {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.contains(
+        property: r'code',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<VaccineStockData, VaccineStockData, QAfterFilterCondition>
+      codeMatches(String pattern, {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.matches(
+        property: r'code',
+        wildcard: pattern,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<VaccineStockData, VaccineStockData, QAfterFilterCondition>
+      codeIsEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'code',
+        value: '',
+      ));
+    });
+  }
+
+  QueryBuilder<VaccineStockData, VaccineStockData, QAfterFilterCondition>
+      codeIsNotEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        property: r'code',
+        value: '',
+      ));
+    });
+  }
+
+  QueryBuilder<VaccineStockData, VaccineStockData, QAfterFilterCondition>
+      dosesPerFlaconEqualTo(int value) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'dosesPerFlacon',
+        value: value,
+      ));
+    });
+  }
+
+  QueryBuilder<VaccineStockData, VaccineStockData, QAfterFilterCondition>
+      dosesPerFlaconGreaterThan(
+    int value, {
+    bool include = false,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        include: include,
+        property: r'dosesPerFlacon',
+        value: value,
+      ));
+    });
+  }
+
+  QueryBuilder<VaccineStockData, VaccineStockData, QAfterFilterCondition>
+      dosesPerFlaconLessThan(
+    int value, {
+    bool include = false,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.lessThan(
+        include: include,
+        property: r'dosesPerFlacon',
+        value: value,
+      ));
+    });
+  }
+
+  QueryBuilder<VaccineStockData, VaccineStockData, QAfterFilterCondition>
+      dosesPerFlaconBetween(
+    int lower,
+    int upper, {
+    bool includeLower = true,
+    bool includeUpper = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.between(
+        property: r'dosesPerFlacon',
+        lower: lower,
+        includeLower: includeLower,
+        upper: upper,
+        includeUpper: includeUpper,
+      ));
+    });
+  }
+}
+
+extension VaccineStockDataQueryObject
+    on QueryBuilder<VaccineStockData, VaccineStockData, QFilterCondition> {}
 
 // coverage:ignore-file
 // ignore_for_file: duplicate_ignore, non_constant_identifier_names, constant_identifier_names, invalid_use_of_protected_member, unnecessary_cast, prefer_const_constructors, lines_longer_than_80_chars, require_trailing_commas, inference_failure_on_function_invocation, unnecessary_parenthesis, unnecessary_raw_strings, unnecessary_null_checks, join_return_with_assignment, prefer_final_locals, avoid_js_rounded_ints, avoid_positional_boolean_parameters, always_specify_types

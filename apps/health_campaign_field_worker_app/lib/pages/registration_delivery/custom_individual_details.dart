@@ -116,7 +116,10 @@ class CustomIndividualDetailsPageState
             ),
           );
         }
-        router.popUntil(
+        // router.popUntil(
+        //     (route) => route.settings.name == SearchBeneficiaryRoute.name);
+        (context.router.parent() as StackRouter).maybePop();
+        context.router.popUntil(
             (route) => route.settings.name == SearchBeneficiaryRoute.name);
         router.push(CustomBeneficiaryAcknowledgementRoute(
           enableViewHousehold: true,
@@ -410,6 +413,19 @@ class CustomIndividualDetailsPageState
                                         addressModel: addressModel,
                                         householdModel: householdModel,
                                         model: individual.copyWith(
+                                          auditDetails:
+                                              individual.auditDetails == null
+                                                  ? null
+                                                  : individual.auditDetails!
+                                                      .copyWith(
+                                                      lastModifiedBy:
+                                                          RegistrationDeliverySingleton()
+                                                              .loggedInUserUuid,
+                                                      lastModifiedTime:
+                                                          ContextUtilityExtensions(
+                                                                  context)
+                                                              .millisecondsSinceEpoch(),
+                                                    ),
                                           clientAuditDetails: (individual
                                                           .clientAuditDetails
                                                           ?.createdBy !=

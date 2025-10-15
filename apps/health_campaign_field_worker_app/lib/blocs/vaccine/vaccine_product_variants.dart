@@ -11,8 +11,6 @@ import '../../models/entities/vaccine/vaccine_dose_variant.dart';
 import '../../utils/constants.dart';
 import '../../utils/typedefs.dart';
 
-// import '../utils/typedefs.dart';
-
 part 'vaccine_product_variants.freezed.dart';
 
 typedef VaccineProductVariantEmitter = Emitter<VaccineProductVariantState>;

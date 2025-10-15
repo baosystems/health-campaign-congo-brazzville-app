@@ -491,6 +491,14 @@ class HomeShowcase {
     return 'HOME_SHOWCASE_SUMMARY_REPORT_REGISTRED_CHILDREN';
   }
 
+  String get summaryReportUnderVaccinated {
+    return 'HOME_SHOWCASE_SUMMARY_REPORT_UNDER_VACCINATED_CHILDREN';
+  }
+
+  String get summaryReportFullyVaccinated {
+    return 'HOME_SHOWCASE_SUMMARY_REPORT_FULLY_VACCINATED_CHILDREN';
+  }
+
   String get summaryReportAdministredChildren {
     return 'HOME_SHOWCASE_SUMMARY_REPORT_ADMINISTRED_CHILDREN';
   }

@@ -81,8 +81,8 @@ class CustomStockDetailsPageState
 
   FormGroup _form(bool isDistributor, bool isHealthFacilitySupervisor,
       StockRecordEntryType entryType) {
-    deliveryTeamSelected = context.isHealthFacilitySupervisor &&
-        entryType != StockRecordEntryType.receipt;
+    // deliveryTeamSelected = context.isHealthFacilitySupervisor &&
+    //     entryType != StockRecordEntryType.receipt;
     return fb.group({
       _productVariantKey: FormControl<ProductVariantModel>(),
       _secondaryPartyKey: FormControl<String>(
@@ -157,8 +157,8 @@ class CustomStockDetailsPageState
 
                 const module = i18.stockDetails;
                 final isWarehouseMgr = context.isWarehouseMgr;
-                deliveryTeamSelected = context.isHealthFacilitySupervisor &&
-                    entryType != StockRecordEntryType.receipt;
+                // deliveryTeamSelected = context.isHealthFacilitySupervisor &&
+                //     entryType != StockRecordEntryType.receipt;
 
                 String pageTitle;
                 String quantityCountLabel;
@@ -213,7 +213,7 @@ class CustomStockDetailsPageState
                     transactionPartyLabel =
                         module.selectTransactingPartyReturned;
                     quantityCountLabel = module.quantityReturnedLabel;
-                    transactionType = TransactionType.received.toValue();
+                    transactionType = TransactionType.dispatched.toValue();
                     partialBlistersQuantityValidator = [
                       Validators.required,
                       Validators.min(minQuantity),
@@ -784,6 +784,9 @@ class CustomStockDetailsPageState
 
                                           if (submit && context.mounted) {
                                             Map<String, int> skuCounts = {};
+                                            Map<String, int> currentSKUCounts =
+                                                context
+                                                    .getAllProductSkuCounts();
 
                                             int totalQuantity = 0;
                                             int dosesPerFlacon =
@@ -800,38 +803,34 @@ class CustomStockDetailsPageState
                                                         0;
 
                                             totalQuantity = entryType ==
-                                                        StockRecordEntryType
-                                                            .dispatch ||
-                                                    entryType ==
-                                                        StockRecordEntryType
-                                                            .loss ||
-                                                    entryType ==
-                                                        StockRecordEntryType
-                                                            .damaged
+                                                    StockRecordEntryType.receipt
                                                 ? ((quantity != null
-                                                        ? int.parse(
-                                                            quantity.toString(),
-                                                          )
-                                                        : 0)) *
-                                                    -1
-                                                : quantity != null
                                                     ? int.parse(
                                                         quantity.toString(),
                                                       )
+                                                    : 0))
+                                                : quantity != null
+                                                    ? int.parse(
+                                                          quantity.toString(),
+                                                        ) *
+                                                        -1
                                                     : 0;
                                             if (productVariant.sku == null) {
                                               return;
                                             }
-                                            skuCounts[productVariant.sku!] =
-                                                totalQuantity * dosesPerFlacon;
 
-                                            if (entryType ==
-                                                StockRecordEntryType.dispatch) {
-                                              if (((skuCounts[productVariant
-                                                              .sku!] ??
-                                                          0) +
-                                                      totalQuantity <
-                                                  0)) {
+                                            // Update the quantity based on dosesPerFlacon
+                                            totalQuantity *= dosesPerFlacon;
+
+                                            if (((currentSKUCounts[
+                                                            productVariant
+                                                                .sku!] ??
+                                                        0) +
+                                                    totalQuantity <
+                                                0)) {
+                                              if (entryType !=
+                                                  StockRecordEntryType
+                                                      .receipt) {
                                                 await DigitToast.show(
                                                   context,
                                                   options: DigitToastOptions(
@@ -850,37 +849,8 @@ class CustomStockDetailsPageState
                                               }
                                             }
 
-                                            if (entryType ==
-                                                    StockRecordEntryType.loss ||
-                                                entryType ==
-                                                    StockRecordEntryType
-                                                        .damaged ||
-                                                entryType ==
-                                                    StockRecordEntryType
-                                                        .returned) {
-                                              if (quantity >
-                                                  skuCounts[
-                                                      productVariant.sku!]) {
-                                                await DigitToast.show(
-                                                  context,
-                                                  options: DigitToastOptions(
-                                                      localizations.translate(context
-                                                                  .isCDD ||
-                                                              entryType ==
-                                                                  StockRecordEntryType
-                                                                      .returned
-                                                          ? i18_local
-                                                              .beneficiaryDetails
-                                                              .validationForExcessStockReturn
-                                                          : i18_local
-                                                              .beneficiaryDetails
-                                                              .validationForExcessStockDispatch),
-                                                      true,
-                                                      theme),
-                                                );
-                                                return;
-                                              }
-                                            }
+                                            skuCounts[productVariant.sku!] =
+                                                totalQuantity;
 
                                             context.read<AuthBloc>().add(
                                                   AuthUpdateProductSKUCountsEvent(
@@ -1111,96 +1081,38 @@ class CustomStockDetailsPageState
                                         List<FacilityModel> filteredFacilities =
                                             [];
 
-                                        if (context.selectedProject.address
-                                                ?.boundaryType ==
-                                            Constants.countryBoundaryLevel) {
-                                          filteredFacilities = entryType ==
-                                                  StockRecordEntryType.receipt
-                                              ? allFacilities
-                                                  .where((element) =>
-                                                      element.usage ==
-                                                      Constants.centralFacility)
-                                                  .toList()
-                                              : allFacilities
-                                                  .where((element) =>
-                                                      element.usage ==
-                                                      Constants.lgaFacility)
-                                                  .toList();
-                                        } else if (context.selectedProject
-                                                .address?.boundaryType ==
-                                            Constants.stateBoundaryLevel) {
-                                          filteredFacilities = entryType ==
-                                                  StockRecordEntryType.receipt
-                                              ? allFacilities
-                                                  .where((element) =>
-                                                      element.usage ==
-                                                      Constants.centralFacility)
-                                                  .toList()
-                                              : allFacilities
-                                                  .where((element) =>
-                                                      element.usage ==
-                                                      Constants.lgaFacility)
-                                                  .toList();
-                                        } else if (context.selectedProject
-                                                .address?.boundaryType ==
-                                            Constants.lgaBoundaryLevel) {
-                                          filteredFacilities = entryType ==
-                                                  StockRecordEntryType.receipt
-                                              ? facilities
-                                                  .where((element) =>
-                                                      element.usage ==
-                                                      Constants.stateFacility)
-                                                  .toList()
-                                              : facilities
-                                                  .where((element) =>
-                                                      element.usage ==
-                                                      Constants.healthFacility)
-                                                  .toList();
-                                        } else {
-                                          filteredFacilities = context
-                                                  .isDistributor
-                                              ? facilities
-                                                  .where((element) =>
-                                                      element.usage ==
-                                                      Constants.healthFacility)
-                                                  .toList()
-                                              : entryType ==
-                                                      StockRecordEntryType
-                                                          .receipt
-                                                  ? allFacilities
-                                                      .where((element) =>
-                                                          element.usage ==
-                                                          Constants.lgaFacility)
-                                                      .toList()
-                                                  // +
-                                                  // facilities
-                                                  //     .where((element) =>
-                                                  //         element.usage ==
-                                                  //         Constants
-                                                  //             .healthFacility)
-                                                  //     .toList()
-                                                  : [];
-                                        }
+                                        filteredFacilities = entryType ==
+                                                StockRecordEntryType.receipt
+                                            ? facilities
+                                                .where((element) =>
+                                                    element.usage ==
+                                                    Constants.storingResource)
+                                                .toList()
+                                            : facilities
+                                                .where((element) =>
+                                                    element.usage ==
+                                                    Constants.healthFacility)
+                                                .toList();
 
-                                        facilities =
-                                            context.isHealthFacilitySupervisor &&
-                                                    entryType !=
-                                                        StockRecordEntryType
-                                                            .receipt
-                                                ? []
-                                                : filteredFacilities.isEmpty
-                                                    ? facilities
-                                                    : filteredFacilities;
+                                        // facilities =
+                                        //     context.isHealthFacilitySupervisor &&
+                                        //             entryType !=
+                                        //                 StockRecordEntryType
+                                        //                     .receipt
+                                        //         ? []
+                                        //         : filteredFacilities.isEmpty
+                                        //             ? facilities
+                                        //             : filteredFacilities;
 
-                                        final teamFacilities = [
-                                          FacilityModel(
-                                            id: 'Delivery Team',
-                                            name: 'CDD Team',
-                                          ),
-                                        ];
-                                        teamFacilities.addAll(
-                                          facilities,
-                                        );
+                                        // final teamFacilities = [
+                                        //   FacilityModel(
+                                        //     id: 'Delivery Team',
+                                        //     name: 'CDD Team',
+                                        //   ),
+                                        // ];
+                                        // teamFacilities.addAll(
+                                        //   facilities,
+                                        // );
 
                                         return Column(
                                           children: [
@@ -1218,12 +1130,7 @@ class CustomStockDetailsPageState
                                                     await context.router.push(
                                                         CustomInventoryFacilitySelectionRoute(
                                                   facilities:
-                                                      (isHealthFacilitySupervisor &&
-                                                              entryType !=
-                                                                  StockRecordEntryType
-                                                                      .receipt)
-                                                          ? teamFacilities
-                                                          : facilities,
+                                                      filteredFacilities,
                                                 )) as FacilityModel?;
 
                                                 if (facility == null) return;

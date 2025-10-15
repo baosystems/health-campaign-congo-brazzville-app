@@ -97,7 +97,7 @@ class Constants {
 
   static const String reAdministeredKey = "reAdministered";
   static const String reDoseQuantityKey = 'reDoseQuantity';
-  static const String healthFacility = 'Health Facility';
+  static const String healthFacility = 'Health facility';
   static const String lgaBoundaryLevel = 'District';
   static const String provincialBoundaryLevel = 'Provincia';
   static const String centralFacility = 'Central Facility';
@@ -105,6 +105,7 @@ class Constants {
   static const String stateFacility = 'Regional Facility';
   static const String lgaFacility = 'District Facility';
   static const String countryBoundaryLevel = 'Country';
+  static const String storingResource = "Storing Resource";
   static const int mlPerBottle = 30;
   static const int apiCallLimit = 1000;
   static const String pipeSeparator = '||';

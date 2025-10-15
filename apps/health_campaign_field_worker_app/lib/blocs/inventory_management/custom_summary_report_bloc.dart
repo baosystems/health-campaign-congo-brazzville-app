@@ -105,6 +105,7 @@ class SummaryReportBloc extends Bloc<SummaryReportEvent, SummaryReportState> {
       } else if (normalizedDose == 'fullyvaccinated') {
         fullyVaccinatedChildrenList.add(element);
       }
+    }
 
     for (var task in administeredChildrenList) {
       for (var resource in task.resources!) {

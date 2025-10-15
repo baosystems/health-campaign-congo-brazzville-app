@@ -12,7 +12,6 @@ import 'package:registration_delivery/registration_delivery.dart';
 import '../../../models/entities/assessment_checklist/status.dart'
     as status_local;
 import '../../data/repositories/custom_task.dart';
-// import '../../progress_indicator/progress_indicator.dart';
 import '../progress_indicator/progress_indicator.dart';
 
 import 'package:digit_ui_components/digit_components.dart';

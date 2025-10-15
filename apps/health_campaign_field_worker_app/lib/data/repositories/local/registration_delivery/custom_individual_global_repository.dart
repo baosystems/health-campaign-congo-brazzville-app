@@ -11,11 +11,6 @@ import 'package:registration_delivery/models/entities/task.dart';
 import 'package:registration_delivery/models/entities/task_resource.dart';
 import 'package:registration_delivery/utils/global_search_parameters.dart';
 
-// import '../../../models/entities/status.dart';
-// import '../../../models/entities/task.dart';
-// import '../../../models/entities/task_resource.dart';
-// import '../../../utils/global_search_parameters.dart';
-
 class CustomIndividualGlobalSearchRepository extends LocalRepository {
   CustomIndividualGlobalSearchRepository(super.sql, super.opLogManager);
 

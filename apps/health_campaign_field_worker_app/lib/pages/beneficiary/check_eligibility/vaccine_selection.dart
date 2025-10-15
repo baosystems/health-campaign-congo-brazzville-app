@@ -5,7 +5,6 @@ import 'package:digit_components/widgets/digit_elevated_button.dart';
 import 'package:digit_ui_components/digit_components.dart';
 import 'package:digit_ui_components/services/location_bloc.dart';
 import 'package:digit_ui_components/widgets/molecules/digit_card.dart';
-// import 'package:drift/drift.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:health_campaign_field_worker_app/data/local_store/no_sql/schema/app_configuration.dart';
@@ -27,9 +26,6 @@ import '../../../utils/environment_config.dart';
 import '../../../utils/extensions/extensions.dart';
 import '../../../widgets/localized.dart';
 import 'package:digit_data_model/data_model.dart';
-
-// import '../../../models/entities/additional_fields_type.dart'
-//     as additional_fields_local;
 import '../../../models/entities/assessment_checklist/status.dart'
     as status_local;
 import '../../../widgets/custom_back_navigation.dart';
@@ -37,10 +33,7 @@ import '../../../widgets/showcase/showcase_wrappers.dart';
 import 'package:registration_delivery/utils/i18_key_constants.dart' as i18;
 import '../../../utils/i18_key_constants.dart' as i18_local;
 import 'package:survey_form/utils/i18_key_constants.dart' as i18_survey_form;
-
-//  Add this import for the radio button component.
 import 'package:group_radio_button/group_radio_button.dart';
-
 import '../../../utils/date_utils.dart' as date_utils_local;
 
 @RoutePage()

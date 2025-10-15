@@ -77,9 +77,11 @@ class SummaryReportBloc extends Bloc<SummaryReportEvent, SummaryReportState> {
                 createdTime <= currentCycle.endDate;
           }).toList();
     for (var element in taskList) {
-      if (element.status == null) continue;
-      final status = StatusMapper.fromValue(element.status);
-
+      if (element.status == null && element.additionalFields == null) continue;
+      Status? status;
+      if (element.status != null) {
+        status = StatusMapper.fromValue(element.status);
+      }
       if (status == Status.administeredSuccess) {
         administeredChildrenList.add(element);
       } else if (status == Status.beneficiaryRefused) {
@@ -91,9 +93,10 @@ class SummaryReportBloc extends Bloc<SummaryReportEvent, SummaryReportState> {
             f.key ==
             additional_fields_local.AdditionalFieldsType.doseStatus.toValue(),
       );
-      final doseStatusValue = doseStatusField?.value?.toLowerCase();
 
-      final normalizedDose = doseStatusValue?.replaceAll('_', '') ?? '';
+      final String? doseStatusValue =
+          (doseStatusField?.value as String?)?.toLowerCase();
+      final String normalizedDose = doseStatusValue?.replaceAll('_', '') ?? '';
 
       if (normalizedDose == 'zerodose') {
         zeroDoseChildrenList.add(element);
@@ -102,7 +105,6 @@ class SummaryReportBloc extends Bloc<SummaryReportEvent, SummaryReportState> {
       } else if (normalizedDose == 'fullyvaccinated') {
         fullyVaccinatedChildrenList.add(element);
       }
-    }
 
     for (var task in administeredChildrenList) {
       for (var resource in task.resources!) {

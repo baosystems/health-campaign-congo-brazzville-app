@@ -510,6 +510,41 @@ class _VaccineDeliveryPageState extends LocalizedState<VaccineDeliveryPage> {
                                               .toList();
                                       int currentDose =
                                           vaccineSearchState.currentDose ?? 0;
+                                      for (var element
+                                          in currentVaccineDoseDataSelected) {
+                                        if (element.numberOfDose > 0) {
+                                          if (element.batchNumber == null ||
+                                              element.batchNumber == "") {
+                                            await DigitToast.show(
+                                              context,
+                                              options: DigitToastOptions(
+                                                localizations.translate(
+                                                    i18_local
+                                                        .deliverIntervention
+                                                        .enterBatchNumber),
+                                                true,
+                                                theme,
+                                              ),
+                                            );
+                                            return;
+                                          } else if (element
+                                                  .batchNumber!.length <
+                                              3) {
+                                            await DigitToast.show(
+                                              context,
+                                              options: DigitToastOptions(
+                                                localizations.translate(
+                                                    i18_local
+                                                        .deliverIntervention
+                                                        .batchNumberMinLength),
+                                                true,
+                                                theme,
+                                              ),
+                                            );
+                                            return;
+                                          }
+                                        }
+                                      }
                                       final submit = await showCustomPopup(
                                         context: context,
                                         builder: (popupContext) => Popup(
@@ -744,7 +779,8 @@ class _VaccineDeliveryPageState extends LocalizedState<VaccineDeliveryPage> {
                                                 ),
                                                 form: form,
                                                 enabled: true,
-                                                isRequired: isCommentsRequired(),
+                                                isRequired:
+                                                    isCommentsRequired(),
                                                 menuItems:
                                                     deliveryCommentOptions
                                                         .map((e) {
@@ -923,6 +959,8 @@ class _VaccineDetailsCardState extends LocalizedState<VaccineDetailsCard> {
   static const _enterBatchNumberKey = 'enterBatchNumber';
   static const _numberOfDoseKey = 'numberOfDose';
 
+  bool isBatchNumberRequired = false;
+
   FormGroup _form() {
     return fb.group({
       _selectVaccineKey: FormControl<String>(
@@ -933,17 +971,11 @@ class _VaccineDetailsCardState extends LocalizedState<VaccineDetailsCard> {
         ],
       ),
       _enterBatchNumberKey: FormControl<String>(
-        validators: [
-          Validators.required,
-        ],
+        validators: [],
       ),
       _numberOfDoseKey: FormControl<int>(
         value: 0,
-        validators: [
-          Validators.required,
-          Validators.min(0),
-          Validators.max(1)
-        ],
+        validators: [Validators.required, Validators.min(0), Validators.max(1)],
       ),
     });
   }
@@ -986,7 +1018,7 @@ class _VaccineDetailsCardState extends LocalizedState<VaccineDetailsCard> {
                       builder: (field) {
                         return InputField(
                           type: InputType.text,
-                          isRequired: true,
+                          isRequired: isBatchNumberRequired,
                           label: localizations.translate(
                             i18_local.deliverIntervention.enterBatchNumber,
                           ),
@@ -1011,6 +1043,21 @@ class _VaccineDetailsCardState extends LocalizedState<VaccineDetailsCard> {
                         initialValue: "0",
                         maxValue: 1,
                         onChange: (value) {
+                          if (int.parse(value) > 0) {
+                            setState(() {
+                              isBatchNumberRequired = true;
+                            });
+                            form.setValidators([Validators.required],
+                                autoValidate: true);
+                            form.markAllAsTouched();
+                          } else {
+                            setState(() {
+                              isBatchNumberRequired = false;
+                            });
+                            form.setValidators([], autoValidate: true);
+                            form.markAllAsTouched();
+                          }
+
                           field.control.value = int.parse(value);
                           widget.vaccineDeliveryDetails.numberOfDose =
                               int.parse(value);

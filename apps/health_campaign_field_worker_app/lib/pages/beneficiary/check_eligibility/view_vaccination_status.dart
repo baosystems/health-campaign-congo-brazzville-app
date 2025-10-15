@@ -34,14 +34,11 @@ import '../../../router/app_router.dart';
 import '../../../utils/app_enums.dart';
 import '../../../utils/constants.dart';
 import '../../../utils/date_utils.dart';
-import '../../../utils/utils.dart' show getIndividualAdditionalFields;
+import '../../../utils/utils.dart';
 import '../../../utils/environment_config.dart';
 import '../../../utils/extensions/extensions.dart';
 import '../../../widgets/localized.dart';
 import 'package:digit_data_model/data_model.dart';
-
-// import '../../../models/entities/additional_fields_type.dart'
-//     as additional_fields_local;
 import '../../../models/entities/assessment_checklist/status.dart'
     as status_local;
 import '../../../widgets/custom_back_navigation.dart';
@@ -224,20 +221,6 @@ class _ViewVaccinationStatusPageState
   @override
   void initState() {
     context.read<LocationBloc>().add(const LocationEvent.load());
-    // if (!false) {
-    //   context.read<ServiceBloc>().add(ServiceSurveyFormEvent(
-    //         value: Random().nextInt(100).toString(),
-    //         submitTriggered: true,
-    //       ));
-    // } else {
-    //   context.read<ServiceBloc>().add(ServiceSearchEvent(
-    //         serviceSearchModel: ServiceSearchModel(
-    //           relatedClientReferenceId:
-    //               widget.projectBeneficiaryClientReferenceId,
-    //         ),
-    //       ));
-    // }
-    // fetchTasksData();
     super.initState();
   }
 
@@ -345,23 +328,6 @@ class _ViewVaccinationStatusPageState
     return true;
   }
 
-  String _numberToWords(int number) {
-    // Simple mapping for numbers 0-6, extend as needed
-    const words = [
-      'Zero',
-      'One',
-      'Two',
-      'Three',
-      'Four',
-      'Five',
-      'Six',
-    ];
-    if (number >= 0 && number < words.length) {
-      return words[number];
-    }
-    return number.toString();
-  }
-
   Widget _buildVaccineRadioChecklist({
     required int index,
     required BuildContext context,
@@ -377,7 +343,7 @@ class _ViewVaccinationStatusPageState
       children: [
         Text(
             localizations.translate(
-              '${i18_local.deliverIntervention.vaccinsSelectionLabelForGroup}_${_numberToWords(index).toUpperCase()}',
+              '${i18_local.deliverIntervention.vaccinsSelectionLabelForGroup}_${numberToWords(index).toUpperCase()}',
             ),
             style: theme.textTheme.headlineLarge),
         Text(
@@ -536,9 +502,6 @@ class _ViewVaccinationStatusPageState
                   .toList()
                   .firstOrNull;
               final selectedCodesString = selectedAttribute?.value as String;
-              // setState(() {
-              //   selectedCodes = selectedCodesString.split('.').toList();
-              // });
             }
           }
         },

@@ -444,3 +444,33 @@ class DownloadBeneficiary {
     this.suffixLabel,
   });
 }
+
+const Set<String> filterDoseCodes = {
+  "HCM_VACCINE_VIT_A",
+  "HCM_VACCINE_MEN_A",
+};
+
+DoseStatus getDoseStatus(
+  List<String> selectedCodes,
+  List<String> noSelectedCodes,
+) {
+  final updatedNoSelectedCodes =
+      noSelectedCodes.whereNot((e) => filterDoseCodes.contains(e)).toList();
+
+  if (selectedCodes.isEmpty && updatedNoSelectedCodes.isEmpty) {
+    return DoseStatus.none;
+  } else if ((selectedCodes.isEmpty && updatedNoSelectedCodes.isNotEmpty) ||
+      (selectedCodes.isNotEmpty &&
+          updatedNoSelectedCodes.isNotEmpty &&
+          updatedNoSelectedCodes.contains(Constants.penta1))) {
+    return DoseStatus.zeroDose;
+  } else if (selectedCodes.isNotEmpty &&
+      updatedNoSelectedCodes.isNotEmpty &&
+      selectedCodes.contains(Constants.penta1)) {
+    return DoseStatus.underVaccinated;
+  } else if (selectedCodes.isNotEmpty && updatedNoSelectedCodes.isEmpty) {
+    return DoseStatus.fullyVaccinated;
+  }
+
+  return DoseStatus.zeroDose;
+}

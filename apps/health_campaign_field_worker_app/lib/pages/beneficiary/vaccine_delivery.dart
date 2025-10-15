@@ -79,14 +79,14 @@ class _VaccineDeliveryPageState extends LocalizedState<VaccineDeliveryPage> {
   Set<String> availedVaccineDoseCodes = {};
 
   List<VaccineDeliveryDetails> currentVaccineDoseData = [];
-  Set<VaccineDeliveryDetails> currentVaccineDoseDataSelected = {};
+  Map<String, VaccineDeliveryDetails> currentVaccineDoseDataSelected = {};
 
   Set<String> nextVaccineDoseCodes = {};
 
   bool isCommentsRequired() {
     bool result = currentVaccineDoseDataSelected.isEmpty ||
         currentVaccineDoseDataSelected.length < currentVaccineDoseData.length ||
-        currentVaccineDoseDataSelected
+        currentVaccineDoseDataSelected.values
             .any((vaccineData) => vaccineData.numberOfDose == 0);
 
     return result;
@@ -314,7 +314,7 @@ class _VaccineDeliveryPageState extends LocalizedState<VaccineDeliveryPage> {
       projectId: RegistrationDeliverySingleton().projectId,
       resources: currentVaccineDoseDataSelected.isEmpty
           ? null
-          : currentVaccineDoseDataSelected
+          : currentVaccineDoseDataSelected.values
               .map((e) => TaskResourceModel(
                     taskclientReferenceId: clientReferenceId,
                     clientReferenceId: IdGen.i.identifier,
@@ -499,7 +499,7 @@ class _VaccineDeliveryPageState extends LocalizedState<VaccineDeliveryPage> {
                                       updatedAvailedVaccineDoseCodes
                                           .addAll(availedVaccineDoseCodes);
                                       updatedAvailedVaccineDoseCodes.addAll(
-                                          currentVaccineDoseDataSelected
+                                          currentVaccineDoseDataSelected.values
                                               .map((e) => e.vaccineCode));
                                       List<String>
                                           notDeliveredVaccineDoseCodes =
@@ -511,7 +511,8 @@ class _VaccineDeliveryPageState extends LocalizedState<VaccineDeliveryPage> {
                                       int currentDose =
                                           vaccineSearchState.currentDose ?? 0;
                                       for (var element
-                                          in currentVaccineDoseDataSelected) {
+                                          in currentVaccineDoseDataSelected
+                                              .values) {
                                         if (element.numberOfDose > 0) {
                                           if (element.batchNumber == null ||
                                               element.batchNumber == "") {
@@ -709,24 +710,32 @@ class _VaccineDeliveryPageState extends LocalizedState<VaccineDeliveryPage> {
                                     ),
                                     Column(
                                       children: [
-                                        for (int i = 0;
-                                            i < currentVaccineDoseData.length;
-                                            i++)
+                                        for (var vaccineDoseElement
+                                            in currentVaccineDoseData)
                                           VaccineDetailsCard(
                                             key: ValueKey(
-                                                currentVaccineDoseData[i]
-                                                    .vaccineCode),
-                                            vaccineDeliveryDetails:
-                                                currentVaccineDoseData[i],
+                                                vaccineDoseElement.vaccineCode),
+                                            vaccineDoseCode:
+                                                vaccineDoseElement.vaccineCode,
+                                            productVariationId:
+                                                vaccineDoseElement
+                                                    .productVariationId,
+                                            currentVaccineDetailsSelected:
+                                                currentVaccineDoseDataSelected[
+                                                    vaccineDoseElement
+                                                        .vaccineCode],
                                             onVaccineDetailsChanged:
                                                 (vaccineDetails) {
                                               if (vaccineDetails.numberOfDose >
                                                   0) {
-                                                currentVaccineDoseDataSelected
-                                                    .add(vaccineDetails);
+                                                currentVaccineDoseDataSelected[
+                                                        vaccineDoseElement
+                                                            .vaccineCode] =
+                                                    vaccineDetails;
                                               } else {
                                                 currentVaccineDoseDataSelected
-                                                    .remove(vaccineDetails);
+                                                    .remove(vaccineDoseElement
+                                                        .vaccineCode);
                                               }
                                               if (isCommentsRequired()) {
                                                 form
@@ -942,11 +951,15 @@ class _VaccineDeliveryPageState extends LocalizedState<VaccineDeliveryPage> {
 }
 
 class VaccineDetailsCard extends LocalizedStatefulWidget {
-  final VaccineDeliveryDetails vaccineDeliveryDetails;
+  final String vaccineDoseCode;
+  final String productVariationId;
+  final VaccineDeliveryDetails? currentVaccineDetailsSelected;
   final Function(VaccineDeliveryDetails) onVaccineDetailsChanged;
   const VaccineDetailsCard({
     super.key,
-    required this.vaccineDeliveryDetails,
+    required this.vaccineDoseCode,
+    required this.productVariationId,
+    required this.currentVaccineDetailsSelected,
     required this.onVaccineDetailsChanged,
   });
 
@@ -961,11 +974,12 @@ class _VaccineDetailsCardState extends LocalizedState<VaccineDetailsCard> {
 
   bool isBatchNumberRequired = false;
 
+  late VaccineDeliveryDetails currentVaccineDetails;
+
   FormGroup _form() {
     return fb.group({
       _selectVaccineKey: FormControl<String>(
-        value:
-            localizations.translate(widget.vaccineDeliveryDetails.vaccineCode),
+        value: localizations.translate(widget.vaccineDoseCode),
         validators: [
           Validators.required,
         ],
@@ -981,6 +995,15 @@ class _VaccineDetailsCardState extends LocalizedState<VaccineDetailsCard> {
   }
 
   @override
+  void initState() {
+    currentVaccineDetails = widget.currentVaccineDetailsSelected ??
+        VaccineDeliveryDetails(
+            productVariationId: widget.productVariationId,
+            vaccineCode: widget.vaccineDoseCode);
+    super.initState();
+  }
+
+  @override
   Widget build(BuildContext context) {
     return DigitCard(
       margin: const EdgeInsets.fromLTRB(0, kPadding, 0, 0),
@@ -988,12 +1011,12 @@ class _VaccineDetailsCardState extends LocalizedState<VaccineDetailsCard> {
         ReactiveFormBuilder(
             form: () => _form(),
             builder: (context, form, child) {
-              form.control(_selectVaccineKey).value = localizations
-                  .translate(widget.vaccineDeliveryDetails.vaccineCode);
+              form.control(_selectVaccineKey).value =
+                  localizations.translate(currentVaccineDetails.vaccineCode);
               form.control(_enterBatchNumberKey).value =
-                  widget.vaccineDeliveryDetails.batchNumber;
+                  currentVaccineDetails.batchNumber;
               form.control(_numberOfDoseKey).value =
-                  widget.vaccineDeliveryDetails.numberOfDose;
+                  currentVaccineDetails.numberOfDose;
               return Column(
                 children: [
                   ReactiveWrapperField(
@@ -1019,15 +1042,16 @@ class _VaccineDetailsCardState extends LocalizedState<VaccineDetailsCard> {
                         return InputField(
                           type: InputType.text,
                           isRequired: isBatchNumberRequired,
+                          isDisabled: !isBatchNumberRequired,
                           label: localizations.translate(
                             i18_local.deliverIntervention.enterBatchNumber,
                           ),
                           errorMessage: field.errorText,
                           onChange: (val) {
                             field.control.value = val;
-                            widget.vaccineDeliveryDetails.batchNumber = val;
-                            widget.onVaccineDetailsChanged(
-                                widget.vaccineDeliveryDetails);
+                            currentVaccineDetails.batchNumber = val;
+                            widget
+                                .onVaccineDetailsChanged(currentVaccineDetails);
                           },
                         );
                       }),
@@ -1047,22 +1071,16 @@ class _VaccineDetailsCardState extends LocalizedState<VaccineDetailsCard> {
                             setState(() {
                               isBatchNumberRequired = true;
                             });
-                            form.setValidators([Validators.required],
-                                autoValidate: true);
-                            form.markAllAsTouched();
                           } else {
                             setState(() {
                               isBatchNumberRequired = false;
+                              form.control(_enterBatchNumberKey).value = null;
                             });
-                            form.setValidators([], autoValidate: true);
-                            form.markAllAsTouched();
                           }
 
                           field.control.value = int.parse(value);
-                          widget.vaccineDeliveryDetails.numberOfDose =
-                              int.parse(value);
-                          widget.onVaccineDetailsChanged(
-                              widget.vaccineDeliveryDetails);
+                          currentVaccineDetails.numberOfDose = int.parse(value);
+                          widget.onVaccineDetailsChanged(currentVaccineDetails);
                         },
                       ),
                     ),

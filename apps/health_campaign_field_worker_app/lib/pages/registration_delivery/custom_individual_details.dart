@@ -116,7 +116,10 @@ class CustomIndividualDetailsPageState
             ),
           );
         }
-        router.popUntil(
+        // router.popUntil(
+        //     (route) => route.settings.name == SearchBeneficiaryRoute.name);
+        (context.router.parent() as StackRouter).maybePop();
+        context.router.popUntil(
             (route) => route.settings.name == SearchBeneficiaryRoute.name);
         router.push(CustomBeneficiaryAcknowledgementRoute(
           enableViewHousehold: true,
@@ -129,8 +132,28 @@ class CustomIndividualDetailsPageState
     }
   }
 
-  onBeneficiarySubmit(name, individual) async {
+  onBeneficiarySubmit(
+    name,
+    individual,
+    DateTime dob,
+  ) async {
     final router = context.router;
+    final theme = Theme.of(context);
+
+    final ageInYears = DateTime.now().difference(dob).inDays / 365;
+
+    if (ageInYears > 18) {
+      await DigitToast.show(
+        context,
+        options: DigitToastOptions(
+          localizations.translate(i18_local.individualDetails.childMaxAgeError),
+          true,
+          theme,
+        ),
+      );
+      return;
+    }
+
     router.push(CustomBeneficiarySummaryRoute(
       name: name,
       individualModel: individual,
@@ -364,8 +387,27 @@ class CustomIndividualDetailsPageState
                                   addressModel,
                                   projectBeneficiaryModel,
                                   loading,
-                                ) {
+                                ) async {
                                   isEditIndividual = true;
+                                  DateTime dob = form.control(_dobKey).value;
+                                  final ageInYears =
+                                      DateTime.now().difference(dob).inDays /
+                                          365;
+
+                                  if (ageInYears > 18 &&
+                                      widget.isHeadOfHousehold == false) {
+                                    await DigitToast.show(
+                                      context,
+                                      options: DigitToastOptions(
+                                        localizations.translate(i18_local
+                                            .individualDetails
+                                            .childMaxAgeError),
+                                        true,
+                                        theme,
+                                      ),
+                                    );
+                                    return;
+                                  }
                                   final scannerBloc =
                                       context.read<DigitScannerBloc>();
                                   scannerBloc.add(
@@ -440,6 +482,7 @@ class CustomIndividualDetailsPageState
                                             : null,
                                       ),
                                     );
+
                                     onSubmit(individual, householdModel, false);
                                   }
                                 },
@@ -520,9 +563,13 @@ class CustomIndividualDetailsPageState
                                       //         : null,
                                       //   ),
                                       // );
+                                      DateTime dob =
+                                          form.control(_dobKey).value;
+
                                       onBeneficiarySubmit(
                                           individual.name?.givenName ?? "",
-                                          individual);
+                                          individual,
+                                          dob);
                                     }
                                   }
                                 },

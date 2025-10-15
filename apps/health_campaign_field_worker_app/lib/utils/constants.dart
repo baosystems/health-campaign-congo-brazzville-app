@@ -108,7 +108,7 @@ class Constants {
   static const int mlPerBottle = 30;
   static const int apiCallLimit = 1000;
   static const String pipeSeparator = '||';
-  static const int mobileNumberLength = 8;
+  static const int mobileNumberLength = 9;
 
   static const String zeroDoseAssessment = "ZERODOSE_ASSESSMENT";
 
@@ -147,6 +147,8 @@ class Constants {
   static const String tablet_3_11 = "tablet_3_11";
   static const String tablet_12_59 = "tablet_12_59";
   static const String zeroDose = 'zeroDose';
+  static const String underVaccinated = 'underVaccinated';
+  static const String fullyVaccinated = 'fullyVaccinated';
 
   // todo enable before cycle2
   static const bool isDownSyncEnabled = true;

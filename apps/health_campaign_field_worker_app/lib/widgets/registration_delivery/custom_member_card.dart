@@ -227,7 +227,7 @@ class CustomMemberCard extends StatelessWidget {
     bool isHPVEligible =
         gender == Gender.female && ageInDays >= 3240 && ageInDays < 3600;
 
-    bool isAgeInEligible = ageInDays > 540 && !isHPVEligible;
+    bool isAgeInEligible = ageInDays > (18 * Constants.yearsInDays);
 
     final theme = Theme.of(context);
     if (isHead) {
@@ -343,8 +343,7 @@ class CustomMemberCard extends StatelessWidget {
         ageInDays >= (9 * Constants.yearsInDays) &&
         ageInDays < (10 * Constants.yearsInDays);
 
-    bool isAgeInEligible =
-        ageInDays > (18 * Constants.monthsInDays) && !isHPVEligible;
+    bool isAgeInEligible = ageInDays > (18 * Constants.yearsInDays);
 
     initializeVaccineSearch(
         BuildContext context, List<VaccineDoseData>? vaccineDataList) {

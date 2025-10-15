@@ -248,6 +248,8 @@ class DeliverIntervention {
 
   String get selectVaccine => 'DELIVER_INTERVENTION_SELECT_VACCINE';
   String get enterBatchNumber => 'DELIVER_INTERVENTION_ENTER_BATCH_NUMBER';
+  String get batchNumberMinLength =>
+      'DELIVER_INTERVENTION_BATCH_NUMBER_MIN_LENGTH';
   String get numberOfDose =>
       'DELIVER_INTERVENTION_NUMBER_OF_DOSE_ADMINISTERED_LABEL';
 
@@ -1479,6 +1481,8 @@ class IndividualDetails {
 
   String get onlyAlphabetsNumbersSpacesValidationMessage =>
       'INDIVIDUAL_DETAILS_ONLY_ALPHABETS_NUMBERS_SPACES_VALIDATION_MESSAGE';
+
+  String get childMaxAgeError => "CHILD_MAX_AGE_ERROR";
 
   String get headAgeValidError => "HEAD_AGE_VALID_ERROR";
 

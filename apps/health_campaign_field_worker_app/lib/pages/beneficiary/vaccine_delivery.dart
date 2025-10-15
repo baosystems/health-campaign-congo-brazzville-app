@@ -526,6 +526,7 @@ class _VaccineDeliveryPageState extends LocalizedState<VaccineDeliveryPage> {
                                                 theme,
                                               ),
                                             );
+                                            return;
                                           } else if (element
                                                   .batchNumber!.length <
                                               3) {
@@ -540,9 +541,8 @@ class _VaccineDeliveryPageState extends LocalizedState<VaccineDeliveryPage> {
                                                 theme,
                                               ),
                                             );
+                                            return;
                                           }
-
-                                          return;
                                         }
                                       }
                                       final submit = await showCustomPopup(

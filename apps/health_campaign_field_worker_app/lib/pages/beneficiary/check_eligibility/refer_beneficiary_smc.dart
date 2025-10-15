@@ -584,20 +584,3 @@ class CustomReferBeneficiarySMCPageState
     return shouldNavigateBack ?? false;
   }
 }
-
-
-// class CustomFacilityValueAccessor extends ControlValueAccessor<FacilityModel, String> {
-//   final FacilityModel facility;
-
-//   CustomFacilityValueAccessor(this.facility);
-
-//   @override
-//   String? modelToViewValue(FacilityModel? modelValue) {
-//     return modelValue?.id;
-//   }
-
-//   @override
-//   FacilityModel? viewToModelValue(String? viewValue) {
-//     return facility((f) => f.id == viewValue);
-//   }
-// }

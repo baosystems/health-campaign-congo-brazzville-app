@@ -641,7 +641,7 @@ class _VaccineSelectionPageState extends LocalizedState<VaccineSelectionPage> {
               WidgetsBinding.instance.addPostFrameCallback((_) async {
                 if (currentIndex < lastIndex) {
                   setState(() => currentIndex += 1);
-                } else {}
+                }
               });
             }
 

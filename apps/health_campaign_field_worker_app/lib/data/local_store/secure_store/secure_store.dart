@@ -1,5 +1,6 @@
 import 'dart:convert';
 
+import 'package:collection/collection.dart';
 import 'package:digit_data_model/data_model.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
@@ -20,10 +21,6 @@ class LocalSecureStore {
   static const isAppInActiveKey = 'isAppInActiveKey';
   static const manualSyncKey = 'manualSyncKey';
   static const selectedProjectTypeKey = 'selectedProjectType';
-  static const spaq1Key = 'spaq1';
-  static const spaq2Key = 'spaq2';
-
-  List<String> keysToKeep = [spaq1Key, spaq2Key];
 
   final storage = const FlutterSecureStorage();
 
@@ -151,42 +148,6 @@ class LocalSecureStore {
     }
   }
 
-  Future<int> get spaq1 async {
-    final userBody = await storage.read(key: userObjectKey);
-    if (userBody == null) return 0;
-    final spaq1MapString = await storage.read(key: spaq1Key);
-
-    if (spaq1MapString == null) return 0;
-
-    try {
-      final user = UserRequestModel.fromJson(json.decode(userBody));
-
-      Map<String, dynamic> spaq1Map = json.decode(spaq1MapString);
-
-      return spaq1Map[user.uuid] != null ? spaq1Map[user.uuid] as int : 0;
-    } catch (_) {
-      return 0;
-    }
-  }
-
-  Future<int> get spaq2 async {
-    final userBody = await storage.read(key: userObjectKey);
-    if (userBody == null) return 0;
-    final spaq2MapString = await storage.read(key: spaq2Key);
-
-    if (spaq2MapString == null) return 0;
-
-    try {
-      final user = UserRequestModel.fromJson(json.decode(userBody));
-
-      Map<String, dynamic> spaq2Map = json.decode(spaq2MapString);
-
-      return spaq2Map[user.uuid] != null ? spaq2Map[user.uuid] as int : 0;
-    } catch (_) {
-      return 0;
-    }
-  }
-
   Future<Map<String, int>> getAllProductSKUCounts() async {
     final userBody = await storage.read(key: userObjectKey);
     if (userBody == null) return {};
@@ -229,47 +190,6 @@ class LocalSecureStore {
       await storage.write(
         key: Constants.productSKUCounts,
         value: json.encode(skuCountsWithUUID),
-      );
-    } catch (_) {
-      return;
-    }
-  }
-
-  Future<void> setSpaqCounts(int spaq1, int spaq2) async {
-    final userBody = await storage.read(key: userObjectKey);
-    if (userBody == null) return;
-
-    try {
-      final user = UserRequestModel.fromJson(json.decode(userBody));
-
-      final spaq1MapString = await storage.read(key: spaq1Key);
-      final spaq2MapString = await storage.read(key: spaq2Key);
-      Map<String, dynamic> spaq1Map = {};
-      Map<String, dynamic> spaq2Map = {};
-
-      if (spaq1MapString != null) {
-        try {
-          spaq1Map = json.decode(spaq1MapString);
-        } catch (_) {}
-      }
-
-      if (spaq2MapString != null) {
-        try {
-          spaq2Map = json.decode(spaq2MapString);
-        } catch (_) {}
-      }
-
-      spaq1Map[user.uuid] = spaq1;
-      spaq2Map[user.uuid] = spaq2;
-
-      await storage.write(
-        key: spaq1Key,
-        value: json.encode(spaq1Map),
-      );
-
-      await storage.write(
-        key: spaq2Key,
-        value: json.encode(spaq2Map),
       );
     } catch (_) {
       return;
@@ -359,7 +279,7 @@ class LocalSecureStore {
     List<String> allKeys = allValues.keys.toList();
 
     List<String> keysToDelete =
-        allKeys.where((key) => !keysToKeep.contains(key)).toList();
+        allKeys.whereNot((key) => key == Constants.productSKUCounts).toList();
 
     for (String key in keysToDelete) {
       await storage.delete(key: key);

@@ -621,7 +621,11 @@ class CustomStockDetailsPageState
                                             referenceId: stockState.projectId,
                                             referenceIdType: 'PROJECT',
                                             quantity: quantity.toString(),
-                                            wayBillNumber: waybillNumber,
+                                            wayBillNumber: (waybillNumber !=
+                                                        null &&
+                                                    waybillNumber.length > 2)
+                                                ? waybillNumber
+                                                : null,
                                             receiverId: receiverId,
                                             receiverType: receiverType,
                                             senderId: senderId,
@@ -1081,18 +1085,11 @@ class CustomStockDetailsPageState
                                         List<FacilityModel> filteredFacilities =
                                             [];
 
-                                        filteredFacilities = entryType ==
-                                                StockRecordEntryType.receipt
-                                            ? facilities
-                                                .where((element) =>
-                                                    element.usage ==
-                                                    Constants.storingResource)
-                                                .toList()
-                                            : facilities
-                                                .where((element) =>
-                                                    element.usage ==
-                                                    Constants.healthFacility)
-                                                .toList();
+                                        filteredFacilities = facilities
+                                            .where((element) =>
+                                                element.usage ==
+                                                Constants.storingResource)
+                                            .toList();
 
                                         // facilities =
                                         //     context.isHealthFacilitySupervisor &&

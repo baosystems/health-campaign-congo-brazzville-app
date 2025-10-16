@@ -443,68 +443,6 @@ class CustomDeliverInterventionPageState
                                                               type: ToastType
                                                                   .error);
                                                         } else {
-                                                          // final shouldSubmit =
-                                                          //     await dialog
-                                                          //             .DigitDialog
-                                                          //         .show<bool>(
-                                                          //   context,
-                                                          //   options: dialog
-                                                          //       .DigitDialogOptions(
-                                                          //     titleText:
-                                                          //         localizations
-                                                          //             .translate(
-                                                          //       i18.deliverIntervention
-                                                          //           .dialogTitle,
-                                                          //     ),
-                                                          //     contentText:
-                                                          //         localizations
-                                                          //             .translate(
-                                                          //       i18.deliverIntervention
-                                                          //           .dialogContent,
-                                                          //     ),
-                                                          //     primaryAction: dialog
-                                                          //         .DigitDialogActions(
-                                                          //       label: localizations
-                                                          //           .translate(
-                                                          //         i18.common
-                                                          //             .coreCommonSubmit,
-                                                          //       ),
-                                                          //       action: (ctx) {
-                                                          //         Navigator.of(
-                                                          //                 ctx,
-                                                          //                 rootNavigator:
-                                                          //                     true)
-                                                          //             .pop(
-                                                          //                 true);
-                                                          //       },
-                                                          //     ),
-                                                          //     secondaryAction:
-                                                          //         dialog
-                                                          //             .DigitDialogActions(
-                                                          //       label: localizations
-                                                          //           .translate(
-                                                          //         i18.common
-                                                          //             .coreCommonGoback,
-                                                          //       ),
-                                                          //       action: (ctx) {
-                                                          //         Navigator.of(
-                                                          //                 ctx,
-                                                          //                 rootNavigator:
-                                                          //                     true)
-                                                          //             .pop(
-                                                          //                 false);
-                                                          //       },
-                                                          //     ),
-                                                          //   ),
-                                                          // );
-
-                                                          // Check the result of the dialog
-                                                          // if (shouldSubmit ??
-                                                          //     false) {
-                                                          //   if (context
-                                                          //       .mounted) {
-                                                          // vas
-
                                                           context
                                                               .read<
                                                                   LocationBloc>()

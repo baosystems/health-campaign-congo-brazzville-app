@@ -271,7 +271,8 @@ class ZeroDoseCheckPageState extends LocalizedState<ZeroDoseCheckPage> {
                                   responses[attributeCode] = value;
                                 }
 
-                                if(responses.entries.any((element) => element.value.isEmpty)){
+                                if (responses.entries
+                                    .any((element) => element.value.isEmpty)) {
                                   return;
                                 }
 

@@ -414,6 +414,7 @@ class ReferBeneficiary {
 
   String get reasonForReferralExpanded => 'REFERRAL_REASON';
   String get reasonComments => 'REFERRAL_COMMENTS';
+  String get referralID => 'REFERRAL_ID';
 }
 
 class HouseholdDetails {

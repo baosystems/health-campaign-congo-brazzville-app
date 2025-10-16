@@ -9,7 +9,6 @@ import 'package:registration_delivery/models/entities/status.dart';
 import 'package:registration_delivery/registration_delivery.dart';
 
 import '../../../../utils/search/global_search_parameters_smc.dart';
-// import 'package:registration_delivery/utils/global_search_parameters.dart';
 
 class IndividualGlobalSearchSMCRepository extends LocalRepository {
   IndividualGlobalSearchSMCRepository(super.sql, super.opLogManager);

@@ -288,8 +288,12 @@ class _VaccineDeliveryPageState extends LocalizedState<VaccineDeliveryPage> {
 
     DateTime? nextDateOfDelivery = notDeliveredVaccineDoseCodes.isEmpty
         ? null
-        : DateTime(DateTime.now().year, DateTime.now().month,
-            DateTime.now().day, DateTime.now().hour, DateTime.now().minute + 5);
+        : DateTime(
+            DateTime.now().year,
+            DateTime.now().month,
+            DateTime.now().day + 28,
+            DateTime.now().hour,
+            DateTime.now().minute);
     TaskModel task = TaskModel(
       projectBeneficiaryClientReferenceId: projectBeneficiaryClientReferenceId,
       clientReferenceId: clientReferenceId,

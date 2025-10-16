@@ -177,11 +177,13 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
         for (final sku in additionCounts!.keys) {
           // final existingCount = currentCounts[sku] ?? 0;
           final addition = additionCounts[sku] ?? 0;
-          currentCounts[sku] = addition;
+          currentCounts[sku] = (currentCounts[sku] ?? 0) + addition;
         }
       }
 
-      localSecureStore.setProductSKUCounts(currentCounts);
+      await localSecureStore.setProductSKUCounts(currentCounts);
+
+      Map<String, int> test = await localSecureStore.getAllProductSKUCounts();
 
       final accessToken = await localSecureStore.accessToken;
       final refreshToken = await localSecureStore.refreshToken;

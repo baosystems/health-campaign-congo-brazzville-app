@@ -160,8 +160,11 @@ class LocalSecureStore {
       final localStorageMap =
           json.decode(localStorageStringMap) as Map<String, dynamic>;
       if (localStorageMap[userUUID] != null) {
-        Map<String, int> productCountMap =
-            localStorageMap[userUUID] as Map<String, int>;
+        Map<String, int> productCountMap = {};
+        for (var element in localStorageMap[userUUID].entries) {
+          productCountMap[element.key.toString()] =
+              int.parse(element.value.toString());
+        }
         return productCountMap;
       }
     } catch (_) {}

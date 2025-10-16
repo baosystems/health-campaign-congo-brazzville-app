@@ -80,18 +80,18 @@ class CustomValidator {
         : {'required': true};
   }
 
-  static Map<String, dynamic>? validMobileNumber(AbstractControl<dynamic> c) {
-    final v = c.value?.toString().trim() ?? '';
-    if (v.isEmpty) return null; // Optional!
-    return RegExp(r'^\d{9}$').hasMatch(v) // Exactly 9 digits
-        ? null
-        : {'mobileNumber': true};
+  static Map<String, dynamic>? validMobileNumber(
+      AbstractControl<dynamic> control) {
+    final value = control.value?.toString().trim() ?? '';
+    if (value.isEmpty) return null;
+    return RegExp(r'^\d{9}$').hasMatch(value) ? null : {'mobileNumber': true};
   }
 
-  static Map<String, dynamic>? startsWith7or9(AbstractControl<dynamic> c) {
-    final v = c.value?.toString().trim() ?? '';
-    if (v.isEmpty) return null; // Optional!
-    return RegExp(r'^[79]').hasMatch(v) ? null : {'startsWith7or9': true};
+  static Map<String, dynamic>? startsWith7or9(
+      AbstractControl<dynamic> control) {
+    final value = control.value?.toString().trim() ?? '';
+    if (value.isEmpty) return null;
+    return RegExp(r'^[79]').hasMatch(value) ? null : {'startsWith7or9': true};
   }
 
   static Map<String, dynamic>? onlyAlphabets(AbstractControl<dynamic> control) {

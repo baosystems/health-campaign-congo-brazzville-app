@@ -33,6 +33,7 @@ import 'package:registration_delivery/models/entities/task_resource.dart';
 import 'package:registration_delivery/utils/utils.dart';
 
 import '../../blocs/app_initialization/app_initialization.dart';
+import '../../blocs/auth/auth.dart';
 import '../../blocs/vaccine/vaccine_delivery.dart';
 import '../../blocs/vaccine/vaccine_product_variants.dart';
 import '../../blocs/vaccine/vaccine_search.dart';
@@ -917,6 +918,16 @@ class _VaccineDeliveryPageState extends LocalizedState<VaccineDeliveryPage> {
         longitude: long,
         selectedIndividual: selectedIndividual,
         notDeliveredVaccineDoseCodes: notDeliveredVaccineDoseCodes);
+
+    Map<String, int> skuCounts = {};
+
+    for (var element in currentVaccineDoseDataSelected.values) {
+      skuCounts[element.productVariationId] = element.numberOfDose * -1;
+    }
+
+    context.read<AuthBloc>().add(
+          AuthUpdateProductSKUCountsEvent(skuCounts: skuCounts),
+        );
 
     context.read<VaccineDeliveryBloc>().add(
           VaccineDeliverySubmitEvent(

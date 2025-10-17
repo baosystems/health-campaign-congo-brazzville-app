@@ -677,6 +677,8 @@ class CustomStockDetailsPageState
                                           skuCounts[productVariant.sku!] =
                                               totalQuantity;
 
+                                          if (totalQuantity < 1) return;
+
                                           final stockModel = StockModel(
                                             clientReferenceId:
                                                 IdGen.i.identifier,

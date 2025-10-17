@@ -93,11 +93,9 @@ class CustomInventoryReportDetailsPageState
           )
         : InventoryReportLoadStockDataEvent(
             reportType: widget.reportType,
-            facilityId: context.isCDD
-                ? context.loggedInUserUuid
-                : form.control(_facilityKey).value != null
-                    ? selectedFacilityId!
-                    : '',
+            facilityId: form.control(_facilityKey).value != null
+                ? selectedFacilityId!
+                : '',
             productVariantId: form.control(_productVariantKey).value != null
                 ? (form.control(_productVariantKey).value
                         as ProductVariantModel)

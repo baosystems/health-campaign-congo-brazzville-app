@@ -609,6 +609,74 @@ class CustomStockDetailsPageState
                                               break;
                                           }
 
+                                          Map<String, int> skuCounts = {};
+                                          Map<String, int> currentSKUCounts =
+                                              context.getAllProductSkuCounts();
+
+                                          int totalQuantity = 0;
+                                          int dosesPerFlacon =
+                                              vaccinationStockData == null
+                                                  ? 0
+                                                  : vaccinationStockData
+                                                          .firstWhereOrNull(
+                                                              (e) =>
+                                                                  e.code ==
+                                                                  productVariant
+                                                                      .sku)
+                                                          ?.dosesPerFlacon ??
+                                                      0;
+
+                                          totalQuantity = entryType ==
+                                                  StockRecordEntryType.receipt
+                                              ? ((quantity != null
+                                                  ? int.parse(
+                                                      quantity.toString(),
+                                                    )
+                                                  : 0))
+                                              : quantity != null
+                                                  ? int.parse(
+                                                        quantity.toString(),
+                                                      ) *
+                                                      -1
+                                                  : 0;
+                                          if (productVariant.sku == null) {
+                                            return;
+                                          }
+
+                                          // Update the quantity based on dosesPerFlacon
+                                          if (entryType ==
+                                              StockRecordEntryType.receipt) {
+                                            totalQuantity *= dosesPerFlacon;
+                                          }
+
+                                          if (((currentSKUCounts[productVariant
+                                                          .sku!] ??
+                                                      0) +
+                                                  totalQuantity <
+                                              0)) {
+                                            if (entryType !=
+                                                StockRecordEntryType.receipt) {
+                                              await DigitToast.show(
+                                                context,
+                                                options: DigitToastOptions(
+                                                    localizations.translate(context
+                                                            .isCDD
+                                                        ? i18_local
+                                                            .beneficiaryDetails
+                                                            .validationForExcessStockReturn
+                                                        : i18_local
+                                                            .beneficiaryDetails
+                                                            .validationForExcessStockDispatch),
+                                                    true,
+                                                    theme),
+                                              );
+                                              return;
+                                            }
+                                          }
+
+                                          skuCounts[productVariant.sku!] =
+                                              totalQuantity;
+
                                           final stockModel = StockModel(
                                             clientReferenceId:
                                                 IdGen.i.identifier,
@@ -618,7 +686,8 @@ class CustomStockDetailsPageState
                                             transactionType: transactionType,
                                             referenceId: stockState.projectId,
                                             referenceIdType: 'PROJECT',
-                                            quantity: quantity.toString(),
+                                            quantity:
+                                                totalQuantity.abs().toString(),
                                             wayBillNumber: (waybillNumber !=
                                                         null &&
                                                     waybillNumber.length > 2)
@@ -735,68 +804,6 @@ class CustomStockDetailsPageState
                                             ),
                                           );
 
-                                          Map<String, int> skuCounts = {};
-                                          Map<String, int> currentSKUCounts =
-                                              context.getAllProductSkuCounts();
-
-                                          int totalQuantity = 0;
-                                          int dosesPerFlacon =
-                                              vaccinationStockData == null
-                                                  ? 0
-                                                  : vaccinationStockData
-                                                          .firstWhereOrNull(
-                                                              (e) =>
-                                                                  e.code ==
-                                                                  productVariant
-                                                                      .sku)
-                                                          ?.dosesPerFlacon ??
-                                                      0;
-
-                                          totalQuantity = entryType ==
-                                                  StockRecordEntryType.receipt
-                                              ? ((quantity != null
-                                                  ? int.parse(
-                                                      quantity.toString(),
-                                                    )
-                                                  : 0))
-                                              : quantity != null
-                                                  ? int.parse(
-                                                        quantity.toString(),
-                                                      ) *
-                                                      -1
-                                                  : 0;
-                                          if (productVariant.sku == null) {
-                                            return;
-                                          }
-
-                                          // Update the quantity based on dosesPerFlacon
-                                          totalQuantity *= dosesPerFlacon;
-
-                                          if (((currentSKUCounts[productVariant
-                                                          .sku!] ??
-                                                      0) +
-                                                  totalQuantity <
-                                              0)) {
-                                            if (entryType !=
-                                                StockRecordEntryType.receipt) {
-                                              await DigitToast.show(
-                                                context,
-                                                options: DigitToastOptions(
-                                                    localizations.translate(context
-                                                            .isCDD
-                                                        ? i18_local
-                                                            .beneficiaryDetails
-                                                            .validationForExcessStockReturn
-                                                        : i18_local
-                                                            .beneficiaryDetails
-                                                            .validationForExcessStockDispatch),
-                                                    true,
-                                                    theme),
-                                              );
-                                              return;
-                                            }
-                                          }
-
                                           final submit = await showCustomPopup(
                                             context: context,
                                             builder: (popupContext) => Popup(
@@ -847,9 +854,6 @@ class CustomStockDetailsPageState
                                           ) as bool;
 
                                           if (submit && context.mounted) {
-                                            skuCounts[productVariant.sku!] =
-                                                totalQuantity;
-
                                             context.read<AuthBloc>().add(
                                                   AuthUpdateProductSKUCountsEvent(
                                                       skuCounts: skuCounts),

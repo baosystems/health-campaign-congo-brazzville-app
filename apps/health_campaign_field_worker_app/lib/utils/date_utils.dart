@@ -120,6 +120,26 @@ class DigitDateUtils {
     }
   }
 
+  static int calculateAgeInDaysFromDob(String dobString) {
+    final dob = DigitDateUtils.getFormattedDateToDateTime(dobString);
+    if (dob == null) return 0;
+    final now = DateTime.now();
+    return now.difference(dob).inDays;
+  }
+
+  static DateTime subtractYearMonths(
+      DateTime date, int years, int monthsToSubtract) {
+    return DateTime(
+        date.year - years,
+        date.month - monthsToSubtract,
+        date.day,
+        date.hour,
+        date.minute,
+        date.second,
+        date.millisecond,
+        date.microsecond);
+  }
+
   // Function to get a formatted date string from the provided timestamp in milliseconds.
   static String getDateFromTimestamp(int timestamp, {String? dateFormat}) {
     DateTime date = DateTime.fromMillisecondsSinceEpoch(timestamp);

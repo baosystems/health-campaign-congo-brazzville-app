@@ -1,6 +1,5 @@
 import 'package:collection/collection.dart';
 import 'package:digit_components/widgets/atoms/digit_reactive_dropdown.dart';
-// import 'package:digit_components/digit_components.dart';
 import 'package:digit_components/widgets/atoms/digit_toaster.dart';
 import 'package:digit_components/widgets/digit_dialog.dart' as digit_dialog;
 import 'package:digit_components/widgets/digit_elevated_button.dart';
@@ -229,7 +228,7 @@ class _RecordRedosePageState extends LocalizedState<RecordRedosePage> {
                                                       otherControl.setErrors({
                                                         'onlyAlphabets': true
                                                       });
-                                                      
+
                                                       return;
                                                     }
                                                   }
@@ -312,60 +311,6 @@ class _RecordRedosePageState extends LocalizedState<RecordRedosePage> {
                                                         context,
                                                         updatedTask,
                                                       );
-
-                                                      // final shouldSubmit =
-                                                      //     await digit_dialog
-                                                      //             .DigitDialog
-                                                      //         .show<bool>(
-                                                      //   context,
-                                                      //   options: digit_dialog
-                                                      //       .DigitDialogOptions(
-                                                      //     titleText:
-                                                      //         localizations
-                                                      //             .translate(
-                                                      //       i18.deliverIntervention
-                                                      //           .dialogTitle,
-                                                      //     ),
-                                                      //     contentText:
-                                                      //         localizations
-                                                      //             .translate(
-                                                      //       i18.deliverIntervention
-                                                      //           .dialogContent,
-                                                      //     ),
-                                                      //     primaryAction:
-                                                      //         digit_dialog
-                                                      //             .DigitDialogActions(
-                                                      //       label: localizations
-                                                      //           .translate(
-                                                      //         i18.common
-                                                      //             .coreCommonSubmit,
-                                                      //       ),
-                                                      //       action: (ctx) {
-                                                      //         Navigator.of(
-                                                      //           context,
-                                                      //           rootNavigator:
-                                                      //               true,
-                                                      //         ).pop(true);
-                                                      //       },
-                                                      //     ),
-                                                      //     secondaryAction:
-                                                      //         digit_dialog
-                                                      //             .DigitDialogActions(
-                                                      //       label: localizations
-                                                      //           .translate(
-                                                      //         i18.common
-                                                      //             .coreCommonCancel,
-                                                      //       ),
-                                                      //       action: (context) =>
-                                                      //           Navigator.of(
-                                                      //         context,
-                                                      //         rootNavigator:
-                                                      //             true,
-                                                      //       ).pop(false),
-                                                      //     ),
-                                                      //   ),
-                                                      // );
-
                                                       if (true) {
                                                         if (context.mounted) {
                                                           int spaq1 = 0;

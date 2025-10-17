@@ -25,12 +25,14 @@ class AdditionalFieldsTypeMapper extends EnumMapper<AdditionalFieldsType> {
   @override
   AdditionalFieldsType decode(dynamic value) {
     switch (value) {
-      case "zeroDoseStatus":
-        return AdditionalFieldsType.zeroDoseStatus;
+      case "doseStatus":
+        return AdditionalFieldsType.doseStatus;
       case "selectedVaccines":
         return AdditionalFieldsType.selectedVaccines;
       case "noSelectedVaccines":
         return AdditionalFieldsType.noSelectedVaccines;
+      case "vaccineDoseList":
+        return AdditionalFieldsType.vaccineDoseList;
       case "hasSideEffects":
         return AdditionalFieldsType.hasSideEffects;
       case "deliveryStrategy":
@@ -45,6 +47,8 @@ class AdditionalFieldsTypeMapper extends EnumMapper<AdditionalFieldsType> {
         return AdditionalFieldsType.dateOfAdministration;
       case "dateOfDelivery":
         return AdditionalFieldsType.dateOfDelivery;
+      case "nextDateOfDelivery":
+        return AdditionalFieldsType.nextDateOfDelivery;
       case "referralComments":
         return AdditionalFieldsType.referralComments;
       case "cycle":
@@ -73,6 +77,22 @@ class AdditionalFieldsTypeMapper extends EnumMapper<AdditionalFieldsType> {
         return AdditionalFieldsType.mobile;
       case "EMPLOYEE":
         return AdditionalFieldsType.employee;
+      case "ineligibleReasons":
+        return AdditionalFieldsType.ineligibleReasons;
+      case "ageBelow3Months":
+        return AdditionalFieldsType.ageBelow3Months;
+      case "currentMonth":
+        return AdditionalFieldsType.currentMonth;
+      case "dateOfVaccination":
+        return AdditionalFieldsType.dateOfVaccination;
+      case "doseAdministeredBy":
+        return AdditionalFieldsType.doseAdministeredBy;
+      case "taskStatus":
+        return AdditionalFieldsType.taskStatus;
+      case "individualClientReferenceId":
+        return AdditionalFieldsType.individualClientReferenceId;
+      case "uniqueBeneficiaryId":
+        return AdditionalFieldsType.uniqueBeneficiaryId;
       default:
         throw MapperException.unknownEnumValue(value);
     }
@@ -81,12 +101,14 @@ class AdditionalFieldsTypeMapper extends EnumMapper<AdditionalFieldsType> {
   @override
   dynamic encode(AdditionalFieldsType self) {
     switch (self) {
-      case AdditionalFieldsType.zeroDoseStatus:
-        return "zeroDoseStatus";
+      case AdditionalFieldsType.doseStatus:
+        return "doseStatus";
       case AdditionalFieldsType.selectedVaccines:
         return "selectedVaccines";
       case AdditionalFieldsType.noSelectedVaccines:
         return "noSelectedVaccines";
+      case AdditionalFieldsType.vaccineDoseList:
+        return "vaccineDoseList";
       case AdditionalFieldsType.hasSideEffects:
         return "hasSideEffects";
       case AdditionalFieldsType.deliveryStrategy:
@@ -101,6 +123,8 @@ class AdditionalFieldsTypeMapper extends EnumMapper<AdditionalFieldsType> {
         return "dateOfAdministration";
       case AdditionalFieldsType.dateOfDelivery:
         return "dateOfDelivery";
+      case AdditionalFieldsType.nextDateOfDelivery:
+        return "nextDateOfDelivery";
       case AdditionalFieldsType.referralComments:
         return "referralComments";
       case AdditionalFieldsType.cycle:
@@ -129,6 +153,22 @@ class AdditionalFieldsTypeMapper extends EnumMapper<AdditionalFieldsType> {
         return "mobile";
       case AdditionalFieldsType.employee:
         return "EMPLOYEE";
+      case AdditionalFieldsType.ineligibleReasons:
+        return "ineligibleReasons";
+      case AdditionalFieldsType.ageBelow3Months:
+        return "ageBelow3Months";
+      case AdditionalFieldsType.currentMonth:
+        return "currentMonth";
+      case AdditionalFieldsType.dateOfVaccination:
+        return "dateOfVaccination";
+      case AdditionalFieldsType.doseAdministeredBy:
+        return "doseAdministeredBy";
+      case AdditionalFieldsType.taskStatus:
+        return "taskStatus";
+      case AdditionalFieldsType.individualClientReferenceId:
+        return "individualClientReferenceId";
+      case AdditionalFieldsType.uniqueBeneficiaryId:
+        return "uniqueBeneficiaryId";
     }
   }
 }

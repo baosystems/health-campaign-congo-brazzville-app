@@ -1,15 +1,14 @@
+import 'dart:convert';
 import 'dart:math';
 
 import 'package:collection/collection.dart';
 import 'package:digit_components/digit_components.dart';
 import 'package:digit_components/utils/date_utils.dart';
-// import 'package:digit_components/digit_components.dart';
 import 'package:digit_data_model/data_model.dart';
 import 'package:digit_ui_components/enum/app_enums.dart';
 import 'package:digit_ui_components/services/location_bloc.dart' as location;
 import 'package:digit_ui_components/theme/digit_extended_theme.dart';
 import 'package:digit_ui_components/theme/spacers.dart';
-// import 'package:digit_ui_components/theme/digit_extended_theme.dart';
 import 'package:digit_ui_components/widgets/atoms/digit_button.dart';
 import 'package:digit_ui_components/widgets/atoms/digit_date_form_input.dart';
 import 'package:digit_ui_components/widgets/atoms/digit_text_form_input.dart';
@@ -23,7 +22,6 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
 import 'package:reactive_forms/reactive_forms.dart';
 import 'package:group_radio_button/group_radio_button.dart';
-// import 'package:registration_delivery/models/entities/status.dart';
 import 'package:registration_delivery/registration_delivery.dart';
 import 'package:registration_delivery/router/registration_delivery_router.gm.dart';
 import 'package:registration_delivery/utils/i18_key_constants.dart' as i18;
@@ -31,12 +29,15 @@ import 'package:registration_delivery/utils/utils.dart';
 import 'package:registration_delivery/widgets/localized.dart';
 import 'package:survey_form/survey_form.dart';
 
+import '../../../blocs/app_initialization/app_initialization.dart';
+import '../../../blocs/vaccine/vaccine_product_variants.dart';
+import '../../../blocs/vaccine/vaccine_search.dart';
+import '../../../data/local_store/no_sql/schema/app_configuration.dart';
 import '../../../models/entities/additional_fields_type.dart'
     as additional_fields_local;
 import '../../../models/entities/additional_fields_type.dart';
 import '../../../models/entities/assessment_checklist/status.dart'
     as status_local;
-// import '../../../blocs/service/service.dart' as service;
 import '../../../models/entities/roles_type.dart';
 import '../../../models/entities/status.dart';
 import '../../../router/app_router.dart';
@@ -46,7 +47,7 @@ import '../../../utils/i18_key_constants.dart' as i18_local;
 import '../../../utils/upper_case.dart';
 import '../../../utils/utils.dart';
 import '../../../widgets/custom_back_navigation.dart';
-// import '../../../widgets/showcase/showcase_wrappers.dart';
+import '../../../utils/date_utils.dart' as date_utils_local;
 
 @RoutePage()
 class ZeroDoseCheckPage extends LocalizedStatefulWidget {
@@ -57,8 +58,6 @@ class ZeroDoseCheckPage extends LocalizedStatefulWidget {
   final String? projectBeneficiaryClientReferenceId;
   final IndividualModel? individual;
   final TaskModel task;
-  final bool? hasSideEffects;
-  final SideEffectModel sideEffect;
   final bool isRefused;
 
   ZeroDoseCheckPage({
@@ -70,12 +69,9 @@ class ZeroDoseCheckPage extends LocalizedStatefulWidget {
     this.isChecklistAssessmentDone = true,
     this.projectBeneficiaryClientReferenceId,
     this.individual,
-    this.hasSideEffects = false,
     this.isRefused = false,
-    SideEffectModel? sideEffect,
     TaskModel? task,
-  })  : task = task ?? TaskModel(clientReferenceId: ''),
-        sideEffect = sideEffect ?? SideEffectModel(clientReferenceId: '');
+  }) : task = task ?? TaskModel(clientReferenceId: '');
 
   @override
   State<ZeroDoseCheckPage> createState() => ZeroDoseCheckPageState();
@@ -98,6 +94,7 @@ class ZeroDoseCheckPageState extends LocalizedState<ZeroDoseCheckPage> {
   Map<String?, String> responses = {};
   final String yes = "YES";
   final String no = "NO";
+  List<String> allVaccineCodes = [];
 
   // List of controllers for form elements
   final List _controllers = [];
@@ -116,96 +113,75 @@ class ZeroDoseCheckPageState extends LocalizedState<ZeroDoseCheckPage> {
     // super.initState();
   }
 
+  bool _shouldShowVaccinePage(
+    Map<String?, String> responses,
+  ) {
+    var showVaccinePage = false;
+    var q1Key = "ZDAQ1";
+
+    if (responses.isNotEmpty) {
+      if (!showVaccinePage &&
+          (responses.containsKey(q1Key) && responses[q1Key]!.isNotEmpty)) {
+        showVaccinePage = responses[q1Key] == yes ? true : false;
+      }
+    }
+
+    return showVaccinePage;
+  }
+
+  TaskModel _getTaskModel(double? latitude, double? longitude) {
+    final clientReferenceId = IdGen.i.identifier;
+    return TaskModel(
+      projectBeneficiaryClientReferenceId:
+          widget.projectBeneficiaryClientReferenceId,
+      clientReferenceId: clientReferenceId,
+      tenantId: envConfig.variables.tenantId,
+      rowVersion: 1,
+      auditDetails: AuditDetails(
+        createdBy: context.loggedInUserUuid,
+        createdTime: context.millisecondsSinceEpoch(),
+      ),
+      projectId: context.projectId,
+      status: status_local.Status.beneficiaryInEligible.toValue(),
+      clientAuditDetails: ClientAuditDetails(
+        createdBy: context.loggedInUserUuid,
+        createdTime: context.millisecondsSinceEpoch(),
+        lastModifiedBy: context.loggedInUserUuid,
+        lastModifiedTime: context.millisecondsSinceEpoch(),
+      ),
+      additionalFields: TaskAdditionalFields(
+        version: 1,
+        fields: [
+          AdditionalField(
+            AdditionalFieldsType.cycleIndex.toValue(),
+            "0${context.selectedCycle?.id}",
+          ),
+          AdditionalField(
+            additional_fields_local.AdditionalFieldsType.deliveryType.toValue(),
+            EligibilityAssessmentStatus.smcDone.name,
+          ),
+          AdditionalField(
+              additional_fields_local.AdditionalFieldsType.doseStatus.toValue(),
+              DoseStatus.zeroDose.name),
+          ...getIndividualAdditionalFields(widget.individual)
+        ],
+      ),
+      address: widget.individual?.address?.first.copyWith(
+        relatedClientReferenceId: clientReferenceId,
+        id: null,
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final deliveryInterventionState =
-        context.read<DeliverInterventionBloc>().state;
+
     final relatedClientRefId = context
         .read<HouseholdOverviewBloc>()
         .state
         .selectedIndividual
         ?.clientReferenceId;
-
-    final householdMemberWrapper =
-        context.read<HouseholdOverviewBloc>().state.householdMemberWrapper;
-
-    final projectBeneficiary =
-        RegistrationDeliverySingleton().beneficiaryType !=
-                BeneficiaryType.individual
-            ? [householdMemberWrapper.projectBeneficiaries!.first]
-            : householdMemberWrapper.projectBeneficiaries
-                ?.where((element) =>
-                    element.beneficiaryClientReferenceId ==
-                    context
-                        .read<HouseholdOverviewBloc>()
-                        .state
-                        .selectedIndividual
-                        ?.clientReferenceId)
-                .toList();
-
-    final projectTypeModel =
-        widget.eligibilityAssessmentType == EligibilityAssessmentType.smc
-            ? RegistrationDeliverySingleton()
-                .selectedProject
-                ?.additionalDetails
-                ?.projectType
-            : RegistrationDeliverySingleton()
-                .selectedProject
-                ?.additionalDetails
-                ?.additionalProjectType;
-
-    final productVariants = !widget.isChecklistAssessmentDone
-        ? projectTypeModel?.resources
-            ?.map((r) =>
-                DeliveryProductVariant(productVariantId: r.productVariantId))
-            .toList()
-        : projectTypeModel?.cycles?.isNotEmpty == true
-            ? (fetchProductVariant(
-                    projectTypeModel
-                        ?.cycles?[deliveryInterventionState.cycle - 1]
-                        .deliveries?[deliveryInterventionState.dose - 1],
-                    context
-                        .read<HouseholdOverviewBloc>()
-                        .state
-                        .selectedIndividual,
-                    householdMemberWrapper.household)
-                ?.productVariants)
-            : projectTypeModel?.resources
-                ?.map((r) => DeliveryProductVariant(
-                    productVariantId: r.productVariantId))
-                .toList();
-
-    if ((productVariants ?? []).isEmpty && context.mounted) {
-      SchedulerBinding.instance.addPostFrameCallback((_) {
-        showCustomPopup(
-          context: context,
-          builder: (popUpContext) => Popup(
-            title: localizations.translate(i18.common.noResultsFound),
-            description: localizations.translate(
-              i18.deliverIntervention.checkForProductVariantsConfig,
-            ),
-            type: PopUpType.alert,
-            actions: [
-              DigitButton(
-                label: localizations.translate(i18.common.coreCommonOk),
-                onPressed: () {
-                  context.router.maybePop();
-                  Navigator.of(popUpContext).pop();
-                },
-                type: DigitButtonType.primary,
-                size: DigitButtonSize.large,
-              ),
-            ],
-          ),
-        );
-      });
-    }
-
-    final productVariantState = context.read<ProductVariantBloc>().state;
-    final variant = productVariantState.whenOrNull(
-      fetched: (fetchedVariants) => fetchedVariants,
-    );
 
     return WillPopScope(
       onWillPop: () async {
@@ -223,7 +199,6 @@ class ZeroDoseCheckPageState extends LocalizedState<ZeroDoseCheckPage> {
               builder: (context, householdOverviewState) {
                 double? latitude = locationState.latitude;
                 double? longitude = locationState.longitude;
-                String zeroDoseAssessment = "ZERODOSE_ASSESSMENT";
                 return BlocBuilder<ServiceDefinitionBloc,
                     ServiceDefinitionState>(
                   builder: (context, state) {
@@ -232,7 +207,7 @@ class ZeroDoseCheckPageState extends LocalizedState<ZeroDoseCheckPage> {
                         selectedServiceDefinition = value.serviceDefinitionList
                             .where(
                                 (element) => element.code.toString().contains(
-                                      '${context.selectedProject.name}.$zeroDoseAssessment.${context.isCommunityDistributor ? RolesType.communityDistributor.toValue() : ''}',
+                                      '${context.selectedProject.name}.${Constants.zeroDoseAssessment}.${RolesType.communityDistributor.toValue()}',
                                     ))
                             .toList()
                             .firstOrNull;
@@ -274,20 +249,7 @@ class ZeroDoseCheckPageState extends LocalizedState<ZeroDoseCheckPage> {
                                 if (!isValid!) {
                                   return;
                                 }
-                                final itemsAttributes = initialAttributes;
 
-                                for (int i = 0; i < controller.length; i++) {
-                                  if (i == 0 && controller[i].text == 'YES') {
-                                    break;
-                                  }
-                                  if (itemsAttributes?[i].required == true &&
-                                      itemsAttributes?[i].dataType ==
-                                          'SingleValueList' &&
-                                      visibleChecklistIndexes.contains(i) &&
-                                      controller[i].text.isEmpty) {
-                                    return;
-                                  }
-                                }
                                 for (int i = 0; i < controller.length; i++) {
                                   var attributeCode =
                                       '${initialAttributes?[i].code}';
@@ -309,601 +271,112 @@ class ZeroDoseCheckPageState extends LocalizedState<ZeroDoseCheckPage> {
                                   responses[attributeCode] = value;
                                 }
 
+                                if (responses.entries
+                                    .any((element) => element.value.isEmpty)) {
+                                  return;
+                                }
+
                                 bool showVaccineSelectionPage =
-                                    shouldShowVaccinePage(responses);
-                                bool zeroDose = isZeroDose(responses);
-                                bool incompletementVaccine =
-                                    isIncompletementVaccine(
-                                  responses,
+                                    _shouldShowVaccinePage(responses);
+
+                                final projectBeneficiaryClientReferenceId =
+                                    widget.projectBeneficiaryClientReferenceId ??
+                                        relatedClientRefId ??
+                                        '';
+
+                                final shouldSubmit = await DigitDialog.show(
+                                  context,
+                                  options: DigitDialogOptions(
+                                    titleText: localizations.translate(
+                                      i18.deliverIntervention.dialogTitle,
+                                    ),
+                                    content: Text(localizations
+                                        .translate(
+                                          i18.deliverIntervention.dialogContent,
+                                        )
+                                        .replaceFirst('{}', '')),
+                                    primaryAction: DigitDialogActions(
+                                      label: localizations.translate(
+                                        i18_local.checklist
+                                            .checklistDialogPrimaryAction,
+                                      ),
+                                      action: (ctx) {
+                                        Navigator.of(
+                                          context,
+                                          rootNavigator: true,
+                                        ).pop(true);
+                                      },
+                                    ),
+                                    secondaryAction: DigitDialogActions(
+                                      label: localizations.translate(
+                                        i18_local.checklist
+                                            .checklistDialogSecondaryAction,
+                                      ),
+                                      action: (context) {
+                                        Navigator.of(
+                                          context,
+                                          rootNavigator: true,
+                                        ).pop(false);
+                                      },
+                                    ),
+                                  ),
                                 );
+                                if (shouldSubmit ?? false) {
+                                  if (context.mounted) {
+                                    if (showVaccineSelectionPage) {
+                                      context.router.push(VaccineSelectionRoute(
+                                        isAdministration:
+                                            widget.isAdministration,
+                                        eligibilityAssessmentType:
+                                            widget.eligibilityAssessmentType,
+                                        isChecklistAssessmentDone:
+                                            widget.isChecklistAssessmentDone,
+                                        projectBeneficiaryClientReferenceId:
+                                            projectBeneficiaryClientReferenceId,
+                                        individual: widget.individual,
+                                        task: widget.task,
+                                      ));
+                                    } else {
+                                      TaskModel task =
+                                          _getTaskModel(latitude, longitude);
+                                      context
+                                          .read<DeliverInterventionBloc>()
+                                          .add(
+                                            DeliverInterventionSubmitEvent(
+                                              task: task,
+                                              isEditing: false,
+                                              boundaryModel: context.boundary,
+                                              navigateToSummary: false,
+                                              householdMemberWrapper: context
+                                                  .read<HouseholdOverviewBloc>()
+                                                  .state
+                                                  .householdMemberWrapper,
+                                            ),
+                                          );
+                                      final searchBloc =
+                                          context.read<SearchHouseholdsBloc>();
+                                      searchBloc.add(
+                                        const SearchHouseholdsClearEvent(),
+                                      );
+                                      final router = context.router;
+                                      router.popUntilRouteWithName(
+                                          BeneficiaryWrapperRoute.name);
 
-                                // TODO: Uncomment this block when the vaccine selection page is complete
-
-                                if (showVaccineSelectionPage ||
-                                    (!zeroDose && !incompletementVaccine)) {
-                                  final referenceId = IdGen.i.identifier;
-                                  List<ServiceAttributesModel> attributes = [];
-                                  for (int i = 0; i < controller.length; i++) {
-                                    final attribute = initialAttributes;
-
-                                    attributes.add(ServiceAttributesModel(
-                                      auditDetails: AuditDetails(
-                                        createdBy: context.loggedInUserUuid,
-                                        createdTime:
-                                            context.millisecondsSinceEpoch(),
-                                      ),
-                                      attributeCode: '${attribute?[i].code}',
-                                      dataType: attribute?[i].dataType,
-                                      clientReferenceId: IdGen.i.identifier,
-                                      referenceId: referenceId,
-                                      value: attribute?[i].dataType !=
-                                              'SingleValueList'
-                                          ? controller[i]
-                                                  .text
-                                                  .toString()
-                                                  .trim()
-                                                  .isNotEmpty
-                                              ? controller[i].text.toString()
-                                              : ''
-                                          : visibleChecklistIndexes.contains(i)
-                                              ? controller[i].text.toString()
-                                              : i18_local
-                                                  .checklist.notSelectedKey,
-                                      rowVersion: 1,
-                                      tenantId: attribute?[i].tenantId,
-                                      additionalFields:
-                                          ServiceAttributesAdditionalFields(
-                                        version: 1,
-                                        // TODO: This needs to be done after adding locationbloc
-                                        fields: [
-                                          AdditionalField(
-                                            'latitude',
-                                            latitude,
-                                          ),
-                                          AdditionalField(
-                                            'longitude',
-                                            longitude,
-                                          ),
-                                        ],
-                                      ),
-                                    ));
+                                      router.push(
+                                        CustomHouseholdAcknowledgementRoute(
+                                            enableViewHousehold: true,
+                                            eligibilityAssessmentType: widget
+                                                .eligibilityAssessmentType),
+                                      );
+                                    }
                                   }
-
+                                  submitTriggered = true;
                                   context.read<ServiceBloc>().add(
-                                        ServiceCreateEvent(
-                                          serviceModel: ServiceModel(
-                                              createdAt: DigitDateUtils
-                                                  .getDateFromTimestamp(
-                                                DateTime.now()
-                                                    .toLocal()
-                                                    .millisecondsSinceEpoch,
-                                                dateFormat: Constants
-                                                    .checklistViewDateFormat,
-                                              ),
-                                              tenantId:
-                                                  selectedServiceDefinition!
-                                                      .tenantId,
-                                              clientId: referenceId,
-                                              serviceDefId:
-                                                  selectedServiceDefinition?.id,
-                                              attributes: attributes,
-                                              rowVersion: 1,
-                                              accountId: context.projectId,
-                                              auditDetails: AuditDetails(
-                                                createdBy:
-                                                    context.loggedInUserUuid,
-                                                createdTime: DateTime.now()
-                                                    .millisecondsSinceEpoch,
-                                              ),
-                                              clientAuditDetails:
-                                                  ClientAuditDetails(
-                                                createdBy:
-                                                    context.loggedInUserUuid,
-                                                createdTime: context
-                                                    .millisecondsSinceEpoch(),
-                                                lastModifiedBy:
-                                                    context.loggedInUserUuid,
-                                                lastModifiedTime: context
-                                                    .millisecondsSinceEpoch(),
-                                              ),
-                                              additionalFields:
-                                                  ServiceAdditionalFields(
-                                                version: 1,
-                                                fields: [
-                                                  AdditionalField(
-                                                      'boundaryCode',
-                                                      context.boundary.code),
-                                                ],
-                                              )),
+                                        const ServiceSurveyFormEvent(
+                                          value: '',
+                                          submitTriggered: true,
                                         ),
                                       );
-                                  final projectBeneficiaryClientReferenceId =
-                                      widget.projectBeneficiaryClientReferenceId ??
-                                          relatedClientRefId;
-                                  final currentCycle =
-                                      RegistrationDeliverySingleton()
-                                          .projectType
-                                          ?.cycles
-                                          ?.firstWhereOrNull(
-                                            (e) =>
-                                                (e.startDate) <
-                                                    DateTime.now()
-                                                        .millisecondsSinceEpoch &&
-                                                (e.endDate) >
-                                                    DateTime.now()
-                                                        .millisecondsSinceEpoch,
-                                          );
-                                  final isZeroDoseAlreadyDone =
-                                      currentCycle!.id > 1;
-                                  context.router.push(VaccineSelectionRoute(
-                                      isAdministration: widget.isAdministration,
-                                      eligibilityAssessmentType:
-                                          widget.eligibilityAssessmentType,
-                                      isChecklistAssessmentDone:
-                                          widget.isChecklistAssessmentDone,
-                                      projectBeneficiaryClientReferenceId:
-                                          projectBeneficiaryClientReferenceId,
-                                      individual: widget.individual,
-                                      task: widget.task,
-                                      hasSideEffects: widget.hasSideEffects!,
-                                      sideEffect: widget.sideEffect!,
-                                      isZeroDoseAlreadyDone:
-                                          isZeroDoseAlreadyDone));
-                                } else {
-                                  final shouldSubmit = await DigitDialog.show(
-                                    context,
-                                    options: DigitDialogOptions(
-                                      titleText: localizations.translate(
-                                        i18.deliverIntervention.dialogTitle,
-                                      ),
-                                      content: Text(localizations
-                                          .translate(
-                                            i18.deliverIntervention
-                                                .dialogContent,
-                                          )
-                                          .replaceFirst('{}', '')),
-                                      primaryAction: DigitDialogActions(
-                                        label: localizations.translate(
-                                          i18_local.checklist
-                                              .checklistDialogPrimaryAction,
-                                        ),
-                                        action: (ctx) {
-                                          final referenceId =
-                                              IdGen.i.identifier;
-                                          List<ServiceAttributesModel>
-                                              attributes = [];
-                                          for (int i = 0;
-                                              i < controller.length;
-                                              i++) {
-                                            final attribute = initialAttributes;
-
-                                            attributes
-                                                .add(ServiceAttributesModel(
-                                              auditDetails: AuditDetails(
-                                                createdBy:
-                                                    context.loggedInUserUuid,
-                                                createdTime: context
-                                                    .millisecondsSinceEpoch(),
-                                              ),
-                                              attributeCode:
-                                                  '${attribute?[i].code}',
-                                              dataType: attribute?[i].dataType,
-                                              clientReferenceId:
-                                                  IdGen.i.identifier,
-                                              referenceId: referenceId,
-                                              value: attribute?[i].dataType !=
-                                                      'SingleValueList'
-                                                  ? controller[i]
-                                                          .text
-                                                          .toString()
-                                                          .trim()
-                                                          .isNotEmpty
-                                                      ? controller[i]
-                                                          .text
-                                                          .toString()
-                                                      : ''
-                                                  : visibleChecklistIndexes
-                                                          .contains(i)
-                                                      ? controller[i]
-                                                          .text
-                                                          .toString()
-                                                      : i18_local.checklist
-                                                          .notSelectedKey,
-                                              rowVersion: 1,
-                                              tenantId: attribute?[i].tenantId,
-                                              additionalFields:
-                                                  ServiceAttributesAdditionalFields(
-                                                version: 1,
-                                                // TODO: This needs to be done after adding locationbloc
-                                                fields: [
-                                                  AdditionalField(
-                                                    'latitude',
-                                                    latitude,
-                                                  ),
-                                                  AdditionalField(
-                                                    'longitude',
-                                                    longitude,
-                                                  ),
-                                                ],
-                                              ),
-                                            ));
-                                          }
-
-                                          context.read<ServiceBloc>().add(
-                                                ServiceCreateEvent(
-                                                  serviceModel: ServiceModel(
-                                                      createdAt: DigitDateUtils
-                                                          .getDateFromTimestamp(
-                                                        DateTime.now()
-                                                            .toLocal()
-                                                            .millisecondsSinceEpoch,
-                                                        dateFormat: Constants
-                                                            .checklistViewDateFormat,
-                                                      ),
-                                                      tenantId:
-                                                          selectedServiceDefinition!
-                                                              .tenantId,
-                                                      clientId: referenceId,
-                                                      serviceDefId:
-                                                          selectedServiceDefinition
-                                                              ?.id,
-                                                      attributes: attributes,
-                                                      rowVersion: 1,
-                                                      accountId:
-                                                          context.projectId,
-                                                      auditDetails:
-                                                          AuditDetails(
-                                                        createdBy: context
-                                                            .loggedInUserUuid,
-                                                        createdTime: DateTime
-                                                                .now()
-                                                            .millisecondsSinceEpoch,
-                                                      ),
-                                                      clientAuditDetails:
-                                                          ClientAuditDetails(
-                                                        createdBy: context
-                                                            .loggedInUserUuid,
-                                                        createdTime: context
-                                                            .millisecondsSinceEpoch(),
-                                                        lastModifiedBy: context
-                                                            .loggedInUserUuid,
-                                                        lastModifiedTime: context
-                                                            .millisecondsSinceEpoch(),
-                                                      ),
-                                                      additionalFields:
-                                                          ServiceAdditionalFields(
-                                                        version: 1,
-                                                        fields: [
-                                                          AdditionalField(
-                                                              'boundaryCode',
-                                                              context.boundary
-                                                                  .code),
-                                                        ],
-                                                      )),
-                                                ),
-                                              );
-                                          Navigator.of(
-                                            context,
-                                            rootNavigator: true,
-                                          ).pop(true);
-                                        },
-                                      ),
-                                      secondaryAction: DigitDialogActions(
-                                        label: localizations.translate(
-                                          i18_local.checklist
-                                              .checklistDialogSecondaryAction,
-                                        ),
-                                        action: (context) {
-                                          Navigator.of(
-                                            context,
-                                            rootNavigator: true,
-                                          ).pop(false);
-                                        },
-                                      ),
-                                    ),
-                                  );
-                                  if (shouldSubmit ?? false) {
-                                    if (context.mounted) {
-                                      if (widget.isChecklistAssessmentDone ==
-                                          true) {
-                                        final householdMember = context
-                                            .read<HouseholdOverviewBloc>()
-                                            .state
-                                            .householdMemberWrapper;
-                                        final deliverState = context
-                                            .read<DeliverInterventionBloc>()
-                                            .state;
-
-                                        final oldTask =
-                                            deliverState.oldTask ?? widget.task;
-                                        final oldFields =
-                                            oldTask.additionalFields?.fields ??
-                                                [];
-
-                                        final updatedFields = [
-                                          ...oldFields,
-                                          AdditionalField(
-                                            additional_fields_local
-                                                .AdditionalFieldsType
-                                                .zeroDoseStatus
-                                                .toValue(),
-                                            zeroDose
-                                                ? ZeroDoseStatus.zeroDose.name
-                                                : incompletementVaccine
-                                                    ? ZeroDoseStatus
-                                                        .incompletementVaccine
-                                                        .name
-                                                    : ZeroDoseStatus.done.name,
-                                          ),
-                                        ];
-
-                                        final updatedTask = oldTask.copyWith(
-                                          additionalFields:
-                                              TaskAdditionalFields(
-                                            version: 1,
-                                            fields: updatedFields,
-                                          ),
-                                        );
-
-                                        context
-                                            .read<DeliverInterventionBloc>()
-                                            .add(
-                                              DeliverInterventionSubmitEvent(
-                                                task: updatedTask,
-                                                isEditing: (deliverState
-                                                                .tasks ??
-                                                            [])
-                                                        .isNotEmpty &&
-                                                    RegistrationDeliverySingleton()
-                                                            .beneficiaryType ==
-                                                        BeneficiaryType
-                                                            .household,
-                                                boundaryModel:
-                                                    RegistrationDeliverySingleton()
-                                                        .boundary!,
-                                              ),
-                                            );
-
-                                        ProjectTypeModel? projectTypeModel =
-                                            widget.eligibilityAssessmentType ==
-                                                    EligibilityAssessmentType
-                                                        .smc
-                                                ? RegistrationDeliverySingleton()
-                                                    .selectedProject
-                                                    ?.additionalDetails
-                                                    ?.projectType
-                                                : RegistrationDeliverySingleton()
-                                                    .selectedProject
-                                                    ?.additionalDetails
-                                                    ?.additionalProjectType;
-
-                                        if (widget.isAdministration == true) {
-                                          final router = context.router;
-                                          router.popUntilRouteWithName(
-                                              BeneficiaryWrapperRoute.name);
-                                          if (deliverState.futureDeliveries !=
-                                                  null &&
-                                              deliverState.futureDeliveries!
-                                                  .isNotEmpty &&
-                                              projectTypeModel
-                                                      ?.cycles?.isNotEmpty ==
-                                                  true) {
-                                            router.push(
-                                              CustomSplashAcknowledgementRoute(
-                                                  enableBackToSearch: false,
-                                                  eligibilityAssessmentType: widget
-                                                      .eligibilityAssessmentType),
-                                            );
-                                          } else {
-                                            final reloadState = context
-                                                .read<HouseholdOverviewBloc>();
-
-                                            reloadState.add(
-                                              HouseholdOverviewReloadEvent(
-                                                projectId:
-                                                    RegistrationDeliverySingleton()
-                                                        .projectId!,
-                                                projectBeneficiaryType:
-                                                    RegistrationDeliverySingleton()
-                                                        .beneficiaryType!,
-                                              ),
-                                            );
-                                            context.router.popAndPush(
-                                              CustomHouseholdAcknowledgementRoute(
-                                                enableViewHousehold: true,
-                                                eligibilityAssessmentType: widget
-                                                    .eligibilityAssessmentType,
-                                              ),
-                                            );
-                                          }
-                                        } else {
-                                          final router = context.router;
-                                          final searchBloc = context
-                                              .read<SearchHouseholdsBloc>();
-                                          searchBloc.add(
-                                            const SearchHouseholdsClearEvent(),
-                                          );
-                                          router.popUntilRouteWithName(
-                                              BeneficiaryWrapperRoute.name);
-                                          router.push(
-                                            CustomHouseholdAcknowledgementRoute(
-                                                enableViewHousehold: true,
-                                                eligibilityAssessmentType: widget
-                                                    .eligibilityAssessmentType),
-                                          );
-                                        }
-                                      } else {
-                                        if (widget.hasSideEffects == true) {
-                                          context.read<SideEffectsBloc>().add(
-                                                SideEffectsSubmitEvent(
-                                                  widget.sideEffect!,
-                                                  false,
-                                                ),
-                                              );
-                                        }
-                                        final clientReferenceId =
-                                            IdGen.i.identifier;
-                                        List<String?> ineligibilityReasons = [];
-                                        ineligibilityReasons.add(
-                                            "CHILD_AGE_LESS_THAN_3_MONTHS");
-                                        context
-                                            .read<DeliverInterventionBloc>()
-                                            .add(
-                                              DeliverInterventionSubmitEvent(
-                                                task: TaskModel(
-                                                  projectBeneficiaryClientReferenceId:
-                                                      widget
-                                                          .projectBeneficiaryClientReferenceId,
-                                                  clientReferenceId:
-                                                      clientReferenceId,
-                                                  tenantId: envConfig
-                                                      .variables.tenantId,
-                                                  rowVersion: 1,
-                                                  auditDetails: AuditDetails(
-                                                    createdBy: context
-                                                        .loggedInUserUuid,
-                                                    createdTime: context
-                                                        .millisecondsSinceEpoch(),
-                                                  ),
-                                                  projectId: context.projectId,
-                                                  status:
-                                                      // (widget.hasSideEffects ??
-                                                      //         false)
-                                                      //     ? Status.inComplete
-                                                      //         .toValue()
-                                                      //     :
-                                                      status_local.Status
-                                                          .beneficiaryInEligible
-                                                          .toValue(),
-                                                  clientAuditDetails:
-                                                      ClientAuditDetails(
-                                                    createdBy: context
-                                                        .loggedInUserUuid,
-                                                    createdTime: context
-                                                        .millisecondsSinceEpoch(),
-                                                    lastModifiedBy: context
-                                                        .loggedInUserUuid,
-                                                    lastModifiedTime: context
-                                                        .millisecondsSinceEpoch(),
-                                                  ),
-                                                  additionalFields:
-                                                      TaskAdditionalFields(
-                                                    version: 1,
-                                                    fields: [
-                                                      AdditionalField(
-                                                        AdditionalFieldsType
-                                                            .cycleIndex
-                                                            .toValue(),
-                                                        "0${context.selectedCycle?.id}",
-                                                      ),
-                                                      // AdditionalField(
-                                                      //   'taskStatus',
-                                                      //   status_local.Status
-                                                      //       .beneficiaryInEligible
-                                                      //       .toValue(),
-                                                      // ),
-                                                      if (widget
-                                                              .hasSideEffects ??
-                                                          false == false) ...[
-                                                        AdditionalField(
-                                                          'ineligibleReasons',
-                                                          ineligibilityReasons
-                                                              .join(","),
-                                                        ),
-                                                        AdditionalField(
-                                                            'ageBelow3Months',
-                                                            true.toString()),
-                                                      ] else ...[
-                                                        AdditionalField(
-                                                            'ineligibleReasons',
-                                                            ["SIDE_EFFECTS"]
-                                                                .join(",")),
-                                                        AdditionalField(
-                                                            additional_fields_local
-                                                                .AdditionalFieldsType
-                                                                .hasSideEffects
-                                                                .toValue(),
-                                                            true.toString()),
-                                                      ],
-                                                      AdditionalField(
-                                                        additional_fields_local
-                                                            .AdditionalFieldsType
-                                                            .deliveryType
-                                                            .toValue(),
-                                                        EligibilityAssessmentStatus
-                                                            .smcDone.name,
-                                                      ),
-                                                      AdditionalField(
-                                                        additional_fields_local
-                                                            .AdditionalFieldsType
-                                                            .zeroDoseStatus
-                                                            .toValue(),
-                                                        zeroDose
-                                                            ? ZeroDoseStatus
-                                                                .zeroDose.name
-                                                            : incompletementVaccine
-                                                                ? ZeroDoseStatus
-                                                                    .incompletementVaccine
-                                                                    .name
-                                                                : ZeroDoseStatus
-                                                                    .done.name,
-                                                      ),
-                                                      ...getIndividualAdditionalFields(
-                                                          widget.individual)
-                                                    ],
-                                                  ),
-                                                  address: widget.individual
-                                                      ?.address?.first
-                                                      .copyWith(
-                                                    relatedClientReferenceId:
-                                                        clientReferenceId,
-                                                    id: null,
-                                                  ),
-                                                ),
-                                                isEditing: false,
-                                                boundaryModel: context.boundary,
-                                                navigateToSummary: false,
-                                                householdMemberWrapper: context
-                                                    .read<
-                                                        HouseholdOverviewBloc>()
-                                                    .state
-                                                    .householdMemberWrapper,
-                                              ),
-                                            );
-                                        final searchBloc = context
-                                            .read<SearchHouseholdsBloc>();
-                                        searchBloc.add(
-                                          const SearchHouseholdsClearEvent(),
-                                        );
-                                        final router = context.router;
-                                        router.popUntilRouteWithName(
-                                            BeneficiaryWrapperRoute.name);
-                                        if (widget.isAdministration == true) {
-                                          router.push(
-                                            CustomSplashAcknowledgementRoute(
-                                                enableBackToSearch: false,
-                                                eligibilityAssessmentType: widget
-                                                    .eligibilityAssessmentType),
-                                          );
-                                        } else {
-                                          router.push(
-                                            CustomHouseholdAcknowledgementRoute(
-                                                enableViewHousehold: true,
-                                                eligibilityAssessmentType: widget
-                                                    .eligibilityAssessmentType),
-                                          );
-                                        }
-                                      }
-                                    }
-
-                                    submitTriggered = true;
-                                    context.read<ServiceBloc>().add(
-                                          const ServiceSurveyFormEvent(
-                                            value: '',
-                                            submitTriggered: true,
-                                          ),
-                                        );
-                                  }
                                 }
                               },
                               child: Text(
@@ -918,8 +391,7 @@ class ZeroDoseCheckPageState extends LocalizedState<ZeroDoseCheckPage> {
                               child: Column(
                                 children: [
                                   ReactiveFormBuilder(
-                                    form: () => buildForm(
-                                        context, productVariants, variant),
+                                    form: () => buildForm(context),
                                     builder: (context, form, child) {
                                       return Column(
                                         crossAxisAlignment:
@@ -948,33 +420,6 @@ class ZeroDoseCheckPageState extends LocalizedState<ZeroDoseCheckPage> {
                                             padding: const EdgeInsets.all(8),
                                             child: Column(
                                               children: [
-                                                if (RegistrationDeliverySingleton()
-                                                        .beneficiaryType ==
-                                                    BeneficiaryType.individual)
-                                                  ReactiveWrapperField(
-                                                    formControlName:
-                                                        _doseAdministrationKey,
-                                                    builder: (field) =>
-                                                        LabeledField(
-                                                      label: localizations
-                                                          .translate(i18
-                                                              .deliverIntervention
-                                                              .currentCycle),
-                                                      child: DigitTextFormInput(
-                                                        inputFormatters: [
-                                                          UpperCaseTextFormatter(),
-                                                        ],
-                                                        readOnly: true,
-                                                        keyboardType:
-                                                            TextInputType
-                                                                .number,
-                                                        initialValue: form
-                                                            .control(
-                                                                _doseAdministrationKey)
-                                                            .value,
-                                                      ),
-                                                    ),
-                                                  ),
                                                 ReactiveWrapperField(
                                                   formControlName:
                                                       _dateOfAdministrationKey,
@@ -1204,42 +649,17 @@ class ZeroDoseCheckPageState extends LocalizedState<ZeroDoseCheckPage> {
   // ignore: long-parameter-list
 
   // This method builds a form used for delivering interventions.
-  FormGroup buildForm(
-    BuildContext context,
-    List<DeliveryProductVariant>? productVariants,
-    List<ProductVariantModel>? variants,
-  ) {
+  FormGroup buildForm(BuildContext context) {
     final bloc = context.read<DeliverInterventionBloc>().state;
     final overViewbloc = context.read<HouseholdOverviewBloc>().state;
     _controllers.forEachIndexed((index, element) {
       _controllers.removeAt(index);
     });
-    ProjectTypeModel? projectTypeModel =
-        widget.eligibilityAssessmentType == EligibilityAssessmentType.smc
-            ? RegistrationDeliverySingleton()
-                .selectedProject
-                ?.additionalDetails
-                ?.projectType
-            : RegistrationDeliverySingleton()
-                .selectedProject
-                ?.additionalDetails
-                ?.additionalProjectType;
-    // Add controllers for each product variant to the _controllers list.
-    if (_controllers.isEmpty) {
-      final int r = projectTypeModel?.cycles == null
-          ? 1
-          : fetchProductVariant(
-                      projectTypeModel
-                          ?.cycles![bloc.cycle - 1].deliveries?[bloc.dose - 1],
-                      overViewbloc.selectedIndividual,
-                      overViewbloc.householdMemberWrapper.household)
-                  ?.productVariants
-                  ?.length ??
-              0;
 
-      _controllers.addAll(List.generate(r, (index) => index)
-          .mapIndexed((index, element) => index));
-    }
+    // if (_controllers.isEmpty) {
+    //   _controllers.addAll(List.generate(r, (index) => index)
+    //       .mapIndexed((index, element) => index));
+    // }
 
     return fb.group(<String, Object>{
       _doseAdministrationKey: FormControl<String>(
@@ -1251,6 +671,11 @@ class ZeroDoseCheckPageState extends LocalizedState<ZeroDoseCheckPage> {
       _dateOfAdministrationKey:
           FormControl<DateTime>(value: DateTime.now(), validators: []),
     });
+  }
+
+  String trKey(String key, {String? fallback}) {
+    final v = localizations.translate(key);
+    return (v.isEmpty || v == key) ? (fallback ?? key) : v;
   }
 
   Widget _buildChecklist(
@@ -1281,6 +706,14 @@ class ZeroDoseCheckPageState extends LocalizedState<ZeroDoseCheckPage> {
         }
       }
 
+      final mdmsKey = '${selectedServiceDefinition?.code}.${item.code}';
+
+      final displayLabel = trKey(
+        mdmsKey,
+        fallback:
+            trKey(i18_local.checklist.zeroDoseBookOrEverVaccinatedQuestion),
+      );
+
       return Column(
         children: [
           Align(
@@ -1289,7 +722,7 @@ class ZeroDoseCheckPageState extends LocalizedState<ZeroDoseCheckPage> {
               padding: const EdgeInsets.all(4.0), // Add padding here
               child: Text(
                 '${localizations.translate(
-                  '${selectedServiceDefinition?.code}.${item.code}',
+                  '$displayLabel ${item.required == true ? '' : ''}',
                 )} ${item.required == true ? '*' : ''}',
                 style: theme.textTheme.headlineSmall,
               ),
@@ -1582,58 +1015,5 @@ class ZeroDoseCheckPageState extends LocalizedState<ZeroDoseCheckPage> {
     );
 
     return shouldNavigateBack ?? false;
-  }
-
-  bool shouldShowVaccinePage(
-    Map<String?, String> responses,
-  ) {
-    var showVaccinePage = false;
-    var q1Key = "ZDAQ1";
-
-    if (responses.isNotEmpty) {
-      if (!showVaccinePage &&
-          (responses.containsKey(q1Key) && responses[q1Key]!.isNotEmpty)) {
-        showVaccinePage = responses[q1Key] == yes ? true : false;
-      }
-    }
-
-    return showVaccinePage;
-  }
-
-  bool isZeroDose(
-    Map<String?, String> responses,
-  ) {
-    var isZeroDose = false;
-    var q2Key = "ZDAQ1.NO.Q2A";
-    var q3Key = "ZDAQ1.NO.Q2A.YES.Q2AA";
-
-    if (responses.isNotEmpty) {
-      if (!isZeroDose &&
-          (responses.containsKey(q2Key) && responses[q2Key]!.isNotEmpty)) {
-        isZeroDose = responses[q2Key] == no ? true : false;
-      }
-      if (!isZeroDose &&
-          (responses.containsKey(q3Key) && responses[q3Key]!.isNotEmpty)) {
-        isZeroDose = responses[q3Key] == no ? true : false;
-      }
-    }
-
-    return isZeroDose;
-  }
-
-  bool isIncompletementVaccine(
-    Map<String?, String> responses,
-  ) {
-    var isIncomplete = false;
-    var q3Key = "ZDAQ1.NO.Q2A.YES.Q2AA";
-
-    if (responses.isNotEmpty) {
-      if (!isIncomplete &&
-          (responses.containsKey(q3Key) && responses[q3Key]!.isNotEmpty)) {
-        isIncomplete = responses[q3Key] == yes ? true : false;
-      }
-    }
-
-    return isIncomplete;
   }
 }

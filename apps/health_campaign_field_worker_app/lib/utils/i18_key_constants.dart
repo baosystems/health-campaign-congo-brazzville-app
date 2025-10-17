@@ -44,9 +44,15 @@ const deliverIntervention = DeliverIntervention();
 const checklist = Checklist();
 const referBeneficiary = ReferBeneficiary();
 const householdDetails = HouseholdDetails();
+const memberCard = MemberCard();
+
+const zeroDose = ZeroDose();
 
 class Common {
   const Common();
+
+  String get coreCommonDialogTitle => 'CORE_COMMON_DIALOG_TITLE';
+  String get coreCommonDialogContent => 'CORE_COMMON_DIALOG_CONTENT';
 
   String get coreCommonContinue => 'CORE_COMMON_CONTINUE';
   String get coreCommonWarning => 'CORE_COMMON_WARNING';
@@ -98,6 +104,8 @@ class Common {
   String get coreCommonHome => 'CORE_COMMON_HOME';
 
   String get coreCommonViewDownloadedData => 'CORE_COMMON_VIEW_DOWNLOADED_DATA';
+
+  String get coreCommonError => 'CORE_COMMON_SIDE_EFFECT_REQUIRED';
 
   String get coreCommonlanguage => 'CORE_COMMON_LANGUAGE';
 
@@ -169,6 +177,12 @@ class HouseholdOverView {
   String get householdOverViewSMCAssessmentActionText =>
       'HOUSEHOLD_OVER_VIEW_SMC_ASSESSMENT_ACTION_TEXT';
 
+  String get householdOverViewChildVaccineActionText =>
+      'HOUSEHOLD_OVER_VIEW_CHILD_VACCINATED_ACTION_TEXT';
+
+  String get householdOverViewVaccinationStatusActionText =>
+      'HOUSEHOLD_OVER_VIEW_VACCINATION_STATUS_ACTION_TEXT';
+
   String get householdOverViewZeroDoseActionText =>
       'HOUSEHOLD_OVER_VIEW_ZERO_DOSE_ACTION_TEXT';
 
@@ -187,6 +201,9 @@ class HouseholdOverView {
   String get householdOverViewBeneficiaryReferredSMCLabel =>
       'HOUSEHOLD_OVER_VIEW_BENEFICIARY_REFERRED_SMC_LABEL';
 
+  String get householdOverViewBeneficiarySideEffectLabel =>
+      'HOUSEHOLD_OVER_VIEW_BENEFICIARY_SIDE_EFFECT_LABEL';
+
   String get householdOverViewBeneficiaryInEligibleSMCLabel =>
       'HOUSEHOLD_OVER_VIEW_BENEFICIARY_INELIGIBLE_SMC_LABEL';
   String get householdOverViewBeneficiaryInEligibleVASLabel =>
@@ -194,20 +211,55 @@ class HouseholdOverView {
 
   String get householdOverViewZeroDoseIconLabel =>
       'HOUSEHOLD_OVER_VIEW_ZERO_DOSE_ICON_LABEL';
+  String get householdOverViewUnderVaccinatedLabel =>
+      'HOUSEHOLD_OVER_VIEW_UNDER_VACCINATED_LABEL';
+  String get householdOverViewVaccinatedLabel =>
+      'HOUSEHOLD_OVER_VIEW_VACCINATED_ICON_LABEL';
+  String get householdOverViewFullyVaccinatedLabel =>
+      'HOUSEHOLD_OVER_VIEW_FULLY_VACCINATED_ICON_LABEL';
   String get householdOverViewIncompletementVaccineLabel =>
       'HOUSEHOLD_OVER_VIEW_INCOMPLETEMENT_VACCINE_LABEL';
   String get householdOverViewZeroDoseDeliveredIconLabel =>
       'HOUSEHOLD_OVER_VIEW_ZERO_DOSE_DELIVERED_ICON_LABEL';
+
+  String get householdOverViewBeneficiaryAbsentLabel =>
+      'HOUSEHOLD_OVER_VIEW_BENEFICIARY_ABSENT_STAUS_LABEL';
 }
 
 class DeliverIntervention {
   const DeliverIntervention();
+
+  String get noEligibleAvailableForThisSelection =>
+      'NO_ELIGIBLE_AVAILABLE_FOR_THIS_SELECTION';
+
+  String get selectDeliveryComment =>
+      'DELIVER_INTERVENTION_SELECT_DELIVERY_COMMENT';
+
+  String get recordVaccinationDetails =>
+      'DELIVER_INTERVENTION_RECORD_VACCINATION_DETAILS';
+
+  String get vaccineDetails => 'DELIVER_INTERVENTION_VACCINE_DETAILS_LABEL';
+
+  String get currentMonth => 'DELIVER_INTERVENTION_CURRENT_MONTH';
+  String get dateOfVaccination => 'DELIVER_INTERVENTION_DATE_OF_VACCINATION';
+  String get doseAdministeredBy =>
+      'DELIVER_INTERVENTION_DOSE_ADMINISTERED_BY_LABEL';
+  String get deliveryComment => 'DELIVER_INTERVENTION_DELIVERY_COMMENT';
+
+  String get selectVaccine => 'DELIVER_INTERVENTION_SELECT_VACCINE';
+  String get enterBatchNumber => 'DELIVER_INTERVENTION_ENTER_BATCH_NUMBER';
+  String get batchNumberMinLength =>
+      'DELIVER_INTERVENTION_BATCH_NUMBER_MIN_LENGTH';
+  String get numberOfDose =>
+      'DELIVER_INTERVENTION_NUMBER_OF_DOSE_ADMINISTERED_LABEL';
 
   String get enterReasonForonlyAlphabetsValidation =>
       'ALPHABETS_ONLY_VALIDATION';
 
   String get vaccinsSelectionLabel => 'VACCINS_DETAILS_LABEL';
   String get vaccinsSelectionLabelForGroup => 'VACCINS_DETAILS_LABEL_FOR_GROUP';
+  String get vaccinsSelectionInstruction =>
+      'DELIVER_INTERVENTION_VACCINS_SELECTION_INSTRUCTION';
 
   String get otherReasonLabel =>
       'DELIVER_INTERVENTION_OTHER_REASON_FOR_REDOSE_LABEL';
@@ -258,6 +310,18 @@ class DeliverIntervention {
   String get proceedToVASDescription => 'PROCEED_TO_VAS_DESCRIPTION';
 
   String get zeroDoseCheckLabel => 'DELIVER_INTERVENTION_ZERO_DOSE_CHECK_LABEL';
+
+  String get guidanceTitle => 'DELIVER_INTERVENTION_GUIDANCE_TITLE';
+  String get guidanceBcg => 'DELIVER_INTERVENTION_GUIDANCE_BCG';
+  String get guidanceVpo => 'DELIVER_INTERVENTION_GUIDANCE_VPO';
+  String get guidancePenta => 'DELIVER_INTERVENTION_GUIDANCE_PENTA';
+  String get guidanceRota => 'DELIVER_INTERVENTION_GUIDANCE_ROTA';
+  String get guidancePneumo => 'DELIVER_INTERVENTION_GUIDANCE_PNEUMO';
+  String get guidanceVpi => 'DELIVER_INTERVENTION_GUIDANCE_VPI';
+  String get guidanceRr => 'DELIVER_INTERVENTION_GUIDANCE_RR';
+  String get guidanceVaa => 'DELIVER_INTERVENTION_GUIDANCE_VAA';
+  String get guidanceMen => 'DELIVER_INTERVENTION_GUIDANCE_MEN';
+  String get guidanceVit => 'DELIVER_INTERVENTION_GUIDANCE_VIT';
 }
 
 class Checklist {
@@ -305,6 +369,8 @@ class Checklist {
       'CHECKLIST_BACK_DIALOG_SECONDARY_ACTION';
 
   String get noChecklistFound => 'NO_CHECKLISTS_FOUND';
+
+  String get zeroDoseBookOrEverVaccinatedQuestion => 'CHECKLIST_ZERO_DOSE_Q1';
 }
 
 class ReferBeneficiary {
@@ -345,6 +411,10 @@ class ReferBeneficiary {
   String get referAlertDialogTitle => 'REFERRAL_ALERT_DIALOG_TITLE';
   String get referAlertDialogContent => 'REFERRAL_ALERT_DIALOG_CONTENT';
   String get validationForReferralAge => 'REFERRAL_AGE_VALIDATION';
+
+  String get reasonForReferralExpanded => 'REFERRAL_REASON';
+  String get reasonComments => 'REFERRAL_COMMENTS';
+  String get referralID => 'REFERRAL_ID';
 }
 
 class HouseholdDetails {
@@ -420,6 +490,14 @@ class HomeShowcase {
 
   String get summaryReportRegistredChildren {
     return 'HOME_SHOWCASE_SUMMARY_REPORT_REGISTRED_CHILDREN';
+  }
+
+  String get summaryReportUnderVaccinated {
+    return 'HOME_SHOWCASE_SUMMARY_REPORT_UNDER_VACCINATED_CHILDREN';
+  }
+
+  String get summaryReportFullyVaccinated {
+    return 'HOME_SHOWCASE_SUMMARY_REPORT_FULLY_VACCINATED_CHILDREN';
   }
 
   String get summaryReportAdministredChildren {
@@ -1413,6 +1491,8 @@ class IndividualDetails {
   String get onlyAlphabetsNumbersSpacesValidationMessage =>
       'INDIVIDUAL_DETAILS_ONLY_ALPHABETS_NUMBERS_SPACES_VALIDATION_MESSAGE';
 
+  String get childMaxAgeError => "CHILD_MAX_AGE_ERROR";
+
   String get headAgeValidError => "HEAD_AGE_VALID_ERROR";
 
   String get individualsDetailsLabelText => 'INDIVIDUAL_LABEL_TEXT';
@@ -1485,6 +1565,8 @@ class IndividualDetails {
 
 class BeneficiaryDetails {
   const BeneficiaryDetails();
+
+  String get currentMont => 'CURRENT_MONTH';
 
   String get validationForExcessStockDispatch =>
       "ERROR_VALIDATION_FOR_EXCESS_STOCK_DISPATCH";
@@ -1619,4 +1701,46 @@ class Dashboard {
   const Dashboard();
 
   String get dashboardHeaderLabel => 'DASHBOARD_HEADER';
+}
+
+class MemberCard {
+  const MemberCard();
+
+  String get beneficiaryAbsentButtonLabel =>
+      'MEMBERCARD_BENEFICIARY_ABSENT_BUTTON_LABEL';
+
+  String get householdOverViewBeneficiaryAbsentLabel =>
+      'HOUSEHOLD_OVER_VIEW_BENEFICIARY_ABSENT_STAUS_LABEL';
+}
+
+class ZeroDose {
+  const ZeroDose();
+
+  String get reasonsTitle => 'ZERO_DOSE_REASONS_TITLE';
+  String get reasonsSubtitle => 'ZERO_DOSE_REASONS_SUBTITLE';
+  String get reasonsOtherLabel => 'ZERO_DOSE_REASONS_OTHER_LABEL';
+  String get reasonStockOut => 'ZERO_DOSE_REASON_STOCK_OUT';
+  String get reasonFacilityFar => 'ZERO_DOSE_REASON_FACILITY_FAR';
+  String get reasonForgotAppointment => 'ZERO_DOSE_REASON_FORGOT_APPOINTMENT';
+  String get reasonCaregiverBusy => 'ZERO_DOSE_REASON_CAREGIVER_BUSY';
+  String get reasonPriorAefi => 'ZERO_DOSE_REASON_PRIOR_AEFI';
+  String get reasonNoTransportMoney => 'ZERO_DOSE_REASON_NO_TRANSPORT_MONEY';
+  String get reasonBadStaffAttitude => 'ZERO_DOSE_REASON_BAD_STAFF_ATTITUDE';
+  String get reasonFacilityClosed => 'ZERO_DOSE_REASON_FACILITY_CLOSED';
+  String get reasonNotImportantToCaregiver =>
+      'ZERO_DOSE_REASON_NOT_IMPORTANT_TO_CAREGIVER';
+  String get reasonRumorsMisinformation =>
+      'ZERO_DOSE_REASON_RUMORS_MISINFORMATION';
+  String get reasonHardToAccessArea => 'ZERO_DOSE_REASON_HARD_TO_ACCESS_AREA';
+  String get reasonRefugeeOrIdp => 'ZERO_DOSE_REASON_REFUGEE_OR_IDP';
+  String get reasonIndigenousStigma => 'ZERO_DOSE_REASON_INDIGENOUS_STIGMA';
+  String get reasonOther => 'ZERO_DOSE_REASON_OTHER';
+  String get complaintTitle => 'ZERO_DOSE_COMPLAINT_TITLE';
+  String get complaintLabel => 'ZERO_DOSE_COMPLAINT_LABEL';
+  String get complaintHelp => 'ZERO_DOSE_COMPLAINT_HELP';
+  String get complaintRequired => 'ZERO_DOSE_COMPLAINT_REQUIRED';
+  String get complaintBoxPlaceholder => 'ZERO_DOSE_COMPLAINT_PLACEHOLDER';
+  String get reasonsOtherPlaceholder => 'ZERO_DOSE_REASON_OTHER_PLACEHOLDER';
+  String get reasonEnterOther => 'ZERO_DOSE_ENTER_OTHER_REASON';
+  String get enterReason => 'ZERO_DOSE_ENTER_AT_LEAST_ONE_OTHER_REASON';
 }

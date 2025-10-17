@@ -47,7 +47,7 @@ class _BoundarySelectionPageState
   late StreamSubscription syncSubscription;
   var leastLevelBoundaries;
 
-  final String setLocale = "fr_TG";
+  final String setLocale = "fr_CG";
 
   @override
   void initState() {
@@ -501,7 +501,8 @@ class _BoundarySelectionPageState
 
                                                 if (context.mounted) {
                                                   if (isOnline &&
-                                                      isDistributor &&
+                                                      context
+                                                          .isHealthFacilitySupervisor &&
                                                       Constants
                                                           .isDownSyncEnabled) {
                                                     context

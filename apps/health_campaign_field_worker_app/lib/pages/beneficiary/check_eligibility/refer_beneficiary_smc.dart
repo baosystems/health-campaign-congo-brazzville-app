@@ -5,10 +5,11 @@ import 'package:digit_components/widgets/atoms/digit_toaster.dart';
 import 'package:digit_ui_components/enum/app_enums.dart';
 import 'package:digit_ui_components/theme/spacers.dart';
 import 'package:digit_ui_components/widgets/atoms/digit_button.dart';
+import 'package:digit_ui_components/widgets/atoms/input_wrapper.dart';
 import 'package:digit_ui_components/widgets/atoms/pop_up_card.dart';
+import 'package:digit_ui_components/widgets/atoms/reactive_fields.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-// import 'package:health_campaign_field_worker_app/pages/pages-SMC/beneficiary/custom_facility_selection_smc.dart';
 import 'package:reactive_forms/reactive_forms.dart';
 import 'package:referral_reconciliation/referral_reconciliation.dart';
 import 'package:registration_delivery/models/entities/referral.dart';
@@ -67,7 +68,10 @@ class CustomReferBeneficiarySMCPageState
   static const _dateOfReferralKey = 'dateOfReferral';
   static const _administrativeUnitKey = 'administrativeUnit';
   static const _referredByKey = 'referredBy';
+  static const _referralIDKey = 'referralID';
   static const _referredToKey = 'referredTo';
+  static const _reasonsKey = 'reasons';
+  static const _commentsKey = 'comments';
   final clickedStatus = ValueNotifier<bool>(false);
   static const referralReasons = "referralReasons";
   static const sideEffectFromCurrentCycle = "DRUG_SE_CC";
@@ -283,34 +287,6 @@ class CustomReferBeneficiarySMCPageState
                                             "0${context.selectedCycle?.id}",
                                           ),
                                           AdditionalField(
-                                            'taskStatus',
-                                            Status.beneficiaryReferred
-                                                .toValue(),
-                                          ),
-                                          if (widget
-                                              .isReadministrationUnSuccessful)
-                                            AdditionalField(
-                                              'quantityWasted',
-                                              widget.quantityWasted
-                                                          .toString()
-                                                          .length ==
-                                                      1
-                                                  ? "0${widget.quantityWasted}"
-                                                  : widget.quantityWasted
-                                                      .toString(),
-                                            ),
-                                          if (widget
-                                              .isReadministrationUnSuccessful)
-                                            const AdditionalField(
-                                              'unsuccessfullDelivery',
-                                              'true',
-                                            ),
-                                          if (widget.productVariantId != null)
-                                            AdditionalField(
-                                              'productVariantId',
-                                              widget.productVariantId,
-                                            ),
-                                          AdditionalField(
                                             additional_fields_local
                                                 .AdditionalFieldsType
                                                 .deliveryType
@@ -329,20 +305,19 @@ class CustomReferBeneficiarySMCPageState
                                         id: null,
                                       ),
                                     );
-                                    // TODO: Currently, it's been shifted to the zero dose flow
 
-                                    // context.read<DeliverInterventionBloc>().add(
-                                    //       DeliverInterventionSubmitEvent(
-                                    //         task: task,
-                                    //         isEditing: false,
-                                    //         boundaryModel: context.boundary,
-                                    //       ),
-                                    //     );
-                                    // final searchBloc =
-                                    //     context.read<SearchHouseholdsBloc>();
-                                    // searchBloc.add(
-                                    //   const SearchHouseholdsClearEvent(),
-                                    // );
+                                    context.read<DeliverInterventionBloc>().add(
+                                          DeliverInterventionSubmitEvent(
+                                            task: task,
+                                            isEditing: false,
+                                            boundaryModel: context.boundary,
+                                          ),
+                                        );
+                                    final searchBloc =
+                                        context.read<SearchHouseholdsBloc>();
+                                    searchBloc.add(
+                                      const SearchHouseholdsClearEvent(),
+                                    );
 
                                     final reloadState =
                                         context.read<HouseholdOverviewBloc>();
@@ -358,21 +333,11 @@ class CustomReferBeneficiarySMCPageState
                                       },
                                     ).then(
                                       (value) => context.router.popAndPush(
-                                        ZeroDoseCheckRoute(
+                                        CustomHouseholdAcknowledgementRoute(
+                                          enableViewHousehold: true,
                                           eligibilityAssessmentType:
-                                              EligibilityAssessmentType.smc,
-                                          isAdministration: false,
-                                          task: task,
-                                          projectBeneficiaryClientReferenceId: task
-                                                  .projectBeneficiaryClientReferenceId ??
-                                              widget
-                                                  .projectBeneficiaryClientRefId,
+                                              EligibilityAssessmentType.vas,
                                         ),
-                                        // CustomHouseholdAcknowledgementRoute(
-                                        //   enableViewHousehold: true,
-                                        //   eligibilityAssessmentType:
-                                        //       EligibilityAssessmentType.vas,
-                                        // ),
                                       ),
                                     );
                                   }
@@ -431,7 +396,7 @@ class CustomReferBeneficiarySMCPageState
                             ),
                             DigitTextFormField(
                               formControlName: _referredByKey,
-                              readOnly: true,
+                              //readOnly: true,
                               label: localizations.translate(
                                 i18_local.referBeneficiary.referredToLabel,
                               ),
@@ -443,22 +408,105 @@ class CustomReferBeneficiarySMCPageState
                               isRequired: true,
                             ),
                             DigitTextFormField(
-                              formControlName: _referredToKey,
-                              readOnly: true,
-                              label: localizations.translate(
-                                i18_local.referBeneficiary.referredByLabel,
-                              ),
-                              validationMessages: {
-                                'required': (_) => localizations.translate(
-                                      i18_local.common.corecommonRequired,
-                                    ),
+                                formControlName: _referralIDKey,
+                                label: localizations.translate(
+                                    i18_local.referBeneficiary.referralID)),
+                            BlocBuilder<FacilityBloc, FacilityState>(
+                              builder: (context, state) {
+                                return state.maybeWhen(
+                                    orElse: () => const Offstage(),
+                                    loading: () => const Center(
+                                          child: CircularProgressIndicator(),
+                                        ),
+                                    fetched: (facilities, allFacilities) {
+                                      TextEditingController controller1 =
+                                          TextEditingController();
+                                      return InkWell(
+                                        onTap: () async {
+                                          final facility = await context.router
+                                              .push(
+                                                  CustomInventoryFacilitySelectionRoute(
+                                            facilities: allFacilities
+                                                .where((element) =>
+                                                    element.usage ==
+                                                    "Health facility")
+                                                .toList(),
+                                          )) as FacilityModel?;
+
+                                          if (facility == null) return;
+                                          form.control(_referredToKey).value =
+                                              localizations.translate(
+                                            'FAC_${facility.id}',
+                                          );
+                                        },
+                                        child: IgnorePointer(
+                                          child: ReactiveWrapperField(
+                                              formControlName: _referredToKey,
+                                              validationMessages: {
+                                                'required': (object) =>
+                                                    localizations.translate(
+                                                      '${i18.individualDetails.nameLabelText}_IS_REQUIRED',
+                                                    ),
+                                              },
+                                              showErrors: (control) =>
+                                                  control.invalid &&
+                                                  control.touched,
+                                              builder: (field) {
+                                                return InputField(
+                                                  type: InputType.search,
+                                                  isRequired: true,
+                                                  initialValue: field.value,
+                                                  label:
+                                                      localizations.translate(
+                                                    i18_local.referBeneficiary
+                                                        .referredByLabel,
+                                                  ),
+                                                  onChange: (value) {
+                                                    field.control
+                                                        .markAsTouched();
+                                                  },
+                                                  controller: controller1,
+                                                  errorMessage: field.errorText,
+                                                );
+                                              }),
+                                        ),
+                                      );
+                                    });
                               },
-                              isRequired: true,
                             ),
                           ]),
                         ],
                       ),
                     ),
+                    DigitCard(
+                        child: Column(children: [
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Expanded(
+                            child: Text(
+                              localizations.translate(i18_local
+                                  .referBeneficiary.reasonForReferralExpanded),
+                              style: theme.textTheme.displayMedium,
+                            ),
+                          ),
+                        ],
+                      ),
+                      Column(
+                        children: [
+                          DigitRadioButtonList(
+                              formControlName: _reasonsKey,
+                              valueMapper: (x) =>
+                                  localizations.translate('REFERRAL_REASON_$x'),
+                              options: reasons,
+                              errorMessage: "Option Error"),
+                          DigitTextFormField(
+                              formControlName: _commentsKey,
+                              label: localizations.translate(
+                                  i18_local.referBeneficiary.reasonComments)),
+                        ],
+                      )
+                    ]))
                   ],
                 ),
               ),
@@ -478,6 +526,9 @@ class CustomReferBeneficiarySMCPageState
         value: context.loggedInUser.userName,
         validators: [Validators.required],
       ),
+      _referralIDKey: FormControl<String>(
+        value: context.loggedInUser.userName,
+      ),
       _referredToKey: FormControl<String>(
         value: healthFacilities.isNotEmpty
             ? localizations.translate('FAC_${healthFacilities.first.id}')
@@ -492,6 +543,8 @@ class CustomReferBeneficiarySMCPageState
           Validators.required,
         ],
       ),
+      _reasonsKey: FormControl<String>(),
+      _commentsKey: FormControl<String>(),
     });
   }
 
@@ -531,20 +584,3 @@ class CustomReferBeneficiarySMCPageState
     return shouldNavigateBack ?? false;
   }
 }
-
-
-// class CustomFacilityValueAccessor extends ControlValueAccessor<FacilityModel, String> {
-//   final FacilityModel facility;
-
-//   CustomFacilityValueAccessor(this.facility);
-
-//   @override
-//   String? modelToViewValue(FacilityModel? modelValue) {
-//     return modelValue?.id;
-//   }
-
-//   @override
-//   FacilityModel? viewToModelValue(String? viewValue) {
-//     return facility((f) => f.id == viewValue);
-//   }
-// }

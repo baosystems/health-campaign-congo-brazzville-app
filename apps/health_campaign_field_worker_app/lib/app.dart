@@ -20,6 +20,9 @@ import 'package:survey_form/survey_form.dart';
 
 import 'blocs/app_initialization/app_initialization.dart';
 import 'blocs/auth/auth.dart';
+import 'blocs/vaccine/vaccine_delivery.dart';
+import 'blocs/vaccine/vaccine_product_variants.dart';
+import 'blocs/vaccine/vaccine_search.dart';
 import 'blocs/inventory_management/custom_summary_report_bloc.dart';
 import 'blocs/inventory_management/stock_bloc.dart';
 import 'blocs/localization/localization.dart';
@@ -269,8 +272,7 @@ class MainApplicationState extends State<MainApplication>
 
                     return MultiBlocProvider(
                       providers: [
-
-                          BlocProvider(
+                        BlocProvider(
                           create: (context) => SummaryReportBloc(
                             householdMemberRepository: context.repository<
                                 HouseholdMemberModel,
@@ -449,6 +451,31 @@ class MainApplicationState extends State<MainApplication>
                             projectFacilityDataRepository: context.repository<
                                 ProjectFacilityModel,
                                 ProjectFacilitySearchModel>(),
+                          ),
+                        ),
+                        BlocProvider(
+                          create: (context) => VaccineSearchBloc(
+                            const VaccineSearchState(),
+                            taskRepository: context
+                                .repository<TaskModel, TaskSearchModel>(),
+                          ),
+                        ),
+                        BlocProvider(
+                          create: (context) => VaccineProductVariantBloc(
+                            const VaccineProductVariantState(),
+                            projectResourceDataRepository: context.repository<
+                                ProjectResourceModel,
+                                ProjectResourceSearchModel>(),
+                            productVariantDataRepository: context.repository<
+                                ProductVariantModel,
+                                ProductVariantSearchModel>(),
+                          ),
+                        ),
+                        BlocProvider(
+                          create: (context) => VaccineDeliveryBloc(
+                            const VaccineDeliveryState(),
+                            taskRepository: context
+                                .repository<TaskModel, TaskSearchModel>(),
                           ),
                         ),
                       ],

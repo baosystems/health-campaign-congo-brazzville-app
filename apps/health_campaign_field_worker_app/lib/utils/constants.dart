@@ -108,7 +108,24 @@ class Constants {
   static const int mlPerBottle = 30;
   static const int apiCallLimit = 1000;
   static const String pipeSeparator = '||';
-  static const int mobileNumberLength = 8;
+  static const int mobileNumberLength = 9;
+
+  static const String zeroDoseAssessment = "ZERODOSE_ASSESSMENT";
+
+  static const String ineligibleForBCG = "INELIGIBLE_FOR_BCG";
+  static const String ineligibleForRota = "INELIGIBLE_FOR_ROTA";
+
+  static const String beneficiaryAbsent = "BENEFICIARY_ABSENT";
+
+  static const String rota1Vaccine = "HCM_VACCINE_ROTA_1";
+  static const String rota2Vaccine = "HCM_VACCINE_ROTA_2";
+  static const String bcgVaccine = "HCM_VACCINE_BCG";
+  static const String vaaVaccine = "HCM_VACCINE_VAA";
+  static const String hpvVaccine = "HCM_VACCINE_HPV";
+  static const String penta1 = "HCM_VACCINE_PENTA_1";
+
+  static const int yearsInDays = 365;
+  static const int monthsInDays = 30;
 
   // for stock validation
 
@@ -130,6 +147,8 @@ class Constants {
   static const String tablet_3_11 = "tablet_3_11";
   static const String tablet_12_59 = "tablet_12_59";
   static const String zeroDose = 'zeroDose';
+  static const String underVaccinated = 'underVaccinated';
+  static const String fullyVaccinated = 'fullyVaccinated';
 
   // todo enable before cycle2
   static const bool isDownSyncEnabled = true;
@@ -138,6 +157,19 @@ class Constants {
 
   static RegExp mobileNumberRegExp =
       RegExp(r'^(?=.{10}$)[+]*[(]{0,1}[0-9]{1,4}[)]{0,1}[-\s\./0-9]*$');
+
+  static List<String> allVaccineCodes = [
+    "VIT-A",
+    "MEN-A",
+    "VAA",
+    "BCG",
+    "PENTA",
+    "VPO",
+    "ROTA",
+    "PNEUMO",
+    "RR",
+    "VPI",
+  ];
 
   static List<LocalRepository> getLocalRepositories(
     LocalSqlDataStore sql,
@@ -376,6 +408,8 @@ enum DigitProgressDialogType {
   checkFailed,
   pendingSync,
 }
+
+enum DoseStatus { none, zeroDose, underVaccinated, fullyVaccinated, vaccinated }
 
 class DownloadBeneficiary {
   String title;

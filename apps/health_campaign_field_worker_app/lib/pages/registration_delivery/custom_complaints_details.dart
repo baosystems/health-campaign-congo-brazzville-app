@@ -21,7 +21,6 @@ import 'package:reactive_forms/reactive_forms.dart';
 import '../../utils/utils.dart' as local_utils;
 
 import '../../../utils/i18_key_constants.dart' as i18;
-// import 'package:';
 import '../../../utils/utils.dart' show CustomValidator;
 import '../../../widgets/header/back_navigation_help_header.dart';
 import '../../../widgets/localized.dart';
@@ -434,15 +433,6 @@ class CustomComplaintsDetailsPageState
                               'maxLength': (object) => localizations.translate(i18
                                   .individualDetails
                                   .mobileNumberInvalidFormatValidationMessage),
-                              'startsWith7or9': (object) =>
-                                  localizations.translate(i18_local
-                                      .individualDetails
-                                      .mobileNumberStartWith7or9ValidationMessage),
-                              // 'minLength': (object) => localizations.translate(
-                              //     i18.complaints.validationMinLengthError),
-                              // 'maxLength': (object) => localizations
-                              //     .translate(i18.common.maxCharsRequired)
-                              //     .replaceAll('{}', '8'),
                             },
                             builder: (field) {
                               return LabeledField(
@@ -616,7 +606,6 @@ class CustomComplaintsDetailsPageState
             final value = validator.value?.toString().trim();
             if (value == null || value.isEmpty) return null;
             const pattern = r"^[A-Za-z0-9\s]+$";
-            // const pattern = r"^[A-Za-z0-9\s-]+$";
             final regExp = RegExp(pattern);
             return regExp.hasMatch(value) ? null : {'onlyAlphabets': true};
           }),
@@ -629,10 +618,8 @@ class CustomComplaintsDetailsPageState
           Validators.required,
           Validators.delegate(
               (validator) => CustomValidator.validMobileNumber(validator)),
-          // Validators.minLength(8),
-          Validators.maxLength(8),
-          Validators.delegate((validator) =>
-              local_utils.CustomValidator.startsWith7or9(validator)),
+          Validators.minLength(9),
+          Validators.maxLength(9),
         ],
       ),
       _supervisorName: FormControl<String>(
@@ -643,7 +630,6 @@ class CustomComplaintsDetailsPageState
           Validators.delegate((validator) {
             final value = validator.value?.toString().trim();
             if (value == null || value.isEmpty) return null;
-            // const pattern = r"^[A-Za-z\s]+$";
             const pattern = r"^[A-Za-z0-9\s]+$";
             final regExp = RegExp(pattern);
             return regExp.hasMatch(value) ? null : {'onlyAlphabets': true};

@@ -81,35 +81,17 @@ class CustomValidator {
   }
 
   static Map<String, dynamic>? validMobileNumber(
-    AbstractControl<dynamic> control,
-  ) {
-    if (control.value == null || control.value.toString().isEmpty) {
-      return null;
-    }
-
-    const pattern = r'^\d{8,9}$'; // 9 or 10 digits only
-
-    if (RegExp(pattern).hasMatch(control.value.toString())) {
-      return null; // Valid
-    }
-
-    return {'mobileNumber': true}; // Invalid
+      AbstractControl<dynamic> control) {
+    final value = control.value?.toString().trim() ?? '';
+    if (value.isEmpty) return null;
+    return RegExp(r'^\d{9}$').hasMatch(value) ? null : {'mobileNumber': true};
   }
 
   static Map<String, dynamic>? startsWith7or9(
       AbstractControl<dynamic> control) {
-    if (control.value == null || control.value.toString().isEmpty) {
-      return null;
-    }
-
-    final value = control.value.toString();
-    const pattern = r'^[79]'; // Starts with 7 or 9
-
-    if (RegExp(pattern).hasMatch(value)) {
-      return null; // Valid
-    }
-
-    return {'startsWith7or9': true}; // Invalid
+    final value = control.value?.toString().trim() ?? '';
+    if (value.isEmpty) return null;
+    return RegExp(r'^[79]').hasMatch(value) ? null : {'startsWith7or9': true};
   }
 
   static Map<String, dynamic>? onlyAlphabets(AbstractControl<dynamic> control) {
@@ -898,4 +880,51 @@ class LocalizationParams {
   Locale? get locale => _locale;
 
   bool? get exclude => _exclude;
+}
+
+const List<String> numberWords = [
+  'Zero',
+  'One',
+  'Two',
+  'Three',
+  'Four',
+  'Five',
+  'Six',
+];
+
+String numberToWords(int number) {
+  if (number >= 0 && number < numberWords.length) {
+    return numberWords[number];
+  }
+  return number.toString();
+}
+
+const Set<String> filterDoseCodes = {
+  "HCM_VACCINE_VIT_A",
+  "HCM_VACCINE_MEN_A",
+};
+
+DoseStatus getDoseStatus(
+  List<String> selectedCodes,
+  List<String> noSelectedCodes,
+) {
+  final updatedNoSelectedCodes =
+      noSelectedCodes.whereNot((e) => filterDoseCodes.contains(e)).toList();
+
+  if (selectedCodes.isEmpty && updatedNoSelectedCodes.isEmpty) {
+    return DoseStatus.none;
+  } else if ((selectedCodes.isEmpty && updatedNoSelectedCodes.isNotEmpty) ||
+      (selectedCodes.isNotEmpty &&
+          updatedNoSelectedCodes.isNotEmpty &&
+          updatedNoSelectedCodes.contains(Constants.penta1))) {
+    return DoseStatus.zeroDose;
+  } else if (selectedCodes.isNotEmpty &&
+      updatedNoSelectedCodes.isNotEmpty &&
+      selectedCodes.contains(Constants.penta1)) {
+    return DoseStatus.underVaccinated;
+  } else if (selectedCodes.isNotEmpty && updatedNoSelectedCodes.isEmpty) {
+    return DoseStatus.fullyVaccinated;
+  }
+
+  return DoseStatus.zeroDose;
 }

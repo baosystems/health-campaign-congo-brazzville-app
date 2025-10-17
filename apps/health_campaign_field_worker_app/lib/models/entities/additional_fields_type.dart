@@ -5,12 +5,14 @@ part 'additional_fields_type.mapper.dart';
 
 @MappableEnum(caseStyle: CaseStyle.upperCase)
 enum AdditionalFieldsType {
-  @MappableValue("zeroDoseStatus")
-  zeroDoseStatus,
+  @MappableValue("doseStatus")
+  doseStatus,
   @MappableValue("selectedVaccines")
   selectedVaccines,
   @MappableValue("noSelectedVaccines")
   noSelectedVaccines,
+  @MappableValue("vaccineDoseList")
+  vaccineDoseList,
   @MappableValue("hasSideEffects")
   hasSideEffects,
   @MappableValue("deliveryStrategy")
@@ -25,6 +27,8 @@ enum AdditionalFieldsType {
   dateOfAdministration,
   @MappableValue("dateOfDelivery")
   dateOfDelivery,
+  @MappableValue("nextDateOfDelivery")
+  nextDateOfDelivery,
   @MappableValue("referralComments")
   referralComments,
   @MappableValue("cycle")
@@ -53,5 +57,21 @@ enum AdditionalFieldsType {
   mobile,
   @MappableValue("EMPLOYEE")
   employee,
+  @MappableValue("ineligibleReasons")
+  ineligibleReasons,
+  @MappableValue("ageBelow3Months")
+  ageBelow3Months,
+  @MappableValue("currentMonth")
+  currentMonth,
+  @MappableValue("dateOfVaccination")
+  dateOfVaccination,
+  @MappableValue("doseAdministeredBy")
+  doseAdministeredBy,
+  @MappableValue("taskStatus")
+  taskStatus,
+  @MappableValue("individualClientReferenceId")
+  individualClientReferenceId,
+  @MappableValue("uniqueBeneficiaryId")
+  uniqueBeneficiaryId,
   ;
 }

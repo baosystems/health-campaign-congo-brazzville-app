@@ -78,10 +78,6 @@ class CustomIndividualDetailsPageState
   bool isEditIndividual = false;
   bool isAddIndividual = false;
   bool isBeneficaryRegistration = false;
-  final String yes = "yes";
-  final String no = "no";
-  String? yesNoValue;
-  bool get isRelocated => yesNoValue == yes;
   final RegExp uuidRegex = RegExp(
       r'^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$');
   final trainingRegex = RegExp(r'^cps-f\d{5}$');
@@ -98,7 +94,8 @@ class CustomIndividualDetailsPageState
     super.initState();
   }
 
-  onSubmit(IndividualModel individual, bool isCreate) async {
+  onSubmit(IndividualModel individual, HouseholdModel? householdModel,
+      bool isCreate) async {
     final bloc = context.read<CustomBeneficiaryRegistrationBloc>();
     final router = context.router;
     final name = individual?.name?.givenName ?? '';
@@ -109,17 +106,20 @@ class CustomIndividualDetailsPageState
       } else {
         customSearchHouseholdsBloc
             .add(const CustomSearchHouseholdsEvent.clear());
-        customSearchHouseholdsBloc.add(
-          CustomSearchHouseholdsEvent.searchByHouseholdHead(
-            searchText: name.trim(),
-            projectId: RegistrationDeliverySingleton().projectId!,
-            isProximityEnabled: false,
-            maxRadius: RegistrationDeliverySingleton().maxRadius,
-            limit: customSearchHouseholdsBloc.state.limit,
-            offset: 0,
-          ),
-        );
-        router.popUntil(
+        if (householdModel != null) {
+          customSearchHouseholdsBloc.add(
+            CustomSearchHouseholdsEvent.searchByHousehold(
+              householdModel: householdModel,
+              projectId: RegistrationDeliverySingleton().projectId!,
+              isProximityEnabled: false,
+              maxRadius: RegistrationDeliverySingleton().maxRadius,
+            ),
+          );
+        }
+        // router.popUntil(
+        //     (route) => route.settings.name == SearchBeneficiaryRoute.name);
+        (context.router.parent() as StackRouter).maybePop();
+        context.router.popUntil(
             (route) => route.settings.name == SearchBeneficiaryRoute.name);
         router.push(CustomBeneficiaryAcknowledgementRoute(
           enableViewHousehold: true,
@@ -132,8 +132,28 @@ class CustomIndividualDetailsPageState
     }
   }
 
-  onBeneficiarySubmit(name, individual) async {
+  onBeneficiarySubmit(
+    name,
+    individual,
+    DateTime dob,
+  ) async {
     final router = context.router;
+    final theme = Theme.of(context);
+
+    final ageInYears = DateTime.now().difference(dob).inDays / 365;
+
+    if (ageInYears > 18) {
+      await DigitToast.show(
+        context,
+        options: DigitToastOptions(
+          localizations.translate(i18_local.individualDetails.childMaxAgeError),
+          true,
+          theme,
+        ),
+      );
+      return;
+    }
+
     router.push(CustomBeneficiarySummaryRoute(
       name: name,
       individualModel: individual,
@@ -148,7 +168,6 @@ class CustomIndividualDetailsPageState
     DateTime before150Years = DateTime(now.year - 150, now.month, now.day);
     DateTime lastDate = DateTime(now.year, now.month - 3, now.day);
     DateTime firstDate = DateTime(now.year, now.month - 59, now.day);
-    yesNoValue ??= no;
 
     final textTheme = theme.digitTextTheme(context);
 
@@ -358,7 +377,8 @@ class CustomIndividualDetailsPageState
                                       ),
                                     );
                                     // router.push(CustomSummaryRoute());
-                                    await onSubmit(individual, true);
+                                    await onSubmit(
+                                        individual, householdModel, true);
                                   }
                                 },
                                 editIndividual: (
@@ -367,8 +387,27 @@ class CustomIndividualDetailsPageState
                                   addressModel,
                                   projectBeneficiaryModel,
                                   loading,
-                                ) {
+                                ) async {
                                   isEditIndividual = true;
+                                  DateTime dob = form.control(_dobKey).value;
+                                  final ageInYears =
+                                      DateTime.now().difference(dob).inDays /
+                                          365;
+
+                                  if (ageInYears > 18 &&
+                                      widget.isHeadOfHousehold == false) {
+                                    await DigitToast.show(
+                                      context,
+                                      options: DigitToastOptions(
+                                        localizations.translate(i18_local
+                                            .individualDetails
+                                            .childMaxAgeError),
+                                        true,
+                                        theme,
+                                      ),
+                                    );
+                                    return;
+                                  }
                                   final scannerBloc =
                                       context.read<DigitScannerBloc>();
                                   scannerBloc.add(
@@ -443,7 +482,8 @@ class CustomIndividualDetailsPageState
                                             : null,
                                       ),
                                     );
-                                    onSubmit(individual, false);
+
+                                    onSubmit(individual, householdModel, false);
                                   }
                                 },
                                 addMember: (
@@ -523,9 +563,13 @@ class CustomIndividualDetailsPageState
                                       //         : null,
                                       //   ),
                                       // );
+                                      DateTime dob =
+                                          form.control(_dobKey).value;
+
                                       onBeneficiarySubmit(
                                           individual.name?.givenName ?? "",
-                                          individual);
+                                          individual,
+                                          dob);
                                     }
                                   }
                                 },
@@ -574,6 +618,7 @@ class CustomIndividualDetailsPageState
                                       ),
                                 },
                                 builder: (field) => LabeledField(
+                                  isRequired: true,
                                   label: localizations.translate(
                                     widget.isHeadOfHousehold
                                         ? i18_local.individualDetails
@@ -735,51 +780,6 @@ class CustomIndividualDetailsPageState
                             height: spacer2,
                           ),
                         individualDetailsShowcaseData.dateOfBirth.buildWith(
-                          // child: CustomDigitDobPicker(
-                          //   datePickerFormControl: _dobKey,
-                          //   datePickerLabel: localizations.translate(
-                          //     i18.individualDetails.dobLabelText,
-                          //   ),
-                          //   ageFieldLabel: localizations.translate(
-                          //     i18.individualDetails.ageLabelText,
-                          //   ),
-                          //   yearsHintLabel: localizations.translate(
-                          //     i18.individualDetails.yearsHintText,
-                          //   ),
-                          //   separatorLabel: localizations.translate(
-                          //     i18.individualDetails.separatorLabelText,
-                          //   ),
-                          //   yearsAndMonthsErrMsg: localizations.translate(
-                          //     i18_local.individualDetails
-                          //         .yearsAndMonthsErrorTextUpdate,
-                          //   ),
-                          //   isHead: widget.isHeadOfHousehold,
-                          //   requiredErrMsg: localizations.translate(
-                          //     i18.common.corecommonRequired,
-                          //   ),
-                          //   initialDate: before150Years,
-                          //   onChangeOfFormControl: (formControl) {
-                          //     // Handle changes to the control's value here
-                          //     final value = formControl.value;
-
-                          //     digits.DigitDOBAge age =
-                          //         digits.DigitDateUtils.calculateAge(value);
-                          //     // Allow only between 0 to 59 months for cycle 1
-                          //     final ageInMonths = age.years * 12 + age.months;
-                          //     if (ageInMonths > 59) {
-                          //       widget.isHeadOfHousehold
-                          //           ? formControl.removeError('')
-                          //           : formControl.setErrors({'': true});
-                          //     } else {
-                          //       formControl.removeError('');
-                          //     }
-                          //   },
-                          //   cancelText: localizations
-                          //       .translate(i18.common.coreCommonCancel),
-                          //   confirmText: localizations
-                          //       .translate(i18.common.coreCommonOk),
-                          //   monthsHintLabel: 'Month',
-                          // ),
                           child: CustomDigitDobPicker(
                             datePickerFormControl: _dobKey,
                             datePickerLabel: localizations.translate(
@@ -799,9 +799,7 @@ class CustomIndividualDetailsPageState
                                   .yearsAndMonthsErrorTextUpdate,
                             ),
                             isHeadOfHousehold: widget.isHeadOfHousehold,
-                            initialDate: widget.isHeadOfHousehold
-                                ? before150Years
-                                : firstDate,
+                            initialDate: before150Years,
                             requiredErrMsg: localizations.translate(
                               i18.common.corecommonRequired,
                             ),
@@ -814,14 +812,6 @@ class CustomIndividualDetailsPageState
                               final age =
                                   digits.DigitDateUtils.calculateAge(dob);
                               final ageInMonths = age.years * 12 + age.months;
-                              if (!widget.isHeadOfHousehold &&
-                                  ageInMonths > 59) {
-                                control.setErrors({'ageLimit': true});
-                              } else {
-                                control.removeError('ageLimit');
-                                control.removeError('required');
-                                control.removeError('');
-                              }
                             },
                             cancelText: localizations
                                 .translate(i18.common.coreCommonCancel),
@@ -831,6 +821,7 @@ class CustomIndividualDetailsPageState
                           ),
                         ),
                         dropdown.DigitDropdown<String>(
+                          isRequired: true,
                           label: localizations.translate(
                             i18.individualDetails.genderLabelText,
                           ),
@@ -881,88 +872,6 @@ class CustomIndividualDetailsPageState
                               );
                             },
                           ),
-                        if (!widget.isHeadOfHousehold)
-                          Text(
-                              localizations.translate(i18_local
-                                  .individualDetails
-                                  .relocatedBeneficiaryQuestion),
-                              style: TextStyle(
-                                fontSize: 16,
-                                color: theme.colorTheme.text.primary,
-                              )),
-                        if (!widget.isHeadOfHousehold)
-                          Container(
-                            decoration: BoxDecoration(
-                              border: Border.all(
-                                color: Colors.grey,
-                              ),
-                              borderRadius: BorderRadius.circular(4),
-                            ),
-                            child: StatefulBuilder(
-                              builder: (context, setState) {
-                                return Row(
-                                  children: [
-                                    Expanded(
-                                      child: RadioListTile<String>(
-                                        title: Text(localizations.translate(
-                                          i18_local.householdDetails
-                                              .capitalYesLabelText,
-                                        )),
-                                        value: yes,
-                                        groupValue: yesNoValue,
-                                        onChanged: (value) {
-                                          setState(() {
-                                            yesNoValue = value!;
-                                          });
-                                          // Force rebuild to show/hide button
-                                          this.setState(() {});
-                                        },
-                                      ),
-                                    ),
-                                    Expanded(
-                                      child: RadioListTile<String>(
-                                        title: Text(localizations.translate(
-                                          i18_local.householdDetails
-                                              .capitalNoLabelText,
-                                        )),
-                                        value: no,
-                                        groupValue: yesNoValue,
-                                        onChanged: (value) {
-                                          setState(() {
-                                            yesNoValue = value!;
-                                          });
-                                          this.setState(() {});
-                                        },
-                                      ),
-                                    ),
-                                  ],
-                                );
-                              },
-                            ),
-                          ),
-                        if (!widget.isHeadOfHousehold && isRelocated)
-                          DigitButton(
-                            capitalizeLetters: false,
-                            label: localizations.translate(i18_local
-                                .householdDetails.previousBeneficiaryQRCode),
-                            mainAxisSize: MainAxisSize.max,
-                            type: DigitButtonType.secondary,
-                            size: DigitButtonSize.large,
-                            isDisabled: false,
-                            onPressed: () {
-                              Navigator.of(context).push(
-                                MaterialPageRoute(
-                                  builder: (context) => const DigitScannerPage(
-                                    quantity: 5,
-                                    isGS1code: false,
-                                    singleValue: false,
-                                  ),
-                                  settings:
-                                      const RouteSettings(name: '/qr-scanner'),
-                                ),
-                              );
-                            },
-                          ),
                         individualDetailsShowcaseData.mobile.buildWith(
                           child: Offstage(
                             offstage: !widget.isHeadOfHousehold,
@@ -973,14 +882,14 @@ class CustomIndividualDetailsPageState
                                     localizations.translate(i18_local
                                         .individualDetails
                                         .mobileNumberLengthValidationMessage),
+                                'minLength': (_) => localizations
+                                    .translate(i18_local.individualDetails
+                                        .mobileNumberLengthValidationMessage)
+                                    .replaceAll('{}', '9'),
                                 'maxLength': (object) => localizations
                                     .translate(i18_local.individualDetails
                                         .mobileNumberLengthValidationMessage)
-                                    .replaceAll('{}', '8'),
-                                'startsWith7or9': (object) =>
-                                    localizations.translate(i18_local
-                                        .individualDetails
-                                        .mobileNumberStartWith7or9ValidationMessage),
+                                    .replaceAll('{}', '9'),
                               },
                               builder: (field) => LabeledField(
                                 label: localizations.translate(
@@ -988,15 +897,25 @@ class CustomIndividualDetailsPageState
                                 ),
                                 child: DigitTextFormInput(
                                   keyboardType: TextInputType.number,
-                                  maxLength: 11,
+                                  maxLength: 9,
                                   inputFormatters: [
                                     FilteringTextInputFormatter.digitsOnly,
+                                    LengthLimitingTextInputFormatter(9),
                                   ],
                                   initialValue:
                                       form.control(_mobileNumberKey).value,
                                   onChange: (value) {
-                                    form.control(_mobileNumberKey).value =
-                                        value;
+                                    final c = form.control(_mobileNumberKey);
+                                    c.value = value;
+
+                                    if (value.isEmpty) {
+                                      c
+                                        ..removeError('mobileNumber')
+                                        ..removeError('maxLength')
+                                        ..removeError('minLength');
+                                    } else {
+                                      c.updateValueAndValidity();
+                                    }
                                   },
                                   errorMessage: field.errorText,
                                 ),
@@ -1190,10 +1109,8 @@ class CustomIndividualDetailsPageState
           FormControl<String>(value: individual?.mobileNumber, validators: [
         Validators.delegate((validator) =>
             local_utils.CustomValidator.validMobileNumber(validator)),
-        Validators.maxLength(8),
-        Validators.delegate((validator) =>
-            local_utils.CustomValidator.startsWith7or9(validator)),
-        // Validators.required,
+        Validators.minLength(9),
+        Validators.maxLength(9),
       ]),
     });
   }

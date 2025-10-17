@@ -19,6 +19,8 @@ import 'package:inventory_management/blocs/app_localization.dart';
 import 'package:inventory_management/router/inventory_router.dart';
 import 'package:inventory_management/router/inventory_router.gm.dart';
 import 'package:inventory_management/blocs/record_stock.dart' as _i15;
+import '../pages/beneficiary/check_eligibility/view_vaccination_status.dart';
+import '../pages/beneficiary/vaccine_delivery.dart';
 import '../pages/registration_delivery/custom_complaints_inbox_search.dart';
 
 import '../blocs/inventory_management/custom_inventory_report.dart';
@@ -26,6 +28,8 @@ import '../blocs/localization/app_localization.dart';
 import '../pages/acknowledgement.dart';
 import '../pages/authenticated.dart';
 import '../pages/beneficiary/check_eligibility/check_eligibility_assessment.dart';
+import '../pages/beneficiary/check_eligibility/reasons_for_non_vaccination.dart';
+import '../pages/beneficiary/check_eligibility/complaint_capture.dart';
 import '../pages/beneficiary/check_eligibility/custom_dose_administered.dart';
 import '../pages/beneficiary/check_eligibility/custom_splash_acknowledge.dart';
 import '../pages/beneficiary/check_eligibility/facility_selection_smc.dart';
@@ -33,7 +37,7 @@ import '../pages/beneficiary/check_eligibility/custom_household_acknowledgement.
 import '../pages/beneficiary/check_eligibility/household_acknowledgement_smc.dart';
 import '../pages/beneficiary/check_eligibility/inventory_facility_selection_smc.dart';
 import '../pages/beneficiary/check_eligibility/refer_beneficiary_smc.dart';
-import '../pages/beneficiary/check_eligibility/vaccine_selection_page.dart';
+import '../pages/beneficiary/check_eligibility/vaccine_selection.dart';
 import '../pages/registration_delivery/custom_complaints_details.dart';
 import '../pages/boundary_selection.dart';
 import '../pages/home.dart';
@@ -84,7 +88,7 @@ import '../pages/checklist/custom_survey_form_preview.dart';
 import '../pages/checklist/custom_survey_form_boundary_view.dart';
 import '../pages/checklist/custom_survey_form_acknowledgement.dart';
 import '../pages/checklist/custom_survey_form_wrapper.dart';
-import '../pages/beneficiary/check_eligibility/vaccine_selection_page.dart';
+import '../pages/beneficiary/check_eligibility/vaccine_selection.dart';
 import '../pages/beneficiary/check_eligibility/zero_dose_check.dart';
 import 'package:closed_household/closed_household.dart';
 import 'package:closed_household/router/closed_household_router.gm.dart';
@@ -430,6 +434,14 @@ class AppRouter extends _$AppRouter {
                   //   redirectTo: 'custom-beneficiary-details',
                   // ),
                   AutoRoute(
+                    page: ViewVaccinationStatusRoute.page,
+                    path: 'vaccine-delivery',
+                  ),
+                  AutoRoute(
+                    page: VaccineDeliveryRoute.page,
+                    path: 'vaccine-delivery',
+                  ),
+                  AutoRoute(
                     page: CustomDeliverInterventionRoute.page,
                     path: 'custom-deliver-intervention',
                   ),
@@ -477,6 +489,14 @@ class AppRouter extends _$AppRouter {
                   AutoRoute(
                     page: CustomDoseAdministeredRoute.page,
                     path: 'custom-dose-administered',
+                  ),
+                  AutoRoute(
+                    page: ReasonsForNonVaccinationRoute.page,
+                    path: 'zero-dose/reasons',
+                  ),
+                  AutoRoute(
+                    page: ComplaintCaptureRoute.page,
+                    path: 'zero-dose/complaint',
                   ),
                   // RedirectRoute(
                   //   path: 'dose-administered',

@@ -1079,10 +1079,10 @@ class CustomStockDetailsPageState
                                         List<FacilityModel> filteredFacilities =
                                             [];
 
-                                        filteredFacilities = facilities
+                                        filteredFacilities = allFacilities
                                             .where((element) =>
                                                 element.usage ==
-                                                Constants.storingResource)
+                                                Constants.warehouse)
                                             .toList();
 
                                         // facilities =

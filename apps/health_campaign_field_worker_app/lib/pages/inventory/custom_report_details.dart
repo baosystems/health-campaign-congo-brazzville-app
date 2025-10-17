@@ -8,10 +8,12 @@ import 'package:digit_ui_components/widgets/atoms/input_wrapper.dart';
 import 'package:digit_ui_components/widgets/molecules/digit_card.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:inventory_management/models/entities/stock_reconciliation.dart';
 import 'package:inventory_management/router/inventory_router.gm.dart';
 import 'package:reactive_forms/reactive_forms.dart';
 
 import 'package:inventory_management/utils/i18_key_constants.dart' as i18;
+import '../../blocs/inventory_management/custom_stock_reconciliation.dart';
 import '../../router/app_router.dart';
 import '../../utils/i18_key_constants.dart' as i18_local;
 import 'package:inventory_management/widgets/component_wrapper/facility_bloc_wrapper.dart';
@@ -21,9 +23,9 @@ import 'package:inventory_management/widgets/localized.dart';
 import '../../widgets/reports/readonly_pluto_grid.dart';
 // import 'package:inventory_management/blocs/inventory_report.dart';
 import 'package:inventory_management/blocs/product_variant.dart';
-import 'package:inventory_management/blocs/stock_reconciliation.dart';
+// import 'package:inventory_management/blocs/stock_reconciliation.dart';
 import 'package:inventory_management/models/entities/stock.dart';
-import 'package:inventory_management/models/entities/stock_reconciliation.dart';
+// import 'package:inventory_management/models/entities/stock_reconciliation.dart';
 import 'package:inventory_management/utils/utils.dart';
 import 'package:inventory_management/widgets/back_navigation_help_header.dart';
 
@@ -186,7 +188,7 @@ class CustomInventoryReportDetailsPageState
                         child: SizedBox(
                           height: MediaQuery.of(context).size.height * 0.65,
                           child: BlocProvider(
-                            create: (context) => StockReconciliationBloc(
+                            create: (context) => CustomStockReconciliationBloc(
                               StockReconciliationState(
                                 projectId: InventorySingleton().projectId,
                                 dateOfReconciliation: DateTime.now(),
@@ -197,7 +199,7 @@ class CustomInventoryReportDetailsPageState
                                   StockReconciliationModel,
                                   StockReconciliationSearchModel>(),
                             ),
-                            child: BlocConsumer<StockReconciliationBloc,
+                            child: BlocConsumer<CustomStockReconciliationBloc,
                                 StockReconciliationState>(
                               listener: (context, stockState) {
                                 if (!stockState.persisted) return;
@@ -225,106 +227,28 @@ class CustomInventoryReportDetailsPageState
                                             final facilities = state.whenOrNull(
                                                   fetched: (facilities,
                                                       allfacilities) {
-                                                    if (ctx
-                                                            .selectedProject
-                                                            .address
-                                                            ?.boundaryType ==
-                                                        Constants
-                                                            .countryBoundaryLevel) {
-                                                      List<FacilityModel>
-                                                          filteredFacilities =
-                                                          allfacilities
-                                                              .where(
-                                                                (element) =>
-                                                                    element
-                                                                        .usage ==
-                                                                    Constants
-                                                                        .stateFacility,
-                                                              )
-                                                              .toList();
-                                                      facilities =
-                                                          filteredFacilities
-                                                                  .isEmpty
-                                                              ? facilities
-                                                              : filteredFacilities;
-                                                    } else if (ctx
-                                                            .selectedProject
-                                                            .address
-                                                            ?.boundaryType ==
-                                                        Constants
-                                                            .stateBoundaryLevel) {
-                                                      List<FacilityModel>
-                                                          filteredFacilities =
-                                                          facilities
-                                                              .where(
-                                                                (element) =>
-                                                                    element
-                                                                        .usage ==
-                                                                    Constants
-                                                                        .stateFacility,
-                                                              )
-                                                              .toList();
-                                                      facilities =
-                                                          filteredFacilities
-                                                                  .isEmpty
-                                                              ? facilities
-                                                              : filteredFacilities;
-                                                    } else if (ctx
-                                                            .selectedProject
-                                                            .address
-                                                            ?.boundaryType ==
-                                                        Constants
-                                                            .lgaBoundaryLevel) {
-                                                      List<FacilityModel>
-                                                          filteredFacilities =
-                                                          facilities
-                                                              .where(
-                                                                (element) =>
-                                                                    element
-                                                                        .usage ==
-                                                                    Constants
-                                                                        .lgaFacility,
-                                                              )
-                                                              .toList();
-                                                      facilities =
-                                                          filteredFacilities
-                                                                  .isEmpty
-                                                              ? facilities
-                                                              : filteredFacilities;
-                                                    } else {
-                                                      List<FacilityModel>
-                                                          filteredFacilities =
-                                                          facilities
-                                                              .where(
-                                                                (element) =>
-                                                                    element
-                                                                        .usage ==
-                                                                    Constants
-                                                                        .healthFacility,
-                                                              )
-                                                              .toList();
-                                                      facilities =
-                                                          filteredFacilities
-                                                                  .isEmpty
-                                                              ? facilities
-                                                              : filteredFacilities;
-                                                    }
-                                                    final teamFacilities = [
-                                                      FacilityModel(
-                                                        id: 'Delivery Team',
-                                                        name: 'Delivery Team',
-                                                      ),
-                                                    ];
+                                                    List<FacilityModel>
+                                                        filteredFacilities =
+                                                        facilities
+                                                            .where(
+                                                              (element) =>
+                                                                  element
+                                                                      .usage ==
+                                                                  Constants
+                                                                      .healthFacility,
+                                                            )
+                                                            .toList();
+                                                    // final teamFacilities = [
+                                                    //   FacilityModel(
+                                                    //     id: 'Delivery Team',
+                                                    //     name: 'Delivery Team',
+                                                    //   ),
+                                                    // ];
                                                     // teamFacilities.addAll(
                                                     //   facilities,
                                                     // );
 
-                                                    return context
-                                                                .isDistributor &&
-                                                            !InventorySingleton()
-                                                                .isWareHouseMgr
-                                                        ? teamFacilities
-                                                        : facilities;
+                                                    return filteredFacilities;
                                                   },
                                                 ) ??
                                                 [];
@@ -334,7 +258,7 @@ class CustomInventoryReportDetailsPageState
                                                 if (mounted) {
                                                   final stockReconciliationBloc =
                                                       context.read<
-                                                          StockReconciliationBloc>();
+                                                          CustomStockReconciliationBloc>();
 
                                                   final facility = await context
                                                           .router
@@ -445,9 +369,11 @@ class CustomInventoryReportDetailsPageState
                                                             name: localizations
                                                                 .translate(
                                                                     getSpaqName(
-                                                              variant.sku ??
-                                                                  variant.id,
-                                                            )).toUpperCase(),
+                                                                  variant.sku ??
+                                                                      variant
+                                                                          .id,
+                                                                ))
+                                                                .toUpperCase(),
                                                             code: variant.id,
                                                           );
                                                         }).toList(),

@@ -12,19 +12,23 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
-import 'package:inventory_management/inventory_management.dart';
+import 'package:inventory_management/models/entities/stock.dart';
+import 'package:inventory_management/models/entities/stock_reconciliation.dart';
+// import 'package:inventory_management/inventory_management.dart';
 import 'package:inventory_management/router/inventory_router.gm.dart';
 import 'package:inventory_management/utils/extensions/extensions.dart';
+import 'package:inventory_management/utils/utils.dart';
 import 'package:reactive_forms/reactive_forms.dart';
 
 import 'package:inventory_management/utils/i18_key_constants.dart' as i18;
+import '../../blocs/inventory_management/custom_stock_reconciliation.dart';
 import '../../blocs/project/project.dart';
 import '../../utils/constants.dart';
 import '../../utils/i18_key_constants.dart' as i18_local;
 import 'package:inventory_management/widgets/inventory/no_facilities_assigned_dialog.dart';
 import 'package:inventory_management/widgets/localized.dart';
 import 'package:inventory_management/blocs/product_variant.dart';
-import 'package:inventory_management/blocs/stock_reconciliation.dart';
+// import 'package:inventory_management/blocs/stock_reconciliation.dart';
 import 'package:inventory_management/widgets/back_navigation_help_header.dart';
 import 'package:inventory_management/widgets/component_wrapper/facility_bloc_wrapper.dart';
 import 'package:inventory_management/widgets/component_wrapper/product_variant_bloc_wrapper.dart';
@@ -91,7 +95,7 @@ class CustomStockReconciliationPageState
             child: ProductVariantBlocWrapper(
               projectId: InventorySingleton().projectId,
               child: BlocProvider(
-                create: (context) => StockReconciliationBloc(
+                create: (context) => CustomStockReconciliationBloc(
                   StockReconciliationState(
                     projectId: InventorySingleton().projectId,
                     dateOfReconciliation: DateTime.now(),
@@ -103,7 +107,7 @@ class CustomStockReconciliationPageState
                           StockReconciliationModel,
                           StockReconciliationSearchModel>(context),
                 ),
-                child: BlocConsumer<StockReconciliationBloc,
+                child: BlocConsumer<CustomStockReconciliationBloc,
                     StockReconciliationState>(
                   listener: (context, stockState) {
                     if (!stockState.persisted) return;
@@ -210,7 +214,7 @@ class CustomStockReconciliationPageState
                                                 if (!form.valid) return;
 
                                                 final bloc = ctx.read<
-                                                    StockReconciliationBloc>();
+                                                    CustomStockReconciliationBloc>();
 
                                                 final facilityId =
                                                     InventorySingleton()
@@ -393,94 +397,33 @@ class CustomStockReconciliationPageState
                                                     CircularProgressIndicator(),
                                               ),
                                           fetched: (facilities, allFacilities) {
-                                            // Start with the full list of facilities.
-                                            var filteredFacilitiesList =
-                                                List<FacilityModel>.from(
-                                                    facilities);
-
-                                            // Get the selected project from the context.
-                                            final selectedProject = context
-                                                .read<ProjectBloc>()
-                                                .state
-                                                .selectedProject;
-
                                             // Map your boundary types to facility usages.
-                                            if (selectedProject
-                                                    ?.address?.boundaryType ==
-                                                Constants
-                                                    .countryBoundaryLevel) {
-                                              // This is the NATIONAL filter. The boundary is 'Country'
-                                              final usageFiltered =
-                                                  allFacilities
-                                                      .where((element) =>
-                                                          element.usage ==
-                                                          Constants
-                                                              .stateFacility)
-                                                      .toList();
-                                              filteredFacilitiesList =
-                                                  usageFiltered.isEmpty
-                                                      ? filteredFacilitiesList
-                                                      : usageFiltered;
-                                            } else if (selectedProject
-                                                    ?.address?.boundaryType ==
-                                                Constants.stateBoundaryLevel) {
-                                              // This is the REGIONAL filter. The boundary is 'Region', so we filter for 'Region Facility'.
-                                              final usageFiltered =
-                                                  filteredFacilitiesList
-                                                      .where((element) =>
-                                                          element.usage ==
-                                                          Constants
-                                                              .stateFacility)
-                                                      .toList();
-                                              filteredFacilitiesList =
-                                                  usageFiltered.isEmpty
-                                                      ? filteredFacilitiesList
-                                                      : usageFiltered;
-                                            } else if (selectedProject
-                                                    ?.address?.boundaryType ==
-                                                Constants.lgaBoundaryLevel) {
-                                              // This is the DISTRICT filter. The boundary is 'District', so we filter for 'District Facility'.
-                                              final usageFiltered =
-                                                  filteredFacilitiesList
-                                                      .where((element) =>
-                                                          element.usage ==
-                                                          Constants.lgaFacility)
-                                                      .toList();
-                                              filteredFacilitiesList =
-                                                  usageFiltered.isEmpty
-                                                      ? filteredFacilitiesList
-                                                      : usageFiltered;
-                                            } else {
-                                              // This is the default case for any other boundary type.  It will filter for 'Health Facility'.
-                                              final usageFiltered =
-                                                  filteredFacilitiesList
-                                                      .where((element) =>
-                                                          element.usage ==
-                                                          Constants
-                                                              .healthFacility)
-                                                      .toList();
-                                              filteredFacilitiesList =
-                                                  usageFiltered.isEmpty
-                                                      ? filteredFacilitiesList
-                                                      : usageFiltered;
-                                            }
+                                            var filteredFacilitiesList =
+                                                facilities
+                                                    .where((element) =>
+                                                        element.usage ==
+                                                        Constants
+                                                            .healthFacility)
+                                                    .toList();
 
                                             // Define the special 'Delivery Team' option for distributors.
-                                            final teamFacilities = [
-                                              FacilityModel(
-                                                  id: 'Delivery Team',
-                                                  name: 'Delivery Team'),
-                                            ];
+                                            // final teamFacilities = [
+                                            //   FacilityModel(
+                                            //final teamFacilities = [
+                                            //   FacilityModel(
+                                            //final teamFacilities = [
+                                            //   FacilityModel(
+                                            //       id: 'Delivery Team',
+                                            //       name: 'Delivery Team'),
+                                            // ];       id: 'Delivery Team',
+                                            //       name: 'Delivery Team'),
+                                            // ];       id: 'Delivery Team',
+                                            //       name: 'Delivery Team'),
+                                            // ];
 
                                             // Apply the final user-role filter to the *already boundary-filtered* list.
                                             final facilitiesToDisplay =
-                                                InventorySingleton()
-                                                            .isDistributor! &&
-                                                        // ignore: avoid_dynamic_calls
-                                                        !InventorySingleton()
-                                                            .isWareHouseMgr!
-                                                    ? teamFacilities
-                                                    : filteredFacilitiesList;
+                                                filteredFacilitiesList;
 
                                             return Column(
                                               children: [
@@ -488,7 +431,7 @@ class CustomStockReconciliationPageState
                                                   onTap: () async {
                                                     final stockReconciliationBloc =
                                                         context.read<
-                                                            StockReconciliationBloc>();
+                                                            CustomStockReconciliationBloc>();
                                                     final facility =
                                                         await context.router
                                                             .push(
@@ -651,14 +594,11 @@ class CustomStockReconciliationPageState
 
                                                     ctx
                                                         .read<
-                                                            StockReconciliationBloc>()
+                                                            CustomStockReconciliationBloc>()
                                                         .add(
                                                           StockReconciliationSelectProductEvent(
                                                             value.code,
-                                                            isDistributor: InventorySingleton()
-                                                                    .isDistributor! &&
-                                                                !InventorySingleton()
-                                                                    .isWareHouseMgr!,
+                                                            isDistributor: true,
                                                           ),
                                                         );
                                                   },
@@ -690,16 +630,16 @@ class CustomStockReconciliationPageState
                                     labelFlex: 5,
                                   ),
                                   const DigitDivider(),
-                                  LabelValueItem(
-                                    label: localizations.translate(
-                                      i18.stockReconciliationDetails
-                                          .stockIssued,
-                                    ),
-                                    value: stockState.stockIssued
-                                        .toStringAsFixed(0),
-                                    labelFlex: 5,
-                                  ),
-                                  const DigitDivider(),
+                                  // LabelValueItem(
+                                  //   label: localizations.translate(
+                                  //     i18.stockReconciliationDetails
+                                  //         .stockIssued,
+                                  //   ),
+                                  //   value: stockState.stockIssued
+                                  //       .toStringAsFixed(0),
+                                  //   labelFlex: 5,
+                                  // ),
+                                  // const DigitDivider(),
                                   LabelValueItem(
                                     label: localizations.translate(
                                       i18.stockReconciliationDetails

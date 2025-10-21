@@ -1083,33 +1083,19 @@ class CustomStockDetailsPageState
                                           ),
                                       fetched: (facilities, allFacilities) {
                                         List<FacilityModel> filteredFacilities =
-                                            [];
+                                            facilities
+                                                .where((element) =>
+                                                    element.usage ==
+                                                    Constants.warehouse)
+                                                .toList();
 
-                                        filteredFacilities = allFacilities
-                                            .where((element) =>
-                                                element.usage ==
-                                                Constants.warehouse)
-                                            .toList();
-
-                                        // facilities =
-                                        //     context.isHealthFacilitySupervisor &&
-                                        //             entryType !=
-                                        //                 StockRecordEntryType
-                                        //                     .receipt
-                                        //         ? []
-                                        //         : filteredFacilities.isEmpty
-                                        //             ? facilities
-                                        //             : filteredFacilities;
-
-                                        // final teamFacilities = [
-                                        //   FacilityModel(
-                                        //     id: 'Delivery Team',
-                                        //     name: 'CDD Team',
-                                        //   ),
-                                        // ];
-                                        // teamFacilities.addAll(
-                                        //   facilities,
-                                        // );
+                                        List<FacilityModel>
+                                            allFilteredFacilities =
+                                            allFacilities
+                                                .where((element) =>
+                                                    element.usage ==
+                                                    Constants.warehouse)
+                                                .toList();
 
                                         return Column(
                                           children: [
@@ -1126,8 +1112,10 @@ class CustomStockDetailsPageState
                                                 final facility =
                                                     await context.router.push(
                                                         CustomInventoryFacilitySelectionRoute(
-                                                  facilities:
-                                                      filteredFacilities,
+                                                  facilities: filteredFacilities
+                                                          .isNotEmpty
+                                                      ? filteredFacilities
+                                                      : allFilteredFacilities,
                                                 )) as FacilityModel?;
 
                                                 if (facility == null) return;

@@ -7,7 +7,6 @@ import 'package:flutter/material.dart';
 import 'package:health_campaign_field_worker_app/models/entities/assessment_checklist/status.dart';
 import 'package:registration_delivery/registration_delivery.dart';
 
-// import '../../models/entities/status.dart';
 import 'package:registration_delivery/utils/i18_key_constants.dart' as i18;
 
 class CustomStatusFilter extends LocalizedStatefulWidget {

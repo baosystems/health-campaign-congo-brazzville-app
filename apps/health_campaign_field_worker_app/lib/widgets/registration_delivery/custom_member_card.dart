@@ -26,7 +26,6 @@ import '../../blocs/vaccine/vaccine_search.dart';
 import '../../data/local_store/no_sql/schema/app_configuration.dart';
 import '../../models/entities/additional_fields_type.dart';
 import '../../models/entities/identifier_types.dart';
-// import '../../utils/registration_delivery/utils_smc.dart';
 import 'package:registration_delivery/utils/utils.dart';
 import '../../models/entities/vaccine/vaccine_dose_variant.dart';
 import '../../pages/beneficiary/check_eligibility/check_eligibility_assessment.dart';

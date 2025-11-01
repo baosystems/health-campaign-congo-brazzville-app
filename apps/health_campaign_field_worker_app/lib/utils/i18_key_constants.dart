@@ -414,6 +414,7 @@ class ReferBeneficiary {
 
   String get reasonForReferralExpanded => 'REFERRAL_REASON';
   String get reasonComments => 'REFERRAL_COMMENTS';
+  String get referralID => 'REFERRAL_ID';
 }
 
 class HouseholdDetails {
@@ -489,6 +490,14 @@ class HomeShowcase {
 
   String get summaryReportRegistredChildren {
     return 'HOME_SHOWCASE_SUMMARY_REPORT_REGISTRED_CHILDREN';
+  }
+
+  String get summaryReportUnderVaccinated {
+    return 'HOME_SHOWCASE_SUMMARY_REPORT_UNDER_VACCINATED_CHILDREN';
+  }
+
+  String get summaryReportFullyVaccinated {
+    return 'HOME_SHOWCASE_SUMMARY_REPORT_FULLY_VACCINATED_CHILDREN';
   }
 
   String get summaryReportAdministredChildren {

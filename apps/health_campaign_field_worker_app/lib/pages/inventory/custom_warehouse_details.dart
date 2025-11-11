@@ -103,70 +103,20 @@ class CustomWarehouseDetailsPageState
               final facilities = facilityState.whenOrNull(
                     fetched: (facilities, allFacilities) {
                       // Start with the full list from 'allFacilities'
-                      List<FacilityModel> filteredFacilityResult =
-                          List.from(allFacilities); // Create a mutable copy
-
-                      // Filter based on the boundary type of the selected project
-                      // if boundary type is Country
-                      if (ctx.selectedProject.address?.boundaryType ==
-                          Constants.countryBoundaryLevel) {
-                        filteredFacilityResult =
-                            allFacilities // Filter the complete list
-                                .where((element) =>
-                                    element.usage == Constants.stateFacility)
-                                .toList();
-                        facilities = filteredFacilityResult.isEmpty
-                            ? facilities
-                            : filteredFacilityResult;
-                        // if boundary type is State(ie Region)
-                      } else if (ctx.selectedProject.address?.boundaryType ==
-                          Constants.stateBoundaryLevel) {
-                        filteredFacilityResult =
-                            facilities // Filter the complete list
-                                .where((element) =>
-                                    element.usage == Constants.stateFacility)
-                                .toList();
-                        // Keep original if filter yields no results
-                        facilities = filteredFacilityResult.isEmpty
-                            ? facilities // Fallback to facilities if no match
-                            : filteredFacilityResult;
-                        // if boundary type is LGA(ie District)
-                      } else if (ctx.selectedProject.address?.boundaryType ==
-                          Constants.lgaBoundaryLevel) {
-                        filteredFacilityResult =
-                            facilities // Filter the complete list
-                                .where(
-                                  (element) =>
-                                      element.usage == Constants.lgaFacility,
-                                )
-                                .toList();
-                        facilities = filteredFacilityResult.isEmpty
-                            ? facilities // Fallback to facilities if no match
-                            : filteredFacilityResult;
-                      }
-                      // if boundary type is Health Facility or the default case if no other boundary type matches
-                      else {
-                        filteredFacilityResult =
-                            facilities // Filter the complete list
-                                .where(
-                                  (element) =>
-                                      element.usage == Constants.healthFacility,
-                                )
-                                .toList();
-                        facilities = filteredFacilityResult.isEmpty
-                            ? facilities // Fallback to allFacilities if no match
-                            : filteredFacilityResult;
-                      }
+                      List<FacilityModel> filteredFacilities = facilities
+                          .where((element) =>
+                              element.usage == Constants.healthFacility)
+                          .toList();
 
                       // Handle the Delivery Team (this logic seems separate from the main filtering)
-                      final teamFacilities = [
-                        FacilityModel(
-                          id: 'Delivery Team',
-                          name: 'Delivery Team',
-                          // Consider adding a 'usage' here if it needs to be filtered or excluded
-                          // usage: 'Delivery Team Special',
-                        ),
-                      ];
+                      // final teamFacilities = [
+                      //   FacilityModel(
+                      //     id: 'Delivery Team',
+                      //     name: 'Delivery Team',
+                      //     // Consider adding a 'usage' here if it needs to be filtered or excluded
+                      //     // usage: 'Delivery Team Special',
+                      //   ),
+                      // ];
 
                       // Currently, teamFacilities.addAll(filteredResult); is commented out.
                       // If you want 'Delivery Team' to appear alongside the filtered list,
@@ -174,10 +124,7 @@ class CustomWarehouseDetailsPageState
                       // teamFacilities.addAll(filteredResult); // Uncomment if you want Delivery Team + filtered facilities
 
                       // Decide which list to return based on the distributor status
-                      return InventorySingleton().isDistributor! &&
-                              !InventorySingleton().isWareHouseMgr!
-                          ? teamFacilities // This list ONLY has 'Delivery Team' right now
-                          : facilities; // This is your newly filtered list
+                      return filteredFacilities;
                     },
                   ) ??
                   [];

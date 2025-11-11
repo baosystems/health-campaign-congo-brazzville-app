@@ -236,6 +236,14 @@ class MdmsRepository {
             .toList();
     appConfiguration.vaccinationDoseData = vaccinationDoseData;
 
+    final List<VaccineStockData>? vaccinationStockData =
+        hcmProducts?.vaccinationStockData
+            .map((e) => VaccineStockData()
+              ..code = e.code
+              ..dosesPerFlacon = e.dosesPerFlacon)
+            .toList();
+    appConfiguration.vaccinationStockData = vaccinationStockData;
+
     final List<HouseholdMemberDeletionReasonOptions>?
         householdMemberDeletionReasonOptions =
         element?.householdMemberDeletionReasonOptions.map((element) {

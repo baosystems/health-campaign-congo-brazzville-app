@@ -126,7 +126,8 @@ class AppInitializationBloc
                   moduleName: ModuleEnums.hcmProducts.toValue(),
                   masterDetails: getMasterDetailsModel([
                     MasterEnums.vaccinationData.toValue(),
-                    MasterEnums.vaccinationDoseData.toValue()
+                    MasterEnums.vaccinationDoseData.toValue(),
+                    MasterEnums.vaccinationStockData.toValue()
                   ]),
                 ),
               ],

@@ -452,6 +452,19 @@ class CustomIndividualDetailsPageState
                                         addressModel: addressModel,
                                         householdModel: householdModel,
                                         model: individual.copyWith(
+                                          auditDetails:
+                                              individual.auditDetails == null
+                                                  ? null
+                                                  : individual.auditDetails!
+                                                      .copyWith(
+                                                      lastModifiedBy:
+                                                          RegistrationDeliverySingleton()
+                                                              .loggedInUserUuid,
+                                                      lastModifiedTime:
+                                                          ContextUtilityExtensions(
+                                                                  context)
+                                                              .millisecondsSinceEpoch(),
+                                                    ),
                                           clientAuditDetails: (individual
                                                           .clientAuditDetails
                                                           ?.createdBy !=
@@ -812,14 +825,6 @@ class CustomIndividualDetailsPageState
                               final age =
                                   digits.DigitDateUtils.calculateAge(dob);
                               final ageInMonths = age.years * 12 + age.months;
-                              // if (!widget.isHeadOfHousehold &&
-                              //     ageInMonths > 59) {
-                              //   control.setErrors({'ageLimit': true});
-                              // } else {
-                              //   control.removeError('ageLimit');
-                              //   control.removeError('required');
-                              //   control.removeError('');
-                              // }
                             },
                             cancelText: localizations
                                 .translate(i18.common.coreCommonCancel),

@@ -5,7 +5,6 @@ import 'package:digit_components/widgets/digit_elevated_button.dart';
 import 'package:digit_ui_components/digit_components.dart';
 import 'package:digit_ui_components/services/location_bloc.dart';
 import 'package:digit_ui_components/widgets/molecules/digit_card.dart';
-// import 'package:drift/drift.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:health_campaign_field_worker_app/data/local_store/no_sql/schema/app_configuration.dart';
@@ -22,14 +21,11 @@ import '../../../router/app_router.dart';
 import '../../../utils/app_enums.dart';
 import '../../../utils/constants.dart';
 import '../../../utils/date_utils.dart';
-import '../../../utils/utils.dart' show getIndividualAdditionalFields;
+import '../../../utils/utils.dart';
 import '../../../utils/environment_config.dart';
 import '../../../utils/extensions/extensions.dart';
 import '../../../widgets/localized.dart';
 import 'package:digit_data_model/data_model.dart';
-
-// import '../../../models/entities/additional_fields_type.dart'
-//     as additional_fields_local;
 import '../../../models/entities/assessment_checklist/status.dart'
     as status_local;
 import '../../../widgets/custom_back_navigation.dart';
@@ -37,10 +33,7 @@ import '../../../widgets/showcase/showcase_wrappers.dart';
 import 'package:registration_delivery/utils/i18_key_constants.dart' as i18;
 import '../../../utils/i18_key_constants.dart' as i18_local;
 import 'package:survey_form/utils/i18_key_constants.dart' as i18_survey_form;
-
-//  Add this import for the radio button component.
 import 'package:group_radio_button/group_radio_button.dart';
-
 import '../../../utils/date_utils.dart' as date_utils_local;
 
 @RoutePage()
@@ -160,7 +153,7 @@ class _VaccineSelectionPageState extends LocalizedState<VaccineSelectionPage> {
           ),
           AdditionalField(
             AdditionalFieldsType.doseStatus.toValue(),
-            _getDoseStatus(selectedCodes, noSelectedCodes).name,
+            getDoseStatus(selectedCodes, noSelectedCodes).name,
           ),
           if (selectedVaccineCodesString.isNotEmpty &&
               selectedVaccineCodesString.length > 2)
@@ -393,23 +386,6 @@ class _VaccineSelectionPageState extends LocalizedState<VaccineSelectionPage> {
     return true;
   }
 
-  String _numberToWords(int number) {
-    // Simple mapping for numbers 0-6, extend as needed
-    const words = [
-      'Zero',
-      'One',
-      'Two',
-      'Three',
-      'Four',
-      'Five',
-      'Six',
-    ];
-    if (number >= 0 && number < words.length) {
-      return words[number];
-    }
-    return number.toString();
-  }
-
   Widget _buildVaccineRadioChecklist({
     required int index,
     required BuildContext context,
@@ -425,7 +401,7 @@ class _VaccineSelectionPageState extends LocalizedState<VaccineSelectionPage> {
       children: [
         Text(
             localizations.translate(
-              '${i18_local.deliverIntervention.vaccinsSelectionLabelForGroup}_${_numberToWords(index).toUpperCase()}',
+              '${i18_local.deliverIntervention.vaccinsSelectionLabelForGroup}_${numberToWords(index).toUpperCase()}',
             ),
             style: theme.textTheme.headlineLarge),
         Text(
@@ -556,28 +532,6 @@ class _VaccineSelectionPageState extends LocalizedState<VaccineSelectionPage> {
     );
   }
 
-  DoseStatus _getDoseStatus(
-      List<String> selectedCodes, List<String> noSelectedCodes) {
-    Set<String> filterDoseCodes = {"HCM_VACCINE_VIT_A", "HCM_VACCINE_MEN_A"};
-    List<String> updatedNoSelectedCodes =
-        noSelectedCodes.whereNot((e) => filterDoseCodes.contains(e)).toList();
-    if (selectedCodes.isEmpty && updatedNoSelectedCodes.isEmpty) {
-      return DoseStatus.none;
-    } else if ((selectedCodes.isEmpty && updatedNoSelectedCodes.isNotEmpty) ||
-        (selectedCodes.isNotEmpty &&
-            updatedNoSelectedCodes.isNotEmpty &&
-            updatedNoSelectedCodes.contains(Constants.penta1))) {
-      return DoseStatus.zeroDose;
-    } else if (selectedCodes.isNotEmpty &&
-        updatedNoSelectedCodes.isNotEmpty &&
-        selectedCodes.contains(Constants.penta1)) {
-      return DoseStatus.underVaccinated;
-    } else if (selectedCodes.isNotEmpty && updatedNoSelectedCodes.isEmpty) {
-      return DoseStatus.fullyVaccinated;
-    }
-    return DoseStatus.zeroDose;
-  }
-
   @override
   Widget build(BuildContext context) {
     final localizations = AppLocalizations.of(context);
@@ -594,9 +548,6 @@ class _VaccineSelectionPageState extends LocalizedState<VaccineSelectionPage> {
                   .toList()
                   .firstOrNull;
               final selectedCodesString = selectedAttribute?.value as String;
-              // setState(() {
-              //   selectedCodes = selectedCodesString.split('.').toList();
-              // });
             }
           }
         },
@@ -621,9 +572,6 @@ class _VaccineSelectionPageState extends LocalizedState<VaccineSelectionPage> {
             final allVaccineCodes = [
               for (final v in vaccineDataList) v.doseCode
             ];
-            // final Map<String, String> vaccineCodeToName = {
-            //   for (final v in vaccineDataList) v.doseCode: v.name
-            // };
 
             final List<int> ageList =
                 (vaccineDataList.map((e) => e.ageInDays).toSet().toList()
@@ -693,27 +641,9 @@ class _VaccineSelectionPageState extends LocalizedState<VaccineSelectionPage> {
               WidgetsBinding.instance.addPostFrameCallback((_) async {
                 if (currentIndex < lastIndex) {
                   setState(() => currentIndex += 1);
-                } else {
-                  // No more buckets to show: go final step (Reasons if any "NO", else submit)
-                  // await DigitToast.show(
-                  //   context,
-                  //   options: DigitToastOptions(
-                  //     localizations.translate(
-                  //       i18_local.deliverIntervention
-                  //           .noEligibleAvailableForThisSelection,
-                  //     ),
-                  //     false,
-                  //     theme,
-                  //   ),
-                  // );
                 }
               });
             }
-
-            // If next bucket ends up empty, treat current as last
-            // if (nexRowVaccineDoseCodes.isEmpty) {
-            //   lastIndex = currentIndex;
-            // }
 
             // Pre-fill responses (so validators don’t trip)
             final Map<String, String?> currentResponses = {};
@@ -1113,10 +1043,6 @@ class _VaccineSelectionPageState extends LocalizedState<VaccineSelectionPage> {
                                                                         context
                                                                             .boundary
                                                                             .code),
-                                                                    // AdditionalField(
-                                                                    //   'vaccinationsuccessful',
-                                                                    //   isVaccinationSuccessful,
-                                                                    // ),
                                                                   ],
                                                                 )),
                                                       ),
@@ -1170,7 +1096,7 @@ class _VaccineSelectionPageState extends LocalizedState<VaccineSelectionPage> {
                                               AdditionalField(
                                                 AdditionalFieldsType.doseStatus
                                                     .toValue(),
-                                                _getDoseStatus(selectedCodes,
+                                                getDoseStatus(selectedCodes,
                                                         noSelectedCodes)
                                                     .name,
                                               ),

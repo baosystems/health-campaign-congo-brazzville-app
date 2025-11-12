@@ -311,60 +311,6 @@ class _RecordRedosePageState extends LocalizedState<RecordRedosePage> {
                                                         context,
                                                         updatedTask,
                                                       );
-
-                                                      // final shouldSubmit =
-                                                      //     await digit_dialog
-                                                      //             .DigitDialog
-                                                      //         .show<bool>(
-                                                      //   context,
-                                                      //   options: digit_dialog
-                                                      //       .DigitDialogOptions(
-                                                      //     titleText:
-                                                      //         localizations
-                                                      //             .translate(
-                                                      //       i18.deliverIntervention
-                                                      //           .dialogTitle,
-                                                      //     ),
-                                                      //     contentText:
-                                                      //         localizations
-                                                      //             .translate(
-                                                      //       i18.deliverIntervention
-                                                      //           .dialogContent,
-                                                      //     ),
-                                                      //     primaryAction:
-                                                      //         digit_dialog
-                                                      //             .DigitDialogActions(
-                                                      //       label: localizations
-                                                      //           .translate(
-                                                      //         i18.common
-                                                      //             .coreCommonSubmit,
-                                                      //       ),
-                                                      //       action: (ctx) {
-                                                      //         Navigator.of(
-                                                      //           context,
-                                                      //           rootNavigator:
-                                                      //               true,
-                                                      //         ).pop(true);
-                                                      //       },
-                                                      //     ),
-                                                      //     secondaryAction:
-                                                      //         digit_dialog
-                                                      //             .DigitDialogActions(
-                                                      //       label: localizations
-                                                      //           .translate(
-                                                      //         i18.common
-                                                      //             .coreCommonCancel,
-                                                      //       ),
-                                                      //       action: (context) =>
-                                                      //           Navigator.of(
-                                                      //         context,
-                                                      //         rootNavigator:
-                                                      //             true,
-                                                      //       ).pop(false),
-                                                      //     ),
-                                                      //   ),
-                                                      // );
-
                                                       if (true) {
                                                         if (context.mounted) {
                                                           int spaq1 = 0;
@@ -429,12 +375,8 @@ class _RecordRedosePageState extends LocalizedState<RecordRedosePage> {
                                                           context
                                                               .read<AuthBloc>()
                                                               .add(
-                                                                AuthAddSpaqCountsEvent(
-                                                                  spaq1Count:
-                                                                      spaq1,
-                                                                  spaq2Count:
-                                                                      spaq2,
-                                                                ),
+                                                                const AuthUpdateProductSKUCountsEvent(
+                                                                    skuCounts: {}),
                                                               );
                                                           final reloadState =
                                                               context.read<

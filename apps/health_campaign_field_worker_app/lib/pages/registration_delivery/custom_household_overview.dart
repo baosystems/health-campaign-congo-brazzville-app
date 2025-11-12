@@ -1130,23 +1130,12 @@ class _CustomHouseholdOverviewPageState
                                     child: DigitButton(
                                       mainAxisSize: MainAxisSize.max,
                                       onPressed: () {
-                                        int spaq1 = context.spaq1;
-                                        int spaq2 = context.spaq2;
                                         String descriptionText =
                                             localizations.translate(i18_local
                                                 .beneficiaryDetails
                                                 .insufficientStockMessage);
-                                        if (spaq1 == 0) {
-                                          descriptionText +=
-                                              "\n ${localizations.translate(i18_local.beneficiaryDetails.spaq1DoseUnit)}";
-                                        }
-                                        if (spaq2 == 0) {
-                                          descriptionText +=
-                                              "\n ${localizations.translate(i18_local.beneficiaryDetails.spaq2DoseUnit)}";
-                                        }
 
-                                        if (context.spaq1 > -1 ||
-                                            context.spaq2 > -1) {
+                                        if (true) {
                                           addIndividual(
                                             context,
                                             state.householdMemberWrapper

@@ -105,10 +105,13 @@ class Constants {
   static const String stateFacility = 'Regional Facility';
   static const String lgaFacility = 'District Facility';
   static const String countryBoundaryLevel = 'Country';
+  static const String warehouse = "Warehouse";
   static const int mlPerBottle = 30;
   static const int apiCallLimit = 1000;
   static const String pipeSeparator = '||';
   static const int mobileNumberLength = 9;
+
+  static const String productSKUCounts = "productSKUCounts";
 
   static const String zeroDoseAssessment = "ZERODOSE_ASSESSMENT";
 

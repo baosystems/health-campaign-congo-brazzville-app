@@ -1814,6 +1814,9 @@ mixin _$HCMProductsWrapperModel {
   @JsonKey(name: 'VACCINATION-DOSE-DATA')
   List<VaccineDoseData> get vaccinationDoseData =>
       throw _privateConstructorUsedError;
+  @JsonKey(name: 'VACCINATION-DOSE-STOCK-DATA')
+  List<VaccineStockData> get vaccinationStockData =>
+      throw _privateConstructorUsedError;
 
   Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
   @JsonKey(ignore: true)
@@ -1830,7 +1833,9 @@ abstract class $HCMProductsWrapperModelCopyWith<$Res> {
   $Res call(
       {@JsonKey(name: 'vaccination-data') List<VaccineData> vaccinationData,
       @JsonKey(name: 'VACCINATION-DOSE-DATA')
-      List<VaccineDoseData> vaccinationDoseData});
+      List<VaccineDoseData> vaccinationDoseData,
+      @JsonKey(name: 'VACCINATION-DOSE-STOCK-DATA')
+      List<VaccineStockData> vaccinationStockData});
 }
 
 /// @nodoc
@@ -1849,6 +1854,7 @@ class _$HCMProductsWrapperModelCopyWithImpl<$Res,
   $Res call({
     Object? vaccinationData = null,
     Object? vaccinationDoseData = null,
+    Object? vaccinationStockData = null,
   }) {
     return _then(_value.copyWith(
       vaccinationData: null == vaccinationData
@@ -1859,6 +1865,10 @@ class _$HCMProductsWrapperModelCopyWithImpl<$Res,
           ? _value.vaccinationDoseData
           : vaccinationDoseData // ignore: cast_nullable_to_non_nullable
               as List<VaccineDoseData>,
+      vaccinationStockData: null == vaccinationStockData
+          ? _value.vaccinationStockData
+          : vaccinationStockData // ignore: cast_nullable_to_non_nullable
+              as List<VaccineStockData>,
     ) as $Val);
   }
 }
@@ -1875,7 +1885,9 @@ abstract class _$$HCMProductsWrapperModelImplCopyWith<$Res>
   $Res call(
       {@JsonKey(name: 'vaccination-data') List<VaccineData> vaccinationData,
       @JsonKey(name: 'VACCINATION-DOSE-DATA')
-      List<VaccineDoseData> vaccinationDoseData});
+      List<VaccineDoseData> vaccinationDoseData,
+      @JsonKey(name: 'VACCINATION-DOSE-STOCK-DATA')
+      List<VaccineStockData> vaccinationStockData});
 }
 
 /// @nodoc
@@ -1893,6 +1905,7 @@ class __$$HCMProductsWrapperModelImplCopyWithImpl<$Res>
   $Res call({
     Object? vaccinationData = null,
     Object? vaccinationDoseData = null,
+    Object? vaccinationStockData = null,
   }) {
     return _then(_$HCMProductsWrapperModelImpl(
       vaccinationData: null == vaccinationData
@@ -1903,6 +1916,10 @@ class __$$HCMProductsWrapperModelImplCopyWithImpl<$Res>
           ? _value._vaccinationDoseData
           : vaccinationDoseData // ignore: cast_nullable_to_non_nullable
               as List<VaccineDoseData>,
+      vaccinationStockData: null == vaccinationStockData
+          ? _value._vaccinationStockData
+          : vaccinationStockData // ignore: cast_nullable_to_non_nullable
+              as List<VaccineStockData>,
     ));
   }
 }
@@ -1914,9 +1931,12 @@ class _$HCMProductsWrapperModelImpl implements _HCMProductsWrapperModel {
       {@JsonKey(name: 'vaccination-data')
       required final List<VaccineData> vaccinationData,
       @JsonKey(name: 'VACCINATION-DOSE-DATA')
-      required final List<VaccineDoseData> vaccinationDoseData})
+      required final List<VaccineDoseData> vaccinationDoseData,
+      @JsonKey(name: 'VACCINATION-DOSE-STOCK-DATA')
+      required final List<VaccineStockData> vaccinationStockData})
       : _vaccinationData = vaccinationData,
-        _vaccinationDoseData = vaccinationDoseData;
+        _vaccinationDoseData = vaccinationDoseData,
+        _vaccinationStockData = vaccinationStockData;
 
   factory _$HCMProductsWrapperModelImpl.fromJson(Map<String, dynamic> json) =>
       _$$HCMProductsWrapperModelImplFromJson(json);
@@ -1940,9 +1960,19 @@ class _$HCMProductsWrapperModelImpl implements _HCMProductsWrapperModel {
     return EqualUnmodifiableListView(_vaccinationDoseData);
   }
 
+  final List<VaccineStockData> _vaccinationStockData;
+  @override
+  @JsonKey(name: 'VACCINATION-DOSE-STOCK-DATA')
+  List<VaccineStockData> get vaccinationStockData {
+    if (_vaccinationStockData is EqualUnmodifiableListView)
+      return _vaccinationStockData;
+    // ignore: implicit_dynamic_type
+    return EqualUnmodifiableListView(_vaccinationStockData);
+  }
+
   @override
   String toString() {
-    return 'HCMProductsWrapperModel(vaccinationData: $vaccinationData, vaccinationDoseData: $vaccinationDoseData)';
+    return 'HCMProductsWrapperModel(vaccinationData: $vaccinationData, vaccinationDoseData: $vaccinationDoseData, vaccinationStockData: $vaccinationStockData)';
   }
 
   @override
@@ -1953,7 +1983,9 @@ class _$HCMProductsWrapperModelImpl implements _HCMProductsWrapperModel {
             const DeepCollectionEquality()
                 .equals(other._vaccinationData, _vaccinationData) &&
             const DeepCollectionEquality()
-                .equals(other._vaccinationDoseData, _vaccinationDoseData));
+                .equals(other._vaccinationDoseData, _vaccinationDoseData) &&
+            const DeepCollectionEquality()
+                .equals(other._vaccinationStockData, _vaccinationStockData));
   }
 
   @JsonKey(ignore: true)
@@ -1961,7 +1993,8 @@ class _$HCMProductsWrapperModelImpl implements _HCMProductsWrapperModel {
   int get hashCode => Object.hash(
       runtimeType,
       const DeepCollectionEquality().hash(_vaccinationData),
-      const DeepCollectionEquality().hash(_vaccinationDoseData));
+      const DeepCollectionEquality().hash(_vaccinationDoseData),
+      const DeepCollectionEquality().hash(_vaccinationStockData));
 
   @JsonKey(ignore: true)
   @override
@@ -1983,7 +2016,9 @@ abstract class _HCMProductsWrapperModel implements HCMProductsWrapperModel {
           {@JsonKey(name: 'vaccination-data')
           required final List<VaccineData> vaccinationData,
           @JsonKey(name: 'VACCINATION-DOSE-DATA')
-          required final List<VaccineDoseData> vaccinationDoseData}) =
+          required final List<VaccineDoseData> vaccinationDoseData,
+          @JsonKey(name: 'VACCINATION-DOSE-STOCK-DATA')
+          required final List<VaccineStockData> vaccinationStockData}) =
       _$HCMProductsWrapperModelImpl;
 
   factory _HCMProductsWrapperModel.fromJson(Map<String, dynamic> json) =
@@ -1995,6 +2030,9 @@ abstract class _HCMProductsWrapperModel implements HCMProductsWrapperModel {
   @override
   @JsonKey(name: 'VACCINATION-DOSE-DATA')
   List<VaccineDoseData> get vaccinationDoseData;
+  @override
+  @JsonKey(name: 'VACCINATION-DOSE-STOCK-DATA')
+  List<VaccineStockData> get vaccinationStockData;
   @override
   @JsonKey(ignore: true)
   _$$HCMProductsWrapperModelImplCopyWith<_$HCMProductsWrapperModelImpl>
@@ -3000,6 +3038,165 @@ abstract class _VaccineDoseData implements VaccineDoseData {
   @override
   @JsonKey(ignore: true)
   _$$VaccineDoseDataImplCopyWith<_$VaccineDoseDataImpl> get copyWith =>
+      throw _privateConstructorUsedError;
+}
+
+VaccineStockData _$VaccineStockDataFromJson(Map<String, dynamic> json) {
+  return _VaccineStockData.fromJson(json);
+}
+
+/// @nodoc
+mixin _$VaccineStockData {
+// required String id,
+  String get code => throw _privateConstructorUsedError;
+  int get dosesPerFlacon => throw _privateConstructorUsedError;
+
+  Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
+  @JsonKey(ignore: true)
+  $VaccineStockDataCopyWith<VaccineStockData> get copyWith =>
+      throw _privateConstructorUsedError;
+}
+
+/// @nodoc
+abstract class $VaccineStockDataCopyWith<$Res> {
+  factory $VaccineStockDataCopyWith(
+          VaccineStockData value, $Res Function(VaccineStockData) then) =
+      _$VaccineStockDataCopyWithImpl<$Res, VaccineStockData>;
+  @useResult
+  $Res call({String code, int dosesPerFlacon});
+}
+
+/// @nodoc
+class _$VaccineStockDataCopyWithImpl<$Res, $Val extends VaccineStockData>
+    implements $VaccineStockDataCopyWith<$Res> {
+  _$VaccineStockDataCopyWithImpl(this._value, this._then);
+
+  // ignore: unused_field
+  final $Val _value;
+  // ignore: unused_field
+  final $Res Function($Val) _then;
+
+  @pragma('vm:prefer-inline')
+  @override
+  $Res call({
+    Object? code = null,
+    Object? dosesPerFlacon = null,
+  }) {
+    return _then(_value.copyWith(
+      code: null == code
+          ? _value.code
+          : code // ignore: cast_nullable_to_non_nullable
+              as String,
+      dosesPerFlacon: null == dosesPerFlacon
+          ? _value.dosesPerFlacon
+          : dosesPerFlacon // ignore: cast_nullable_to_non_nullable
+              as int,
+    ) as $Val);
+  }
+}
+
+/// @nodoc
+abstract class _$$VaccineStockDataImplCopyWith<$Res>
+    implements $VaccineStockDataCopyWith<$Res> {
+  factory _$$VaccineStockDataImplCopyWith(_$VaccineStockDataImpl value,
+          $Res Function(_$VaccineStockDataImpl) then) =
+      __$$VaccineStockDataImplCopyWithImpl<$Res>;
+  @override
+  @useResult
+  $Res call({String code, int dosesPerFlacon});
+}
+
+/// @nodoc
+class __$$VaccineStockDataImplCopyWithImpl<$Res>
+    extends _$VaccineStockDataCopyWithImpl<$Res, _$VaccineStockDataImpl>
+    implements _$$VaccineStockDataImplCopyWith<$Res> {
+  __$$VaccineStockDataImplCopyWithImpl(_$VaccineStockDataImpl _value,
+      $Res Function(_$VaccineStockDataImpl) _then)
+      : super(_value, _then);
+
+  @pragma('vm:prefer-inline')
+  @override
+  $Res call({
+    Object? code = null,
+    Object? dosesPerFlacon = null,
+  }) {
+    return _then(_$VaccineStockDataImpl(
+      code: null == code
+          ? _value.code
+          : code // ignore: cast_nullable_to_non_nullable
+              as String,
+      dosesPerFlacon: null == dosesPerFlacon
+          ? _value.dosesPerFlacon
+          : dosesPerFlacon // ignore: cast_nullable_to_non_nullable
+              as int,
+    ));
+  }
+}
+
+/// @nodoc
+@JsonSerializable()
+class _$VaccineStockDataImpl implements _VaccineStockData {
+  const _$VaccineStockDataImpl(
+      {required this.code, required this.dosesPerFlacon});
+
+  factory _$VaccineStockDataImpl.fromJson(Map<String, dynamic> json) =>
+      _$$VaccineStockDataImplFromJson(json);
+
+// required String id,
+  @override
+  final String code;
+  @override
+  final int dosesPerFlacon;
+
+  @override
+  String toString() {
+    return 'VaccineStockData(code: $code, dosesPerFlacon: $dosesPerFlacon)';
+  }
+
+  @override
+  bool operator ==(Object other) {
+    return identical(this, other) ||
+        (other.runtimeType == runtimeType &&
+            other is _$VaccineStockDataImpl &&
+            (identical(other.code, code) || other.code == code) &&
+            (identical(other.dosesPerFlacon, dosesPerFlacon) ||
+                other.dosesPerFlacon == dosesPerFlacon));
+  }
+
+  @JsonKey(ignore: true)
+  @override
+  int get hashCode => Object.hash(runtimeType, code, dosesPerFlacon);
+
+  @JsonKey(ignore: true)
+  @override
+  @pragma('vm:prefer-inline')
+  _$$VaccineStockDataImplCopyWith<_$VaccineStockDataImpl> get copyWith =>
+      __$$VaccineStockDataImplCopyWithImpl<_$VaccineStockDataImpl>(
+          this, _$identity);
+
+  @override
+  Map<String, dynamic> toJson() {
+    return _$$VaccineStockDataImplToJson(
+      this,
+    );
+  }
+}
+
+abstract class _VaccineStockData implements VaccineStockData {
+  const factory _VaccineStockData(
+      {required final String code,
+      required final int dosesPerFlacon}) = _$VaccineStockDataImpl;
+
+  factory _VaccineStockData.fromJson(Map<String, dynamic> json) =
+      _$VaccineStockDataImpl.fromJson;
+
+  @override // required String id,
+  String get code;
+  @override
+  int get dosesPerFlacon;
+  @override
+  @JsonKey(ignore: true)
+  _$$VaccineStockDataImplCopyWith<_$VaccineStockDataImpl> get copyWith =>
       throw _privateConstructorUsedError;
 }
 

@@ -26,18 +26,21 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
   final MdmsRepository mdmsRepository;
   final RemoteRepository<IndividualModel, IndividualSearchModel>
       individualRemoteRepository;
+  final LocalRepository<ProductVariantModel, ProductVariantSearchModel>
+      productVariantLocalRepository;
 
   AuthBloc({
     required this.authRepository,
     required this.mdmsRepository,
     required this.individualRemoteRepository,
+    required this.productVariantLocalRepository,
     LocalSecureStore? localSecureStore,
   })  : localSecureStore = LocalSecureStore.instance,
         super(const AuthUnauthenticatedState()) {
     on(_onLogin);
     on(_onLogout);
     on(_onAutoLogin);
-    on(_onAddSpaqCounts);
+    on(_onUpdateProductSKUCounts);
   }
 
   //_onAutoLogin event handles auto-login of the user when the user is already logged in and token is not expired, AuthenticatedWrapper is returned in UI
@@ -53,8 +56,9 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
       final userObject = await localSecureStore.userRequestModel;
       final actionsList = await localSecureStore.savedActions;
       final userIndividualId = await localSecureStore.userIndividualId;
-      final spaq1 = await localSecureStore.spaq1;
-      final spaq2 = await localSecureStore.spaq2;
+
+      Map<String, int> currentSKUCounts =
+          await localSecureStore.getAllProductSKUCounts();
 
       if (accessToken == null ||
           refreshToken == null ||
@@ -68,8 +72,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
           userModel: userObject,
           individualId: userIndividualId,
           actionsWrapper: actionsList,
-          spaq1Count: spaq1,
-          spaq2Count: spaq2,
+          productSkuCounts: currentSKUCounts,
         ));
       }
     } catch (_) {
@@ -102,8 +105,8 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
         "enabled": true,
       });
       await localSecureStore.setBoundaryRefetch(true);
-      final spaq1 = await localSecureStore.spaq1;
-      final spaq2 = await localSecureStore.spaq2;
+      Map<String, int> currentSKUCounts =
+          await localSecureStore.getAllProductSKUCounts();
 
       await localSecureStore.setRoleActions(actionsWrapper);
       if (result.userRequestModel.roles
@@ -128,8 +131,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
           userModel: result.userRequestModel,
           actionsWrapper: actionsWrapper,
           individualId: await localSecureStore.userIndividualId,
-          spaq1Count: spaq1,
-          spaq2Count: spaq2,
+          productSkuCounts: currentSKUCounts,
         ),
       );
     } on DioException catch (error) {
@@ -159,23 +161,29 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     emit(const AuthUnauthenticatedState());
   }
 
-  FutureOr<void> _onAddSpaqCounts(
-    AuthAddSpaqCountsEvent event,
+  FutureOr<void> _onUpdateProductSKUCounts(
+    AuthUpdateProductSKUCountsEvent event,
     AuthEmitter emit,
   ) async {
     // emit(const AuthLoadingState());
 
     try {
-      int spaq1 = await localSecureStore.spaq1;
-      int spaq2 = await localSecureStore.spaq2;
+      Map<String, int> currentCounts =
+          await localSecureStore.getAllProductSKUCounts();
 
-      int additionSpaq1Count = event.spaq1Count;
-      int additionSpaq2Count = event.spaq2Count;
+      if (event.skuCounts != null) {
+        Map<String, int>? additionCounts = event.skuCounts;
 
-      spaq1 = spaq1 + additionSpaq1Count;
-      spaq2 = spaq2 + additionSpaq2Count;
+        for (final sku in additionCounts!.keys) {
+          // final existingCount = currentCounts[sku] ?? 0;
+          final addition = additionCounts[sku] ?? 0;
+          currentCounts[sku] = (currentCounts[sku] ?? 0) + addition;
+        }
+      }
 
-      localSecureStore.setSpaqCounts(spaq1, spaq2);
+      await localSecureStore.setProductSKUCounts(currentCounts);
+
+      Map<String, int> test = await localSecureStore.getAllProductSKUCounts();
 
       final accessToken = await localSecureStore.accessToken;
       final refreshToken = await localSecureStore.refreshToken;
@@ -195,8 +203,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
           userModel: userObject,
           individualId: userIndividualId,
           actionsWrapper: actionsList,
-          spaq1Count: spaq1,
-          spaq2Count: spaq2,
+          productSkuCounts: currentCounts,
         ));
       }
     } catch (_) {
@@ -215,10 +222,9 @@ class AuthEvent with _$AuthEvent {
     required String tenantId,
   }) = AuthLoginEvent;
 
-  const factory AuthEvent.addSpaqCounts({
-    required int spaq1Count,
-    required int spaq2Count,
-  }) = AuthAddSpaqCountsEvent;
+  const factory AuthEvent.updateProductSKUCounts({
+    required Map<String, int>? skuCounts,
+  }) = AuthUpdateProductSKUCountsEvent;
 
   const factory AuthEvent.autoLogin({
     required String tenantId,
@@ -239,8 +245,7 @@ class AuthState with _$AuthState {
     required UserRequestModel userModel,
     required RoleActionsWrapperModel actionsWrapper,
     String? individualId,
-    final int? spaq1Count,
-    final int? spaq2Count,
+    final Map<String, int>? productSkuCounts,
   }) = AuthAuthenticatedState;
 
   const factory AuthState.error([String? error]) = AuthErrorState;

@@ -615,19 +615,20 @@ class ProjectBloc extends Bloc<ProjectEvent, ProjectState> {
       ));
     }
 
-    try {
-      final projectFacilities = await projectFacilityLocalRepository
-          .search(ProjectFacilitySearchModel());
-      final facilities =
-          await facilityLocalRepository.search(FacilitySearchModel());
-      await downloadStockDataBasedOnRole(
-          projectFacilities, facilities, event.model.address?.boundaryType);
-    } catch (_) {
-      emit(state.copyWith(
-        loading: false,
-        syncError: ProjectSyncErrorType.projectFacilities,
-      ));
-    }
+    // Commented out code for downloading stock data based on role
+    // try {
+    //   final projectFacilities = await projectFacilityLocalRepository
+    //       .search(ProjectFacilitySearchModel());
+    //   final facilities =
+    //       await facilityLocalRepository.search(FacilitySearchModel());
+    //   await downloadStockDataBasedOnRole(
+    //       projectFacilities, facilities, event.model.address?.boundaryType);
+    // } catch (_) {
+    //   emit(state.copyWith(
+    //     loading: false,
+    //     syncError: ProjectSyncErrorType.projectFacilities,
+    //   ));
+    // }
 
     final getSelectedProjectType = await localSecureStore.selectedProjectType;
     final currentRunningCycle = getSelectedProjectType?.cycles

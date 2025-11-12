@@ -10,7 +10,6 @@ import 'package:digit_ui_components/widgets/atoms/pop_up_card.dart';
 import 'package:digit_ui_components/widgets/atoms/reactive_fields.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-// import 'package:health_campaign_field_worker_app/pages/pages-SMC/beneficiary/custom_facility_selection_smc.dart';
 import 'package:reactive_forms/reactive_forms.dart';
 import 'package:referral_reconciliation/referral_reconciliation.dart';
 import 'package:registration_delivery/models/entities/referral.dart';
@@ -287,37 +286,6 @@ class CustomReferBeneficiarySMCPageState
                                                 .toValue(),
                                             "0${context.selectedCycle?.id}",
                                           ),
-                                          // AdditionalField(
-                                          //   AdditionalFieldsType.taskStatus
-                                          //       .toValue(),
-                                          //   Status.beneficiaryReferred
-                                          //       .toValue(),
-                                          // ),
-                                          // if (widget
-                                          //     .isReadministrationUnSuccessful)
-                                          //   AdditionalField(
-                                          //     AdditionalFieldsType
-                                          //         .quantityWasted
-                                          //         .toValue(),
-                                          //     widget.quantityWasted
-                                          //                 .toString()
-                                          //                 .length ==
-                                          //             1
-                                          //         ? "0${widget.quantityWasted}"
-                                          //         : widget.quantityWasted
-                                          //             .toString(),
-                                          //   ),
-                                          // if (widget
-                                          //     .isReadministrationUnSuccessful)
-                                          //   const AdditionalField(
-                                          //     'unsuccessfulDelivery',
-                                          //     'true',
-                                          //   ),
-                                          // if (widget.productVariantId != null)
-                                          //   AdditionalField(
-                                          //     'productVariantId',
-                                          //     widget.productVariantId,
-                                          //   ),
                                           AdditionalField(
                                             additional_fields_local
                                                 .AdditionalFieldsType
@@ -439,22 +407,10 @@ class CustomReferBeneficiarySMCPageState
                               },
                               isRequired: true,
                             ),
-                            const DigitTextFormField(
+                            DigitTextFormField(
                                 formControlName: _referralIDKey,
-                                label: "Referral ID"),
-                            // DigitTextFormField(
-                            //   formControlName: _referredToKey,
-                            //   //readOnly: true,
-                            //   label: localizations.translate(
-                            //     i18_local.referBeneficiary.referredByLabel,
-                            //   ),
-                            //   validationMessages: {
-                            //     'required': (_) => localizations.translate(
-                            //           i18_local.common.corecommonRequired,
-                            //         ),
-                            //   },
-                            //   isRequired: true,
-                            // ),
+                                label: localizations.translate(
+                                    i18_local.referBeneficiary.referralID)),
                             BlocBuilder<FacilityBloc, FacilityState>(
                               builder: (context, state) {
                                 return state.maybeWhen(

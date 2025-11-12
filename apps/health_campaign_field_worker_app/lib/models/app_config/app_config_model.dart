@@ -1,5 +1,6 @@
 import 'package:freezed_annotation/freezed_annotation.dart';
 
+import '../../data/local_store/no_sql/schema/app_configuration.dart';
 import '../privacy_notice/privacy_notice_model.dart';
 import '../referral_reasons/referral_reasons_model.dart';
 import '../symptoms_types/symptoms_types_model.dart';
@@ -116,6 +117,8 @@ class HCMProductsWrapperModel with _$HCMProductsWrapperModel {
     required List<VaccineData> vaccinationData,
     @JsonKey(name: 'VACCINATION-DOSE-DATA')
     required List<VaccineDoseData> vaccinationDoseData,
+    @JsonKey(name: 'VACCINATION-DOSE-STOCK-DATA')
+    required List<VaccineStockData> vaccinationStockData,
   }) = _HCMProductsWrapperModel;
 
   factory HCMProductsWrapperModel.fromJson(Map<String, dynamic> json) =>
@@ -190,6 +193,18 @@ class VaccineDoseData with _$VaccineDoseData {
 
   factory VaccineDoseData.fromJson(Map<String, dynamic> json) =>
       _$VaccineDoseDataFromJson(json);
+}
+
+@freezed
+class VaccineStockData with _$VaccineStockData {
+  const factory VaccineStockData({
+    // required String id,
+    required String code,
+    required int dosesPerFlacon,
+  }) = _VaccineStockData;
+
+  factory VaccineStockData.fromJson(Map<String, dynamic> json) =>
+      _$VaccineStockDataFromJson(json);
 }
 
 @freezed

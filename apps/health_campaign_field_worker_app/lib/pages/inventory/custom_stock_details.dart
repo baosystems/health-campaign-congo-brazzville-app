@@ -1,8 +1,11 @@
 import 'package:auto_route/auto_route.dart';
+import 'package:collection/collection.dart';
 import 'package:digit_components/widgets/atoms/digit_toaster.dart';
 import 'package:digit_data_model/data_model.dart';
 import 'package:digit_scanner/blocs/scanner.dart';
 import 'package:flutter/services.dart';
+import '../../blocs/app_initialization/app_initialization.dart';
+import '../../data/local_store/no_sql/schema/app_configuration.dart';
 import '../../utils/upper_case.dart';
 import '../../utils/utils.dart';
 import './qr_scanner.dart';
@@ -48,8 +51,6 @@ class CustomStockDetailsPageState
   static const _productVariantKey = 'productVariant';
   static const _secondaryPartyKey = 'secondaryParty';
   static const _transactionQuantityKey = 'quantity';
-  // static const _partialBlistersKey = 'partialBlistersReturned';
-  // static const _wastedBlistersKey = 'wastedBlistersReturned';
   static const _transactionReasonKey = 'transactionReason';
   static const _waybillNumberKey = 'waybillNumber';
   static const _waybillQuantityKey = 'waybillQuantity';
@@ -77,8 +78,6 @@ class CustomStockDetailsPageState
 
   FormGroup _form(bool isDistributor, bool isHealthFacilitySupervisor,
       StockRecordEntryType entryType) {
-    deliveryTeamSelected = context.isHealthFacilitySupervisor &&
-        entryType != StockRecordEntryType.receipt;
     return fb.group({
       _productVariantKey: FormControl<ProductVariantModel>(),
       _secondaryPartyKey: FormControl<String>(
@@ -153,8 +152,6 @@ class CustomStockDetailsPageState
 
                 const module = i18.stockDetails;
                 final isWarehouseMgr = context.isWarehouseMgr;
-                deliveryTeamSelected = context.isHealthFacilitySupervisor &&
-                    entryType != StockRecordEntryType.receipt;
 
                 String pageTitle;
                 String quantityCountLabel;
@@ -209,7 +206,7 @@ class CustomStockDetailsPageState
                     transactionPartyLabel =
                         module.selectTransactingPartyReturned;
                     quantityCountLabel = module.quantityReturnedLabel;
-                    transactionType = TransactionType.received.toValue();
+                    transactionType = TransactionType.dispatched.toValue();
                     partialBlistersQuantityValidator = [
                       Validators.required,
                       Validators.min(minQuantity),
@@ -295,965 +292,623 @@ class CustomStockDetailsPageState
                                         ? scannerState.qrCodes.last
                                         : '';
                               }
-                              return DigitButton(
-                                type: DigitButtonType.primary,
-                                size: DigitButtonSize.large,
-                                mainAxisSize: MainAxisSize.max,
-                                onPressed: () async {
-                                  form.markAllAsTouched();
-                                  if (!form.valid) {
-                                    Toast.showToast(
-                                      context,
-                                      type: ToastType.error,
-                                      message: localizations.translate(
-                                        i18_local
-                                            .common.pleaseEnterRequiredDetails,
-                                      ),
-                                    );
-                                    return;
+                              return BlocBuilder<AppInitializationBloc,
+                                  AppInitializationState>(
+                                builder: (context, appInitState) {
+                                  if (appInitState is! AppInitialized) {
+                                    return const Offstage();
                                   }
-                                  final primaryId =
-                                      BlocProvider.of<RecordStockBloc>(
-                                    context,
-                                  ).state.primaryId;
-                                  final secondaryParty =
-                                      selectedFacilityId != null
-                                          ? FacilityModel(
-                                              id: selectedFacilityId.toString(),
-                                            )
-                                          : null;
-
-                                  final deliveryTeamName = form
-                                      .control(_deliveryTeamKey)
-                                      .value as String?;
-                                  if ((form.control(_productVariantKey).value ==
-                                      null)) {
-                                    Toast.showToast(
-                                      context,
-                                      type: ToastType.error,
-                                      message: localizations.translate(
-                                        i18.stockDetails.selectProductLabel,
-                                      ),
-                                    );
-                                  } else if ([
-                                        StockRecordEntryType.loss,
-                                        StockRecordEntryType.damaged,
-                                      ].contains(entryType) &&
-                                      form
-                                              .control(_transactionReasonKey)
-                                              .value ==
-                                          null) {
-                                    Toast.showToast(
-                                      context,
-                                      type: ToastType.error,
-                                      message: localizations.translate(
-                                        i18_local
-                                            .common.pleaseEnterRequiredDetails,
-                                      ),
-                                    );
-                                  } else if (controller1.text.isEmpty) {
-                                    Toast.showToast(context,
-                                        type: ToastType.error,
-                                        message: '${localizations.translate(
-                                          '${pageTitle}_${i18.stockReconciliationDetails.stockLabel}',
-                                        )} ?');
-                                  } else if (deliveryTeamSelected &&
-                                      (form
-                                                  .control(
-                                                    _deliveryTeamKey,
-                                                  )
-                                                  .value ==
-                                              null ||
-                                          form
-                                              .control(_deliveryTeamKey)
-                                              .value
-                                              .toString()
-                                              .trim()
-                                              .isEmpty)) {
-                                    Toast.showToast(
-                                      context,
-                                      type: ToastType.error,
-                                      message: localizations.translate(
-                                        i18.stockDetails.teamCodeRequired,
-                                      ),
-                                    );
-                                  } else if ((primaryId ==
-                                          secondaryParty?.id) ||
-                                      (primaryId == deliveryTeamName)) {
-                                    Toast.showToast(
-                                      context,
-                                      type: ToastType.error,
-                                      message: localizations.translate(
-                                        i18.stockDetails
-                                            .senderReceiverValidation,
-                                      ),
-                                    );
-                                  } else {
-                                    FocusManager.instance.primaryFocus
-                                        ?.unfocus();
-                                    context
-                                        .read<LocationBloc>()
-                                        .add(const LoadLocationEvent());
-                                    DigitComponentsUtils.showDialog(
-                                        context,
-                                        localizations.translate(
-                                            i18.common.locationCapturing),
-                                        DialogType.inProgress);
-                                    Future.delayed(const Duration(seconds: 2),
-                                        () async {
-                                      DigitComponentsUtils.hideDialog(context);
-                                      final bloc =
-                                          context.read<RecordStockBloc>();
-
-                                      final productVariant = form
-                                          .control(_productVariantKey)
-                                          .value as ProductVariantModel;
-
-                                      switch (entryType) {
-                                        case StockRecordEntryType.receipt:
-                                          transactionReason = TransactionReason
-                                              .received
-                                              .toValue();
-                                          break;
-                                        case StockRecordEntryType.dispatch:
-                                          transactionReason = null;
-                                          break;
-                                        case StockRecordEntryType.returned:
-                                          transactionReason = TransactionReason
-                                              .returned
-                                              .toValue();
-                                          break;
-                                        default:
-                                          transactionReason = form
-                                              .control(
-                                                _transactionReasonKey,
-                                              )
-                                              .value as String?;
-                                          break;
-                                      }
-
-                                      final quantity = form
-                                          .control(_transactionQuantityKey)
-                                          .value;
-
-                                      final waybillNumber = form
-                                          .control(_waybillNumberKey)
-                                          .value as String?;
-
-                                      final waybillQuantity = form
-                                          .control(_waybillQuantityKey)
-                                          .value as String?;
-
-                                      final batchNumber = form
-                                          .control(_waybillQuantityKey)
-                                          .value as String?;
-
-                                      final vehicleNumber = form
-                                          .control(_vehicleNumberKey)
-                                          .value as String?;
-
-                                      final lat = locationState.latitude;
-                                      final lng = locationState.longitude;
-
-                                      final hasLocationData =
-                                          lat != null && lng != null;
-
-                                      final transportType = form
-                                          .control(
-                                            _typeOfTransportKey,
-                                          )
-                                          .value as String?;
-
-                                      // final partialBlisters = form
-                                      //     .control(
-                                      //       _partialBlistersKey,
-                                      //     )
-                                      //     .value;
-
-                                      // final wastedBlisters = form
-                                      //     .control(
-                                      //       _wastedBlistersKey,
-                                      //     )
-                                      //     .value;
-
-                                      final comments = form
-                                          .control(_commentsKey)
-                                          .value as String?;
-
-                                      final deliveryTeamName = form
-                                          .control(_deliveryTeamKey)
-                                          .value as String?;
-
-                                      if ((entryType ==
-                                                  StockRecordEntryType
-                                                      .returned &&
-                                              isHealthFacilitySupervisor &&
-                                              quantity == 0) ||
-                                          (entryType ==
-                                                  StockRecordEntryType
-                                                      .dispatch &&
-                                              isDistributor &&
-                                              quantity == 0)) {
-                                        DigitToast.show(
+                                  List<VaccineStockData>? vaccinationStockData =
+                                      appInitState.appConfiguration
+                                          .vaccinationStockData;
+                                  return DigitButton(
+                                    type: DigitButtonType.primary,
+                                    size: DigitButtonSize.large,
+                                    mainAxisSize: MainAxisSize.max,
+                                    onPressed: () async {
+                                      form.markAllAsTouched();
+                                      if (!form.valid) {
+                                        Toast.showToast(
                                           context,
-                                          options: DigitToastOptions(
-                                            localizations.translate(
-                                              i18.common.minValue,
-                                            ),
-                                            true,
-                                            theme,
+                                          type: ToastType.error,
+                                          message: localizations.translate(
+                                            i18_local.common
+                                                .pleaseEnterRequiredDetails,
                                           ),
                                         );
-
                                         return;
                                       }
-
-                                      String secondaryKey = form
-                                          .control(_secondaryPartyKey)
-                                          .value;
-
-                                      String? senderId;
-                                      String? senderType;
-                                      String? receiverId;
-                                      String? receiverType;
-
-                                      final primaryType =
-                                          BlocProvider.of<RecordStockBloc>(
-                                        context,
-                                      ).state.primaryType;
-
                                       final primaryId =
                                           BlocProvider.of<RecordStockBloc>(
                                         context,
                                       ).state.primaryId;
+                                      final secondaryParty =
+                                          selectedFacilityId != null
+                                              ? FacilityModel(
+                                                  id: selectedFacilityId
+                                                      .toString(),
+                                                )
+                                              : null;
 
-                                      switch (entryType) {
-                                        case StockRecordEntryType.receipt:
-                                        // case StockRecordEntryType.loss:
-                                        // case StockRecordEntryType.damaged:
-                                        case StockRecordEntryType.returned:
-                                          if (deliveryTeamSelected) {
-                                            // senderId = deliveryTeamName;
-                                            senderType = "STAFF";
-                                            senderId = secondaryKey
-                                                .split(Constants.pipeSeparator)
-                                                .last;
-                                            if (deliveryTeamName != null &&
-                                                deliveryTeamName
-                                                    .trim()
-                                                    .isNotEmpty) {
-                                              senderId = deliveryTeamName
-                                                  .toLowerCase();
-                                            }
+                                      final deliveryTeamName = form
+                                          .control(_deliveryTeamKey)
+                                          .value as String?;
+                                      if ((form
+                                              .control(_productVariantKey)
+                                              .value ==
+                                          null)) {
+                                        Toast.showToast(
+                                          context,
+                                          type: ToastType.error,
+                                          message: localizations.translate(
+                                            i18.stockDetails.selectProductLabel,
+                                          ),
+                                        );
+                                      } else if ([
+                                            StockRecordEntryType.loss,
+                                            StockRecordEntryType.damaged,
+                                          ].contains(entryType) &&
+                                          form
+                                                  .control(
+                                                      _transactionReasonKey)
+                                                  .value ==
+                                              null) {
+                                        Toast.showToast(
+                                          context,
+                                          type: ToastType.error,
+                                          message: localizations.translate(
+                                            i18_local.common
+                                                .pleaseEnterRequiredDetails,
+                                          ),
+                                        );
+                                      } else if (controller1.text.isEmpty) {
+                                        Toast.showToast(context,
+                                            type: ToastType.error,
+                                            message: '${localizations.translate(
+                                              '${pageTitle}_${i18.stockReconciliationDetails.stockLabel}',
+                                            )} ?');
+                                      } else if (deliveryTeamSelected &&
+                                          (form
+                                                      .control(
+                                                        _deliveryTeamKey,
+                                                      )
+                                                      .value ==
+                                                  null ||
+                                              form
+                                                  .control(_deliveryTeamKey)
+                                                  .value
+                                                  .toString()
+                                                  .trim()
+                                                  .isEmpty)) {
+                                        Toast.showToast(
+                                          context,
+                                          type: ToastType.error,
+                                          message: localizations.translate(
+                                            i18.stockDetails.teamCodeRequired,
+                                          ),
+                                        );
+                                      } else if ((primaryId ==
+                                              secondaryParty?.id) ||
+                                          (primaryId == deliveryTeamName)) {
+                                        Toast.showToast(
+                                          context,
+                                          type: ToastType.error,
+                                          message: localizations.translate(
+                                            i18.stockDetails
+                                                .senderReceiverValidation,
+                                          ),
+                                        );
+                                      } else {
+                                        FocusManager.instance.primaryFocus
+                                            ?.unfocus();
+                                        context
+                                            .read<LocationBloc>()
+                                            .add(const LoadLocationEvent());
+                                        DigitComponentsUtils.showDialog(
+                                            context,
+                                            localizations.translate(
+                                                i18.common.locationCapturing),
+                                            DialogType.inProgress);
+                                        Future.delayed(
+                                            const Duration(seconds: 2),
+                                            () async {
+                                          DigitComponentsUtils.hideDialog(
+                                              context);
+                                          final bloc =
+                                              context.read<RecordStockBloc>();
 
-                                            receiverId = primaryId;
-                                            receiverType = primaryType;
-                                          } else {
-                                            senderId = secondaryParty?.id;
-                                            senderType = "WAREHOUSE";
+                                          final productVariant = form
+                                              .control(_productVariantKey)
+                                              .value as ProductVariantModel;
+
+                                          switch (entryType) {
+                                            case StockRecordEntryType.receipt:
+                                              transactionReason =
+                                                  TransactionReason.received
+                                                      .toValue();
+                                              break;
+                                            case StockRecordEntryType.dispatch:
+                                              transactionReason = null;
+                                              break;
+                                            case StockRecordEntryType.returned:
+                                              transactionReason =
+                                                  TransactionReason.returned
+                                                      .toValue();
+                                              break;
+                                            default:
+                                              transactionReason = form
+                                                  .control(
+                                                    _transactionReasonKey,
+                                                  )
+                                                  .value as String?;
+                                              break;
                                           }
-                                          receiverId = primaryId!
-                                              .split(Constants.pipeSeparator)
-                                              .last;
-                                          ;
-                                          receiverType = primaryType;
-                                          break;
-                                        case StockRecordEntryType.dispatch:
-                                        case StockRecordEntryType.loss:
-                                        case StockRecordEntryType.damaged:
-                                          if (deliveryTeamSelected) {
-                                            // receiverId = deliveryTeamName;
-                                            // receiverType = "STAFF";
-                                            receiverId = secondaryKey
-                                                .split(Constants.pipeSeparator)
-                                                .last;
-                                            if (deliveryTeamName != null &&
-                                                deliveryTeamName
-                                                    .trim()
-                                                    .isNotEmpty) {
-                                              receiverId = deliveryTeamName
-                                                  .toLowerCase();
-                                            }
-                                            receiverType = "STAFF";
-                                            senderId = primaryId;
-                                            senderType = primaryType;
-                                          } else {
-                                            receiverId = secondaryParty?.id;
-                                            receiverType = "WAREHOUSE";
-                                          }
-                                          senderId = primaryId!
-                                              .split(Constants.pipeSeparator)
-                                              .last;
-                                          senderType = primaryType;
-                                          break;
-                                      }
 
-                                      final stockModel = StockModel(
-                                        clientReferenceId: IdGen.i.identifier,
-                                        productVariantId: productVariant.id,
-                                        transactionReason: transactionReason,
-                                        transactionType: transactionType,
-                                        referenceId: stockState.projectId,
-                                        referenceIdType: 'PROJECT',
-                                        quantity: quantity.toString(),
-                                        wayBillNumber: waybillNumber,
-                                        receiverId: receiverId,
-                                        receiverType: receiverType,
-                                        senderId: senderId,
-                                        senderType: senderType,
-                                        auditDetails: AuditDetails(
-                                          createdBy: InventorySingleton()
-                                              .loggedInUserUuid,
-                                          createdTime:
-                                              context.millisecondsSinceEpoch(),
-                                        ),
-                                        clientAuditDetails: ClientAuditDetails(
-                                          createdBy: InventorySingleton()
-                                              .loggedInUserUuid,
-                                          createdTime:
-                                              context.millisecondsSinceEpoch(),
-                                          lastModifiedBy: InventorySingleton()
-                                              .loggedInUserUuid,
-                                          lastModifiedTime:
-                                              context.millisecondsSinceEpoch(),
-                                        ),
-                                        additionalFields: [
-                                                  waybillQuantity,
-                                                  batchNumber,
-                                                  vehicleNumber,
-                                                  comments,
-                                                ].any((element) =>
-                                                    element != null) ||
-                                                hasLocationData
-                                            ? StockAdditionalFields(
-                                                version: 1,
-                                                fields: [
-                                                  AdditionalField(
-                                                    InventoryManagementEnums
-                                                        .name
-                                                        .toValue(),
-                                                    InventorySingleton()
-                                                        .loggedInUser
-                                                        ?.name,
-                                                  ),
-                                                  if (waybillQuantity != null &&
-                                                      waybillQuantity
-                                                          .trim()
-                                                          .isNotEmpty)
-                                                    AdditionalField(
-                                                      'waybill_quantity',
-                                                      waybillQuantity,
-                                                    ),
-                                                  if (batchNumber != null &&
-                                                      batchNumber
-                                                          .trim()
-                                                          .isNotEmpty)
-                                                    AdditionalField(
-                                                      'batch_number',
-                                                      batchNumber,
-                                                    ),
-                                                  if (vehicleNumber != null &&
-                                                      vehicleNumber
-                                                          .trim()
-                                                          .isNotEmpty)
-                                                    AdditionalField(
-                                                      'vehicle_number',
-                                                      vehicleNumber,
-                                                    ),
-                                                  if (comments != null &&
-                                                      comments
-                                                          .trim()
-                                                          .isNotEmpty)
-                                                    AdditionalField(
-                                                      'comments',
-                                                      comments,
-                                                    ),
-                                                  if (deliveryTeamName !=
-                                                          null &&
-                                                      deliveryTeamName
-                                                          .trim()
-                                                          .isNotEmpty)
-                                                    AdditionalField(
-                                                      'deliveryTeam',
-                                                      deliveryTeamName
-                                                          .toLowerCase(),
-                                                    ),
-                                                  if (hasLocationData) ...[
-                                                    AdditionalField(
-                                                      'lat',
-                                                      lat,
-                                                    ),
-                                                    AdditionalField(
-                                                      'lng',
-                                                      lng,
-                                                    ),
-                                                  ],
-                                                  if (scannerState
-                                                      .barCodes.isNotEmpty)
-                                                    addBarCodesToFields(
-                                                        scannerState.barCodes),
-                                                ],
+                                          final quantity = form
+                                              .control(_transactionQuantityKey)
+                                              .value;
+
+                                          final waybillNumber = form
+                                              .control(_waybillNumberKey)
+                                              .value as String?;
+
+                                          final waybillQuantity = form
+                                              .control(_waybillQuantityKey)
+                                              .value as String?;
+
+                                          final batchNumber = form
+                                              .control(_waybillQuantityKey)
+                                              .value as String?;
+
+                                          final vehicleNumber = form
+                                              .control(_vehicleNumberKey)
+                                              .value as String?;
+
+                                          final lat = locationState.latitude;
+                                          final lng = locationState.longitude;
+
+                                          final hasLocationData =
+                                              lat != null && lng != null;
+
+                                          final transportType = form
+                                              .control(
+                                                _typeOfTransportKey,
                                               )
-                                            : null,
-                                      );
+                                              .value as String?;
 
-                                      bloc.add(
-                                        RecordStockSaveStockDetailsEvent(
-                                          stockModel: stockModel,
-                                        ),
-                                      );
+                                          // final partialBlisters = form
+                                          //     .control(
+                                          //       _partialBlistersKey,
+                                          //     )
+                                          //     .value;
 
-                                      final submit = await showCustomPopup(
-                                        context: context,
-                                        builder: (popupContext) => Popup(
-                                          title: localizations.translate(
-                                            i18.stockDetails.dialogTitle,
-                                          ),
-                                          onOutsideTap: () {
-                                            Navigator.of(popupContext)
-                                                .pop(false);
-                                          },
-                                          description: localizations.translate(
-                                            i18.stockDetails.dialogContent,
-                                          ),
-                                          type: PopUpType.simple,
-                                          actions: [
-                                            DigitButton(
-                                              label: localizations.translate(
-                                                i18.common.coreCommonSubmit,
+                                          // final wastedBlisters = form
+                                          //     .control(
+                                          //       _wastedBlistersKey,
+                                          //     )
+                                          //     .value;
+
+                                          final comments = form
+                                              .control(_commentsKey)
+                                              .value as String?;
+
+                                          final deliveryTeamName = form
+                                              .control(_deliveryTeamKey)
+                                              .value as String?;
+
+                                          if ((entryType ==
+                                                      StockRecordEntryType
+                                                          .returned &&
+                                                  isHealthFacilitySupervisor &&
+                                                  quantity == 0) ||
+                                              (entryType ==
+                                                      StockRecordEntryType
+                                                          .dispatch &&
+                                                  isDistributor &&
+                                                  quantity == 0)) {
+                                            DigitToast.show(
+                                              context,
+                                              options: DigitToastOptions(
+                                                localizations.translate(
+                                                  i18.common.minValue,
+                                                ),
+                                                true,
+                                                theme,
                                               ),
-                                              onPressed: () {
-                                                Navigator.of(
-                                                  popupContext,
-                                                  rootNavigator: true,
-                                                ).pop(true);
-                                              },
-                                              type: DigitButtonType.primary,
-                                              size: DigitButtonSize.large,
-                                            ),
-                                            DigitButton(
-                                              label: localizations.translate(
-                                                i18.common.coreCommonCancel,
-                                              ),
-                                              onPressed: () {
-                                                Navigator.of(
-                                                  popupContext,
-                                                  rootNavigator: true,
-                                                ).pop(false);
-                                              },
-                                              type: DigitButtonType.secondary,
-                                              size: DigitButtonSize.large,
-                                            ),
-                                          ],
-                                        ),
-                                      ) as bool;
+                                            );
 
-                                      if (submit && context.mounted) {
-                                        if (isDistributor) {
-                                          int spaq1 = 0;
-                                          int spaq2 = 0;
+                                            return;
+                                          }
+
+                                          String secondaryKey = form
+                                              .control(_secondaryPartyKey)
+                                              .value;
+
+                                          String? senderId;
+                                          String? senderType;
+                                          String? receiverId;
+                                          String? receiverType;
+
+                                          final primaryType =
+                                              BlocProvider.of<RecordStockBloc>(
+                                            context,
+                                          ).state.primaryType;
+
+                                          final primaryId =
+                                              BlocProvider.of<RecordStockBloc>(
+                                            context,
+                                          ).state.primaryId;
+
+                                          switch (entryType) {
+                                            case StockRecordEntryType.receipt:
+                                              if (deliveryTeamSelected) {
+                                                // senderId = deliveryTeamName;
+                                                senderType = "STAFF";
+                                                senderId = secondaryKey
+                                                    .split(
+                                                        Constants.pipeSeparator)
+                                                    .last;
+                                                if (deliveryTeamName != null &&
+                                                    deliveryTeamName
+                                                        .trim()
+                                                        .isNotEmpty) {
+                                                  senderId = deliveryTeamName
+                                                      .toLowerCase();
+                                                }
+
+                                                receiverId = primaryId;
+                                                receiverType = primaryType;
+                                              } else {
+                                                senderId = secondaryParty?.id;
+                                                senderType = "WAREHOUSE";
+                                              }
+                                              receiverId = primaryId!
+                                                  .split(
+                                                      Constants.pipeSeparator)
+                                                  .last;
+
+                                              receiverType = primaryType;
+                                              break;
+                                            case StockRecordEntryType.returned:
+                                            case StockRecordEntryType.dispatch:
+                                            case StockRecordEntryType.loss:
+                                            case StockRecordEntryType.damaged:
+                                              if (deliveryTeamSelected) {
+                                                // receiverId = deliveryTeamName;
+                                                // receiverType = "STAFF";
+                                                receiverId = secondaryKey
+                                                    .split(
+                                                        Constants.pipeSeparator)
+                                                    .last;
+                                                if (deliveryTeamName != null &&
+                                                    deliveryTeamName
+                                                        .trim()
+                                                        .isNotEmpty) {
+                                                  receiverId = deliveryTeamName
+                                                      .toLowerCase();
+                                                }
+                                                receiverType = "STAFF";
+                                                senderId = primaryId;
+                                                senderType = primaryType;
+                                              } else {
+                                                receiverId = secondaryParty?.id;
+                                                receiverType = "WAREHOUSE";
+                                              }
+                                              senderId = primaryId!
+                                                  .split(
+                                                      Constants.pipeSeparator)
+                                                  .last;
+                                              senderType = primaryType;
+                                              break;
+                                          }
+
+                                          Map<String, int> skuCounts = {};
+                                          Map<String, int> currentSKUCounts =
+                                              context.getAllProductSkuCounts();
 
                                           int totalQuantity = 0;
+                                          int dosesPerFlacon =
+                                              vaccinationStockData == null
+                                                  ? 0
+                                                  : vaccinationStockData
+                                                          .firstWhereOrNull(
+                                                              (e) =>
+                                                                  e.code ==
+                                                                  productVariant
+                                                                      .sku)
+                                                          ?.dosesPerFlacon ??
+                                                      0;
 
                                           totalQuantity = entryType ==
-                                                      StockRecordEntryType
-                                                          .dispatch ||
-                                                  entryType ==
-                                                      StockRecordEntryType
-                                                          .loss ||
-                                                  entryType ==
-                                                      StockRecordEntryType
-                                                          .damaged
+                                                  StockRecordEntryType.receipt
                                               ? ((quantity != null
-                                                      ? int.parse(
-                                                          quantity.toString(),
-                                                        )
-                                                      : 0)) *
-                                                  -1
-                                              : quantity != null
                                                   ? int.parse(
                                                       quantity.toString(),
                                                     )
+                                                  : 0))
+                                              : quantity != null
+                                                  ? int.parse(
+                                                        quantity.toString(),
+                                                      ) *
+                                                      -1
                                                   : 0;
-
-                                          if (isSpaq1) {
-                                            spaq1 = totalQuantity;
-                                          } else {
-                                            spaq2 = totalQuantity;
+                                          if (productVariant.sku == null) {
+                                            return;
                                           }
 
-                                          if (entryType ==
-                                              StockRecordEntryType.dispatch) {
-                                            if (productVariant.sku ==
-                                                    Constants.spaq1 &&
-                                                (spaq1 + totalQuantity < 0)) {
-                                              await DigitToast.show(
-                                                context,
-                                                options: DigitToastOptions(
-                                                    localizations.translate(context
-                                                            .isCDD
-                                                        ? i18_local
-                                                            .beneficiaryDetails
-                                                            .validationForExcessStockReturn
-                                                        : i18_local
-                                                            .beneficiaryDetails
-                                                            .validationForExcessStockDispatch),
-                                                    true,
-                                                    theme),
-                                              );
-                                              return;
-                                            } else if (productVariant.sku ==
-                                                    Constants.spaq2 &&
-                                                (spaq2 + totalQuantity < 0)) {
-                                              await DigitToast.show(
-                                                context,
-                                                options: DigitToastOptions(
-                                                    localizations.translate(context
-                                                            .isCDD
-                                                        ? i18_local
-                                                            .beneficiaryDetails
-                                                            .validationForExcessStockReturn
-                                                        : i18_local
-                                                            .beneficiaryDetails
-                                                            .validationForExcessStockDispatch),
-                                                    true,
-                                                    theme),
-                                              );
-                                              return;
-                                            }
-                                          }
-
-                                          if (entryType ==
-                                                  StockRecordEntryType.loss ||
-                                              entryType ==
-                                                  StockRecordEntryType
-                                                      .damaged ||
-                                              entryType ==
-                                                  StockRecordEntryType
-                                                      .returned) {
-                                            if (isSpaq1 &&
-                                                quantity > context.spaq1) {
-                                              await DigitToast.show(
-                                                context,
-                                                options: DigitToastOptions(
-                                                    localizations.translate(context
-                                                                .isCDD ||
-                                                            entryType ==
-                                                                StockRecordEntryType
-                                                                    .returned
-                                                        ? i18_local
-                                                            .beneficiaryDetails
-                                                            .validationForExcessStockReturn
-                                                        : i18_local
-                                                            .beneficiaryDetails
-                                                            .validationForExcessStockDispatch),
-                                                    true,
-                                                    theme),
-                                              );
-                                              return;
-                                            } else if (!isSpaq1 &&
-                                                quantity > context.spaq2) {
-                                              await DigitToast.show(
-                                                context,
-                                                options: DigitToastOptions(
-                                                    localizations.translate(context
-                                                                .isCDD ||
-                                                            entryType ==
-                                                                StockRecordEntryType
-                                                                    .returned
-                                                        ? i18_local
-                                                            .beneficiaryDetails
-                                                            .validationForExcessStockReturn
-                                                        : i18_local
-                                                            .beneficiaryDetails
-                                                            .validationForExcessStockDispatch),
-                                                    true,
-                                                    theme),
-                                              );
-                                              return;
-                                            }
-                                          }
-
-                                          context.read<AuthBloc>().add(
-                                                AuthAddSpaqCountsEvent(
-                                                  spaq1Count: spaq1,
-                                                  spaq2Count: spaq2,
-                                                ),
-                                              );
-                                        } else {
-                                          final now = DateTime.now();
-                                          final startOfToday = DateTime(
-                                                  now.year, now.month, now.day)
-                                              .millisecondsSinceEpoch;
-                                          final endOfToday = DateTime(
-                                                  now.year,
-                                                  now.month,
-                                                  now.day,
-                                                  23,
-                                                  59,
-                                                  59,
-                                                  999)
-                                              .millisecondsSinceEpoch;
-                                          List<StockModel> sentStocks =
-                                              await context
-                                                  .repository<StockModel,
-                                                      StockSearchModel>()
-                                                  .search(
-                                                    StockSearchModel(
-                                                      // ignore: avoid_dynamic_calls
-                                                      productVariantId: form
-                                                          .control(
-                                                              _productVariantKey)
-                                                          .value
-                                                          .id,
-                                                      senderId: primaryId!
-                                                          .split(Constants
-                                                              .pipeSeparator)
-                                                          .last,
-                                                      // receiverId: [
-                                                      //   deliveryTeamSelected
-                                                      //       ? "FAC_Delivery Team"
-                                                      //       : selectedFacilityId!
-                                                      // ],
-                                                      transactionType: [
-                                                        TransactionType
-                                                            .dispatched
-                                                            .toValue()
-                                                      ],
-                                                    ),
-                                                  );
-                                          int sentStocksCount = sentStocks
-                                              .where((element) =>
-                                                  element.transactionReason ==
-                                                      null &&
-                                                  element.auditDetails !=
-                                                      null &&
-                                                  element.receiverId ==
-                                                      (deliveryTeamSelected
-                                                          ? 'FAC_${selectedFacilityId}'
-                                                          : selectedFacilityId) &&
-                                                  element.auditDetails
-                                                          ?.createdBy ==
-                                                      InventorySingleton()
-                                                          .loggedInUserUuid &&
-                                                  element.auditDetails!
-                                                          .createdTime >=
-                                                      startOfToday &&
-                                                  element.auditDetails!
-                                                          .createdTime <=
-                                                      endOfToday)
-                                              .fold<int>(
-                                                  0,
-                                                  (sum, element) =>
-                                                      sum +
-                                                      int.tryParse(
-                                                          element.quantity ?? '0')!);
-
-                                          List<StockModel>
-                                              receivedFromReturnStocks =
-                                              await context
-                                                  .repository<StockModel,
-                                                      StockSearchModel>()
-                                                  .search(
-                                                    StockSearchModel(
-                                                      // ignore: avoid_dynamic_calls
-                                                      productVariantId: form
-                                                          .control(
-                                                              _productVariantKey)
-                                                          .value
-                                                          .id,
-                                                      // receiverId: [
-                                                      //   primaryId!
-                                                      //       .split(Constants
-                                                      //           .pipeSeparator)
-                                                      //       .last
-                                                      // ],
-                                                      senderId: deliveryTeamSelected
-                                                          ? 'FAC_${selectedFacilityId}'
-                                                          : selectedFacilityId,
-                                                      transactionType: [
-                                                        TransactionType.received
-                                                            .toValue()
-                                                      ],
-                                                    ),
-                                                  );
-                                          int receivedFromReturnStocksCount =
-                                              receivedFromReturnStocks
-                                                  .where((element) =>
-                                                      element.transactionReason ==
-                                                          TransactionReason
-                                                              .returned
-                                                              .toValue() &&
-                                                      element.auditDetails !=
-                                                          null &&
-                                                      element.receiverId ==
-                                                          primaryId!
-                                                              .split(Constants
-                                                                  .pipeSeparator)
-                                                              .last &&
-                                                      // element.auditDetails
-                                                      //         ?.createdBy ==
-                                                      //     InventorySingleton()
-                                                      //         .loggedInUserUuid &&
-                                                      element.auditDetails!
-                                                              .createdTime >=
-                                                          startOfToday &&
-                                                      element.auditDetails!
-                                                              .createdTime <=
-                                                          endOfToday)
-                                                  .fold<int>(
-                                                      0,
-                                                      (sum, element) =>
-                                                          sum +
-                                                          int.tryParse(element
-                                                                  .quantity ??
-                                                              '0')!);
-
-                                          if (entryType ==
-                                              StockRecordEntryType.dispatch) {
-                                            if (isSpaq1 &&
-                                                quantity > context.spaq1) {
-                                              await DigitToast.show(
-                                                context,
-                                                options: DigitToastOptions(
-                                                    localizations.translate(context
-                                                            .isCDD
-                                                        ? i18_local
-                                                            .beneficiaryDetails
-                                                            .validationForExcessStockReturn
-                                                        : i18_local
-                                                            .beneficiaryDetails
-                                                            .validationForExcessStockDispatch),
-                                                    true,
-                                                    theme),
-                                              );
-                                              return;
-                                            } else if (!isSpaq1 &&
-                                                entryType ==
-                                                    StockRecordEntryType
-                                                        .dispatch &&
-                                                quantity > context.spaq2) {
-                                              await DigitToast.show(
-                                                context,
-                                                options: DigitToastOptions(
-                                                    localizations.translate(context
-                                                            .isCDD
-                                                        ? i18_local
-                                                            .beneficiaryDetails
-                                                            .validationForExcessStockReturn
-                                                        : i18_local
-                                                            .beneficiaryDetails
-                                                            .validationForExcessStockDispatch),
-                                                    true,
-                                                    theme),
-                                              );
-                                              return;
-                                            }
-                                          }
+                                          // Update the quantity based on dosesPerFlacon
                                           if (entryType ==
                                               StockRecordEntryType.receipt) {
-                                            int spaqL1 = context.spaq1;
-                                            int spaqL2 = context.spaq2;
-                                            if (isSpaq1) {
-                                              context.read<AuthBloc>().add(
-                                                    AuthAddSpaqCountsEvent(
-                                                      spaq1Count: int.parse(
-                                                        quantity.toString(),
-                                                      ),
-                                                      spaq2Count: 0,
-                                                    ),
-                                                  );
-                                            } else {
-                                              context.read<AuthBloc>().add(
-                                                    AuthAddSpaqCountsEvent(
-                                                      spaq1Count: 0,
-                                                      spaq2Count: int.parse(
-                                                        quantity.toString(),
-                                                      ),
-                                                    ),
-                                                  );
-                                            }
-                                          } else if (entryType ==
-                                              StockRecordEntryType.returned) {
-                                            int? spaq1Quantity = sentStocksCount -
-                                                receivedFromReturnStocksCount;
-                                            int? spaq2Quantity = sentStocksCount -
-                                                receivedFromReturnStocksCount;
-                                            int spaqLocal1 = spaq1Quantity > 0
-                                                ? spaq1Quantity
-                                                : 0;
-                                            int spaqLocal2 = spaq2Quantity > 0
-                                                ? spaq2Quantity
-                                                : 0;
-
-                                            if (isSpaq1 &&
-                                                quantity > spaq1Quantity) {
-                                              await DigitToast.show(
-                                                context,
-                                                options: DigitToastOptions(
-                                                    localizations.translate(
-                                                        i18_local
-                                                            .beneficiaryDetails
-                                                            .validationForExcessStockAcceptReturn),
-                                                    true,
-                                                    theme),
-                                              );
-                                              return;
-                                            } else if (!isSpaq1 &&
-                                                quantity > spaq2Quantity) {
-                                              await DigitToast.show(
-                                                context,
-                                                options: DigitToastOptions(
-                                                    localizations.translate(
-                                                        i18_local
-                                                            .beneficiaryDetails
-                                                            .validationForExcessStockAcceptReturn),
-                                                    true,
-                                                    theme),
-                                              );
-                                              return;
-                                            }
-
-                                            if (isSpaq1) {
-                                              spaqLocal1 = int.parse(
-                                                quantity.toString(),
-                                              );
-                                              spaqLocal2 = 0;
-                                            } else {
-                                              spaqLocal2 = int.parse(
-                                                quantity.toString(),
-                                              );
-                                              spaqLocal1 = 0;
-                                            }
-
-                                            context.read<AuthBloc>().add(
-                                                  AuthAddSpaqCountsEvent(
-                                                      spaq1Count: spaqLocal1,
-                                                      spaq2Count: spaqLocal2),
-                                                );
-                                          } else if (entryType ==
-                                                  StockRecordEntryType
-                                                      .dispatch ||
-                                              entryType ==
-                                                  StockRecordEntryType.loss ||
-                                              entryType ==
-                                                  StockRecordEntryType
-                                                      .damaged) {
-                                            int spaqLocal1 = context.spaq1;
-                                            int spaqLocal2 = context.spaq2;
-
-                                            if (isSpaq1) {
-                                              spaqLocal1 = int.parse(
-                                                    quantity.toString(),
-                                                  ) *
-                                                  -1;
-                                              spaqLocal2 = 0;
-                                            } else {
-                                              spaqLocal2 = int.parse(
-                                                    quantity.toString(),
-                                                  ) *
-                                                  -1;
-                                              spaqLocal1 = 0;
-                                            }
-
-                                            // add validation to check stock loss or damage
-                                            if (entryType ==
-                                                    StockRecordEntryType.loss ||
-                                                entryType ==
-                                                    StockRecordEntryType
-                                                        .damaged ||
-                                                entryType ==
-                                                    StockRecordEntryType
-                                                        .dispatch ||
-                                                entryType ==
-                                                    StockRecordEntryType
-                                                        .returned) {
-                                              if (isSpaq1 &&
-                                                  quantity > context.spaq1) {
-                                                await DigitToast.show(
-                                                  context,
-                                                  options: DigitToastOptions(
-                                                      localizations.translate(
-                                                          i18_local
-                                                              .beneficiaryDetails
-                                                              .validationForExcessStockDispatch),
-                                                      true,
-                                                      theme),
-                                                );
-                                                return;
-                                              } else if (!isSpaq1 &&
-                                                  quantity > context.spaq2) {
-                                                await DigitToast.show(
-                                                  context,
-                                                  options: DigitToastOptions(
-                                                      localizations.translate(
-                                                          i18_local
-                                                              .beneficiaryDetails
-                                                              .validationForExcessStockDispatch),
-                                                      true,
-                                                      theme),
-                                                );
-                                                return;
-                                              }
-                                            }
-
-                                            context.read<AuthBloc>().add(
-                                                  AuthAddSpaqCountsEvent(
-                                                      spaq1Count: spaqLocal1,
-                                                      spaq2Count: spaqLocal2),
-                                                );
+                                            totalQuantity *= dosesPerFlacon;
                                           }
-                                        }
 
-                                        bloc.add(
-                                          const RecordStockCreateStockEntryEvent(),
-                                        );
-                                        String descriptionText;
-                                        switch (entryType) {
-                                          case StockRecordEntryType.receipt:
-                                            descriptionText = i18_local
-                                                .acknowledgementSuccess
-                                                .acknowledgementDescriptionTextReceipt;
-                                            break;
-                                          case StockRecordEntryType.dispatch:
-                                            descriptionText = i18_local
-                                                .acknowledgementSuccess
-                                                .acknowledgementDescriptionTextDispatch;
-                                            break;
-                                          case StockRecordEntryType.returned:
-                                            descriptionText = i18_local
-                                                .acknowledgementSuccess
-                                                .acknowledgementDescriptionTextReturned;
-                                            break;
-                                          case StockRecordEntryType.loss:
-                                            descriptionText = i18_local
-                                                .acknowledgementSuccess
-                                                .acknowledgementDescriptionTextLoss;
-                                            break;
-                                          case StockRecordEntryType.damaged:
-                                            descriptionText = i18_local
-                                                .acknowledgementSuccess
-                                                .acknowledgementDescriptionTextDamaged;
-                                            break;
-                                          default:
-                                            descriptionText = i18
-                                                .acknowledgementSuccess
-                                                .acknowledgementDescriptionText;
-                                        }
+                                          if (((currentSKUCounts[productVariant
+                                                          .sku!] ??
+                                                      0) +
+                                                  totalQuantity <
+                                              0)) {
+                                            if (entryType !=
+                                                StockRecordEntryType.receipt) {
+                                              await DigitToast.show(
+                                                context,
+                                                options: DigitToastOptions(
+                                                    localizations.translate(context
+                                                            .isCDD
+                                                        ? i18_local
+                                                            .beneficiaryDetails
+                                                            .validationForExcessStockReturn
+                                                        : i18_local
+                                                            .beneficiaryDetails
+                                                            .validationForExcessStockDispatch),
+                                                    true,
+                                                    theme),
+                                              );
+                                              return;
+                                            }
+                                          }
 
-                                        (context.router.parent() as StackRouter)
-                                            .maybePop();
+                                          skuCounts[productVariant.sku!] =
+                                              totalQuantity;
 
-                                        context.router.push(
-                                            CustomInventoryAcknowledgementRoute(
-                                                description: descriptionText));
+                                          if (totalQuantity.abs() < 1) return;
+
+                                          final stockModel = StockModel(
+                                            clientReferenceId:
+                                                IdGen.i.identifier,
+                                            productVariantId: productVariant.id,
+                                            transactionReason:
+                                                transactionReason,
+                                            transactionType: transactionType,
+                                            referenceId: stockState.projectId,
+                                            referenceIdType: 'PROJECT',
+                                            quantity:
+                                                totalQuantity.abs().toString(),
+                                            wayBillNumber: (waybillNumber !=
+                                                        null &&
+                                                    waybillNumber.length > 2)
+                                                ? waybillNumber
+                                                : null,
+                                            receiverId: receiverId,
+                                            receiverType: receiverType,
+                                            senderId: senderId,
+                                            senderType: senderType,
+                                            auditDetails: AuditDetails(
+                                              createdBy: InventorySingleton()
+                                                  .loggedInUserUuid,
+                                              createdTime: context
+                                                  .millisecondsSinceEpoch(),
+                                            ),
+                                            clientAuditDetails:
+                                                ClientAuditDetails(
+                                              createdBy: InventorySingleton()
+                                                  .loggedInUserUuid,
+                                              createdTime: context
+                                                  .millisecondsSinceEpoch(),
+                                              lastModifiedBy:
+                                                  InventorySingleton()
+                                                      .loggedInUserUuid,
+                                              lastModifiedTime: context
+                                                  .millisecondsSinceEpoch(),
+                                            ),
+                                            additionalFields: [
+                                                      waybillQuantity,
+                                                      batchNumber,
+                                                      vehicleNumber,
+                                                      comments,
+                                                    ].any((element) =>
+                                                        element != null) ||
+                                                    hasLocationData
+                                                ? StockAdditionalFields(
+                                                    version: 1,
+                                                    fields: [
+                                                      AdditionalField(
+                                                        InventoryManagementEnums
+                                                            .name
+                                                            .toValue(),
+                                                        InventorySingleton()
+                                                            .loggedInUser
+                                                            ?.name,
+                                                      ),
+                                                      if (waybillQuantity !=
+                                                              null &&
+                                                          waybillQuantity
+                                                              .trim()
+                                                              .isNotEmpty)
+                                                        AdditionalField(
+                                                          'waybill_quantity',
+                                                          waybillQuantity,
+                                                        ),
+                                                      if (batchNumber != null &&
+                                                          batchNumber
+                                                              .trim()
+                                                              .isNotEmpty)
+                                                        AdditionalField(
+                                                          'batch_number',
+                                                          batchNumber,
+                                                        ),
+                                                      if (vehicleNumber !=
+                                                              null &&
+                                                          vehicleNumber
+                                                              .trim()
+                                                              .isNotEmpty)
+                                                        AdditionalField(
+                                                          'vehicle_number',
+                                                          vehicleNumber,
+                                                        ),
+                                                      if (comments != null &&
+                                                          comments
+                                                              .trim()
+                                                              .isNotEmpty)
+                                                        AdditionalField(
+                                                          'comments',
+                                                          comments,
+                                                        ),
+                                                      if (deliveryTeamName !=
+                                                              null &&
+                                                          deliveryTeamName
+                                                              .trim()
+                                                              .isNotEmpty)
+                                                        AdditionalField(
+                                                          'deliveryTeam',
+                                                          deliveryTeamName
+                                                              .toLowerCase(),
+                                                        ),
+                                                      if (hasLocationData) ...[
+                                                        AdditionalField(
+                                                          'lat',
+                                                          lat,
+                                                        ),
+                                                        AdditionalField(
+                                                          'lng',
+                                                          lng,
+                                                        ),
+                                                      ],
+                                                      if (scannerState
+                                                          .barCodes.isNotEmpty)
+                                                        addBarCodesToFields(
+                                                            scannerState
+                                                                .barCodes),
+                                                    ],
+                                                  )
+                                                : null,
+                                          );
+
+                                          bloc.add(
+                                            RecordStockSaveStockDetailsEvent(
+                                              stockModel: stockModel,
+                                            ),
+                                          );
+
+                                          final submit = await showCustomPopup(
+                                            context: context,
+                                            builder: (popupContext) => Popup(
+                                              title: localizations.translate(
+                                                i18.stockDetails.dialogTitle,
+                                              ),
+                                              onOutsideTap: () {
+                                                Navigator.of(popupContext)
+                                                    .pop(false);
+                                              },
+                                              description:
+                                                  localizations.translate(
+                                                i18.stockDetails.dialogContent,
+                                              ),
+                                              type: PopUpType.simple,
+                                              actions: [
+                                                DigitButton(
+                                                  label:
+                                                      localizations.translate(
+                                                    i18.common.coreCommonSubmit,
+                                                  ),
+                                                  onPressed: () {
+                                                    Navigator.of(
+                                                      popupContext,
+                                                      rootNavigator: true,
+                                                    ).pop(true);
+                                                  },
+                                                  type: DigitButtonType.primary,
+                                                  size: DigitButtonSize.large,
+                                                ),
+                                                DigitButton(
+                                                  label:
+                                                      localizations.translate(
+                                                    i18.common.coreCommonCancel,
+                                                  ),
+                                                  onPressed: () {
+                                                    Navigator.of(
+                                                      popupContext,
+                                                      rootNavigator: true,
+                                                    ).pop(false);
+                                                  },
+                                                  type:
+                                                      DigitButtonType.secondary,
+                                                  size: DigitButtonSize.large,
+                                                ),
+                                              ],
+                                            ),
+                                          ) as bool;
+
+                                          if (submit && context.mounted) {
+                                            context.read<AuthBloc>().add(
+                                                  AuthUpdateProductSKUCountsEvent(
+                                                      skuCounts: skuCounts),
+                                                );
+
+                                            bloc.add(
+                                              const RecordStockCreateStockEntryEvent(),
+                                            );
+                                            String descriptionText;
+                                            switch (entryType) {
+                                              case StockRecordEntryType.receipt:
+                                                descriptionText = i18_local
+                                                    .acknowledgementSuccess
+                                                    .acknowledgementDescriptionTextReceipt;
+                                                break;
+                                              case StockRecordEntryType
+                                                    .dispatch:
+                                                descriptionText = i18_local
+                                                    .acknowledgementSuccess
+                                                    .acknowledgementDescriptionTextDispatch;
+                                                break;
+                                              case StockRecordEntryType
+                                                    .returned:
+                                                descriptionText = i18_local
+                                                    .acknowledgementSuccess
+                                                    .acknowledgementDescriptionTextReturned;
+                                                break;
+                                              case StockRecordEntryType.loss:
+                                                descriptionText = i18_local
+                                                    .acknowledgementSuccess
+                                                    .acknowledgementDescriptionTextLoss;
+                                                break;
+                                              case StockRecordEntryType.damaged:
+                                                descriptionText = i18_local
+                                                    .acknowledgementSuccess
+                                                    .acknowledgementDescriptionTextDamaged;
+                                                break;
+                                              default:
+                                                descriptionText = i18
+                                                    .acknowledgementSuccess
+                                                    .acknowledgementDescriptionText;
+                                            }
+
+                                            (context.router.parent()
+                                                    as StackRouter)
+                                                .maybePop();
+
+                                            context.router.push(
+                                                CustomInventoryAcknowledgementRoute(
+                                                    description:
+                                                        descriptionText));
+                                          }
+                                        });
                                       }
-                                    });
-                                  }
+                                    },
+                                    // isDisabled: !form.valid,
+                                    label: localizations
+                                        .translate(i18.common.coreCommonSubmit),
+                                  );
                                 },
-                                // isDisabled: !form.valid,
-                                label: localizations
-                                    .translate(i18.common.coreCommonSubmit),
                               );
                             })
                           ],
@@ -1421,98 +1076,19 @@ class CustomStockDetailsPageState
                                           ),
                                       fetched: (facilities, allFacilities) {
                                         List<FacilityModel> filteredFacilities =
-                                            [];
+                                            facilities
+                                                .where((element) =>
+                                                    element.usage ==
+                                                    Constants.warehouse)
+                                                .toList();
 
-                                        if (context.selectedProject.address
-                                                ?.boundaryType ==
-                                            Constants.countryBoundaryLevel) {
-                                          filteredFacilities = entryType ==
-                                                  StockRecordEntryType.receipt
-                                              ? allFacilities
-                                                  .where((element) =>
-                                                      element.usage ==
-                                                      Constants.centralFacility)
-                                                  .toList()
-                                              : allFacilities
-                                                  .where((element) =>
-                                                      element.usage ==
-                                                      Constants.lgaFacility)
-                                                  .toList();
-                                        } else if (context.selectedProject
-                                                .address?.boundaryType ==
-                                            Constants.stateBoundaryLevel) {
-                                          filteredFacilities = entryType ==
-                                                  StockRecordEntryType.receipt
-                                              ? allFacilities
-                                                  .where((element) =>
-                                                      element.usage ==
-                                                      Constants.centralFacility)
-                                                  .toList()
-                                              : allFacilities
-                                                  .where((element) =>
-                                                      element.usage ==
-                                                      Constants.lgaFacility)
-                                                  .toList();
-                                        } else if (context.selectedProject
-                                                .address?.boundaryType ==
-                                            Constants.lgaBoundaryLevel) {
-                                          filteredFacilities = entryType ==
-                                                  StockRecordEntryType.receipt
-                                              ? facilities
-                                                  .where((element) =>
-                                                      element.usage ==
-                                                      Constants.stateFacility)
-                                                  .toList()
-                                              : facilities
-                                                  .where((element) =>
-                                                      element.usage ==
-                                                      Constants.healthFacility)
-                                                  .toList();
-                                        } else {
-                                          filteredFacilities = context
-                                                  .isDistributor
-                                              ? facilities
-                                                  .where((element) =>
-                                                      element.usage ==
-                                                      Constants.healthFacility)
-                                                  .toList()
-                                              : entryType ==
-                                                      StockRecordEntryType
-                                                          .receipt
-                                                  ? allFacilities
-                                                      .where((element) =>
-                                                          element.usage ==
-                                                          Constants.lgaFacility)
-                                                      .toList()
-                                                  // +
-                                                  // facilities
-                                                  //     .where((element) =>
-                                                  //         element.usage ==
-                                                  //         Constants
-                                                  //             .healthFacility)
-                                                  //     .toList()
-                                                  : [];
-                                        }
-
-                                        facilities =
-                                            context.isHealthFacilitySupervisor &&
-                                                    entryType !=
-                                                        StockRecordEntryType
-                                                            .receipt
-                                                ? []
-                                                : filteredFacilities.isEmpty
-                                                    ? facilities
-                                                    : filteredFacilities;
-
-                                        final teamFacilities = [
-                                          FacilityModel(
-                                            id: 'Delivery Team',
-                                            name: 'CDD Team',
-                                          ),
-                                        ];
-                                        teamFacilities.addAll(
-                                          facilities,
-                                        );
+                                        List<FacilityModel>
+                                            allFilteredFacilities =
+                                            allFacilities
+                                                .where((element) =>
+                                                    element.usage ==
+                                                    Constants.warehouse)
+                                                .toList();
 
                                         return Column(
                                           children: [
@@ -1529,13 +1105,10 @@ class CustomStockDetailsPageState
                                                 final facility =
                                                     await context.router.push(
                                                         CustomInventoryFacilitySelectionRoute(
-                                                  facilities:
-                                                      (isHealthFacilitySupervisor &&
-                                                              entryType !=
-                                                                  StockRecordEntryType
-                                                                      .receipt)
-                                                          ? teamFacilities
-                                                          : facilities,
+                                                  facilities: filteredFacilities
+                                                          .isNotEmpty
+                                                      ? filteredFacilities
+                                                      : allFilteredFacilities,
                                                 )) as FacilityModel?;
 
                                                 if (facility == null) return;

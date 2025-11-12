@@ -210,6 +210,9 @@ class MainApplicationState extends State<MainApplication>
                   individualRemoteRepository: ctx.read<
                       RemoteRepository<IndividualModel,
                           IndividualSearchModel>>(),
+                  productVariantLocalRepository: ctx.read<
+                      LocalRepository<ProductVariantModel,
+                          ProductVariantSearchModel>>(),
                 )..add(
                     AuthAutoLoginEvent(
                       tenantId: envConfig.variables.tenantId,
@@ -550,7 +553,6 @@ class MainApplicationState extends State<MainApplication>
                                   ____,
                                   _____,
                                   ______,
-                                  _______,
                                 ) =>
                                     [
                                   AuthenticatedRouteWrapper(),

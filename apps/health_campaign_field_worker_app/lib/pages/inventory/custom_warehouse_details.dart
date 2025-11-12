@@ -107,87 +107,11 @@ class CustomWarehouseDetailsPageState
                           .where((element) =>
                               element.usage == Constants.healthFacility)
                           .toList();
-
-                      // Handle the Delivery Team (this logic seems separate from the main filtering)
-                      // final teamFacilities = [
-                      //   FacilityModel(
-                      //     id: 'Delivery Team',
-                      //     name: 'Delivery Team',
-                      //     // Consider adding a 'usage' here if it needs to be filtered or excluded
-                      //     // usage: 'Delivery Team Special',
-                      //   ),
-                      // ];
-
-                      // Currently, teamFacilities.addAll(filteredResult); is commented out.
-                      // If you want 'Delivery Team' to appear alongside the filtered list,
-                      // you would uncomment that line or add 'filteredResult' to 'teamFacilities' here.
-                      // teamFacilities.addAll(filteredResult); // Uncomment if you want Delivery Team + filtered facilities
-
-                      // Decide which list to return based on the distributor status
                       return filteredFacilities;
                     },
                   ) ??
                   [];
 
-              /*.  OLD LOGIC
-                  if (ctx.selectedProject.address?.boundaryType ==
-                      Constants.countryBoundaryLevel) {
-                    List<FacilityModel> filteredFacilities = facilities
-                        .where((element) =>
-                            element.usage == Constants.stateFacility)
-                        .toList();
-                    facilities = filteredFacilities.isEmpty
-                        ? facilities
-                        : filteredFacilities;
-                  } else if (ctx.selectedProject.address?.boundaryType ==
-                      Constants.stateBoundaryLevel) {
-                    List<FacilityModel> filteredFacilities = facilities
-                        .where((element) =>
-                            element.usage == Constants.stateFacility)
-                        .toList();
-                    facilities = filteredFacilities.isEmpty
-                        ? facilities
-                        : filteredFacilities;
-                  } else if (ctx.selectedProject.address?.boundaryType ==
-                      Constants.lgaBoundaryLevel) {
-                    List<FacilityModel> filteredFacilities = facilities
-                        .where(
-                          (element) =>
-                              element.usage == Constants.lgaFacility,
-                        )
-                        .toList();
-                    facilities = filteredFacilities.isEmpty
-                        ? facilities
-                        : filteredFacilities;
-                  } else {
-                    List<FacilityModel> filteredFacilities = facilities
-                        .where(
-                          (element) =>
-                              element.usage == Constants.healthFacility,
-                        )
-                        .toList();
-                    facilities = filteredFacilities.isEmpty
-                        ? facilities
-                        : filteredFacilities;
-                  }
-
-                  final teamFacilities = [
-                    FacilityModel(
-                      id: 'Delivery Team',
-                      name: 'Delivery Team',
-                    ),
-                  ];
-                  // teamFacilities.addAll(
-                  //   facilities,
-                  // );
-
-                  return InventorySingleton().isDistributor! &&
-                          !InventorySingleton().isWareHouseMgr!
-                      ? teamFacilities
-                      : facilities;
-                },
-              ) ??
-              [];*/
               final stockState = recordStockBloc.state;
 
               final entryType = stockState.entryType;
@@ -305,22 +229,6 @@ class CustomWarehouseDetailsPageState
                                                   final productionRegex =
                                                       RegExp(
                                                           r'^CPS26-(\d{6})$');
-                                                  /* if (deliveryTeamSelected &&
-                                                      (teamCode == null ||
-                                                          !uuidRegex.hasMatch(
-                                                              teamCode) && !trainingRegex.hasMatch(
-                                                              teamCode) && !productionRegex.hasMatch(
-                                                              teamCode))) {
-                                                    Toast.showToast(
-                                                      context,
-                                                      type: ToastType.error,
-                                                      message: localizations
-                                                          .translate(i18_local
-                                                              .stockReconciliationDetails
-                                                              .qrCodeInvalidFormat),
-                                                    );
-                                                    return;
-                                                   }*/
 
                                                   final facility =
                                                       deliveryTeamSelected

@@ -5,7 +5,6 @@ import 'package:digit_data_model/data_model.dart';
 import 'package:digit_scanner/blocs/scanner.dart';
 import 'package:flutter/services.dart';
 import '../../blocs/app_initialization/app_initialization.dart';
-// import '../../models/app_config/app_config_model.dart';
 import '../../data/local_store/no_sql/schema/app_configuration.dart';
 import '../../utils/upper_case.dart';
 import '../../utils/utils.dart';
@@ -52,8 +51,6 @@ class CustomStockDetailsPageState
   static const _productVariantKey = 'productVariant';
   static const _secondaryPartyKey = 'secondaryParty';
   static const _transactionQuantityKey = 'quantity';
-  // static const _partialBlistersKey = 'partialBlistersReturned';
-  // static const _wastedBlistersKey = 'wastedBlistersReturned';
   static const _transactionReasonKey = 'transactionReason';
   static const _waybillNumberKey = 'waybillNumber';
   static const _waybillQuantityKey = 'waybillQuantity';
@@ -81,8 +78,6 @@ class CustomStockDetailsPageState
 
   FormGroup _form(bool isDistributor, bool isHealthFacilitySupervisor,
       StockRecordEntryType entryType) {
-    // deliveryTeamSelected = context.isHealthFacilitySupervisor &&
-    //     entryType != StockRecordEntryType.receipt;
     return fb.group({
       _productVariantKey: FormControl<ProductVariantModel>(),
       _secondaryPartyKey: FormControl<String>(
@@ -157,8 +152,6 @@ class CustomStockDetailsPageState
 
                 const module = i18.stockDetails;
                 final isWarehouseMgr = context.isWarehouseMgr;
-                // deliveryTeamSelected = context.isHealthFacilitySupervisor &&
-                //     entryType != StockRecordEntryType.receipt;
 
                 String pageTitle;
                 String quantityCountLabel;
